@@ -8,10 +8,22 @@
  */
 export type Height = number;
 
-export interface Tile {
+export interface TileData {
     q: number;
     r: number;
     height: Height;
     fog: boolean;
     clouds: boolean;
+}
+
+export function isLand(height: Height) {
+    return height >= 0.0 && height < 0.75
+}
+
+export function isWater(height: Height) {
+    return height < 0.0
+}
+
+export function isMountain(height: Height) {
+    return height >= 0.75
 }

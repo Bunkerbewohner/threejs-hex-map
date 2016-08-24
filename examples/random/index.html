@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hex-Map</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="../../node_modules/three/build/three.min.js"></script>
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            height: 100%;
+            background-color: cornflowerblue;
+        }
+    </style>
+</head>
+<body>
+
+<canvas></canvas>
+
+<script>
+    var require = {
+        paths: {
+            "three": "../../node_modules/three/build/three",
+            "es6-promise": "../../node_modules/es6-promise/dist/es6-promise"
+        }
+    }
+</script>
+<script data-main="main" src="../../node_modules/requirejs/require.js"></script>
+
+</body>
+</html>

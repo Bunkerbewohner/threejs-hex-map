@@ -23,6 +23,11 @@
   "license": "MIT",
   "homepage": "https://bitbucket.org/bunkerbewohner/hex-map#readme",
   "dependencies": {
+    "es6-promise": "^3.2.1",
     "three": "^0.79.0"
+  },
+  "devDependencies": {
+    "express": "^4.14.0",
+    "requirejs": "^2.2.0"
   }
 }
