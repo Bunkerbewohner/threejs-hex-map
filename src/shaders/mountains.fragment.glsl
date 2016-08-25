@@ -5,47 +5,42 @@
 precision highp float;
 uniform float sineTime;
 uniform float zoom;
-uniform sampler2D terrainTex;
+uniform sampler2D texture;
+uniform sampler2D hillsNormal;
 
 varying vec2 vTexCoord;
 varying vec3 vPosition;
 varying float vExtra;
-varying float vOcean;
-varying float vMountain;
 varying float vFogOfWar;
-varying float vClouds;
+varying float vHill;
+varying vec2 vOffset;
+
+const vec3 cameraPos = vec3(0, -25.0, 25.0);
+const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
+const vec3 lightAmbient = vec3(0.08, 0.08, 0.08);
+const vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);
 
 void main() {
-    if (vMountain > 0.0)
-    {
-        // MOUNTAIN
-        vec4 textureColor = texture2D(terrainTex, vTexCoord);
-        gl_FragColor = textureColor;
-    }
-    else if (vOcean > 0.0)
-    {
-        // OCEAN
-        vec4 texColor = texture2D(terrainTex, vTexCoord);
-        gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, 1.0);
-    }
-    else
-    {
-        // LAND
-        vec4 texColor = texture2D(terrainTex, vTexCoord);
-        gl_FragColor = texColor;
-    }
+    // LAND
+    vec4 texColor = texture2D(texture, vTexCoord);
+    vec3 normal = vec3(0.0, 1.0, 0.0);
 
-    if (vExtra > 0.94 && true) {
-        // hex border
+    normal = normalize((texture2D(hillsNormal, vTexCoord * 1.5 + vOffset * 0.5).xyz * 2.0) - 1.0);
+
+    vec3 lightDir = normalize(lightPos - vPosition);
+    float lambertian = max(dot(lightDir, normal), 0.0);
+
+    vec3 color = lightAmbient + lambertian * texColor.xyz * lightDiffuse;
+    gl_FragColor = vec4(color, 1.0);
+
+    if (vExtra > 0.97 && true) { // hex border
         float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
-        gl_FragColor = mix(vec4(0.9, 0.9, 0.7, 1.0), gl_FragColor, 1.0 - f);
+        f = 0.34;
+        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);
     }
 
     // FOW
-    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);
+    //gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);
 
-    // Clouds
-    if (vClouds > 0.0) {
-        gl_FragColor = vec4(0.9, 0.9, 0.9, 1.0);
-    }
+    //gl_FragColor = vec4(vTexCoord.x, vTexCoord.y, 0, 1.0);
 }

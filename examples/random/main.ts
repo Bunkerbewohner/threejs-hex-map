@@ -1,6 +1,9 @@
 import {PerspectiveCamera, Scene} from "three"
-import {generateRandomMap} from "../../src/map-generator";
-import MapMesh from "../../src/map-mesh";
+import {generateRandomMap} from "../../src/map-generator"
+import MapMesh from "../../src/map-mesh"
+import {TextureAtlas} from "../../src/interfaces"
+import {loadFile} from "../../src/util"
+import {Promise} from "es6-promise"
 
 const camera    = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000)
 const scene     = new Scene()
@@ -32,8 +35,21 @@ if (renderer.extensions.get('ANGLE_instanced_arrays') === false) {
 }
 
 function init() {
-    generateRandomMap(96).then(tiles => {
-        const mesh = new MapMesh(tiles)
+    var zoom = (parseFloat(localStorage.getItem("zoom"))) || 25
+    camera.position.z = zoom
+    camera.rotation.x = Math.PI / 4.5
+
+    const textureAtlas = loadFile("land-atlas.json").then(json => JSON.parse(json))
+    const tiles = generateRandomMap(96, (q, r, h) => {
+        if (h < 0) return "water";
+        if (h > 0.75) return "mountain";
+        if (Math.random() > 0.5) return "grass"
+        else return "plains"
+    })
+
+    Promise.all([textureAtlas, tiles]).then(([textureAtlas, tiles]) => {
+        const mesh = new MapMesh(tiles, textureAtlas)
+        mesh.position.y = zoom * 0.95
         scene.add(mesh)
     })
 }

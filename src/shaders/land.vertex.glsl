@@ -11,63 +11,55 @@ uniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 camera; // camera position in world space
-uniform vec3 viewCenter; // world position on Z plane that camera is looking at
+
+// (width, height, cellSize, cellSpacing)
+uniform vec4 textureAtlasMeta;
 
 attribute vec3 position; // position of one of the hexagon's vertices
 attribute vec2 offset; // world position offset for the entire hexagon (tile)
 attribute vec2 uv; // texture coordinates
-attribute float extra; // extra = distance from hexagon center (0.0 = center, 1.0 = border)
+attribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)
 
-// style.x = linearized 2D texture atlas offset (X = style.x & 10^0, Y = style.x & 10^1)
-// style.y = 1.0 = fog of war, 0.0 otherwise
-// style.z = 1.0 = clouds, 0.0 otherwise
-attribute vec3 style;
+// style.x = texture atlas cell index
+// style.y = bitmask
+attribute vec2 style;
 
 varying vec3 vPosition;
 varying vec2 vTexCoord;
 varying float vExtra;
-varying float vOcean; // 1.0 = tile is ocean, 0.0 otherwise
-varying float vMountain; // 1.0 = tile is mountain, 0.0 otherwise
 varying float vFogOfWar; // 1.0 = tile is in fog of war, 0.0 otherwise
-varying float vClouds; // 1.0 = tile is under clouds, 0.0 otherwise
+varying float vHill;
+varying vec2 vOffset;
+
+vec2 cellIndexToUV(float idx) {
+    float atlasWidth = textureAtlasMeta.x;
+    float atlasHeight = textureAtlasMeta.y;
+    float cellSize = textureAtlasMeta.z;
+    float cols = atlasWidth / cellSize;
+    float rows = atlasHeight / cellSize;
+    float x = mod(idx, cols);
+    float y = floor(idx / cols);
+
+    //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));
+    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));
+}
 
 void main() {
-    float uvShiftX = 10.0 * (style.x / 10.0 - floor(style.x / 10.0));
-    float uvShiftY = floor(style.x / 10.0);
-
-    vOcean = (style.x == 12.0 ? 1.0 : 0.0);
-    vMountain = (style.x == 20.0) ? 1.0 : 0.0;
-    float clouds = style.z > 0.0 ? 1.0 : 0.0;
-
     vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);
 
-    if (vMountain > 0.0 && extra < 0.95 && clouds == 0.0) {
-        pos.z = mod(uv.s + pos.s * 0.2, 1.0);
-    }
-
-    if (clouds > 0.0) {
-        pos.z += 1.0;
-    }
-
-    bool wrapAround = false;
-
-    if (wrapAround) {
-        float mapWidth = size * sqrt(3.0);
-        float wrapAroundX = mod(pos.x - viewCenter.x, mapWidth);
-        float center = viewCenter.x - mapWidth / 2.0;
-        pos.x = center + wrapAroundX;
+    if (style.y / 10.0 >= 1.0 && border < 0.75) { // hill
+        pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;
+        vHill = 1.0;
+    } else {
+        vHill = 0.0;
     }
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     vPosition = pos;
+    vOffset = offset;
 
-    vTexCoord = uv;
-    vTexCoord.x /= 4.0;
-    vTexCoord.y = 1.0 - vTexCoord.y / 4.0;
-    vTexCoord.x += uvShiftX * (1.0 / 4.0);
-    vTexCoord.y -= uvShiftY * (1.0 / 4.0);
+    vTexCoord = cellIndexToUV(style.x);
 
-    vExtra = extra;
-    vFogOfWar = style.y;
-    vClouds = style.z;
+    vExtra = border;
+    vFogOfWar = style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0;
 }

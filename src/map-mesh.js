@@ -3,29 +3,44 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise"], function (require, exports, interfaces_1, hexagon_1, three_1, es6_promise_1) {
+define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise", "./util"], function (require, exports, interfaces_1, hexagon_1, three_1, es6_promise_1, util_1) {
     "use strict";
     var textureLoader = new three_1.TextureLoader();
-    var fileLoader = new three_1.XHRLoader();
     var MapMesh = (function (_super) {
         __extends(MapMesh, _super);
-        function MapMesh(_tiles) {
+        function MapMesh(_tiles, _textureAtlas) {
             _super.call(this);
             this._tiles = _tiles;
-            this.createLandMesh(_tiles.filter(function (t) { return interfaces_1.isLand(t.height); }));
-            this.createWaterMesh(_tiles.filter(function (t) { return interfaces_1.isWater(t.height); }));
+            this._textureAtlas = _textureAtlas;
+            this.createLandMesh(_tiles.filter(function (t) { return !interfaces_1.isMountain(t.height); }));
+            //this.createWaterMesh(_tiles.filter(t => isWater(t.height)))
             this.createMountainMesh(_tiles.filter(function (t) { return interfaces_1.isMountain(t.height); }));
+            var mountains = _tiles.filter(function (t) { return interfaces_1.isMountain(t.height); });
+            console.log("MOUNTAINS= ", mountains);
         }
         MapMesh.prototype.createLandMesh = function (tiles) {
             var _this = this;
-            MapMesh.landProps.onLoaded(function (diffuseMap, fragmentShader, vertexShader) {
-                var geometry = createHexagonTilesGeometry(tiles, 0);
+            var vertexShader = MapMesh.landShaders.vertexShader;
+            var fragmentShader = MapMesh.landShaders.fragmentShader;
+            var atlas = this._textureAtlas;
+            var hillNormal = textureLoader.load("textures/hills-normal.png");
+            hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping;
+            es6_promise_1.Promise.all([vertexShader, fragmentShader]).then(function (_a) {
+                var vertexShader = _a[0], fragmentShader = _a[1];
+                var geometry = createHexagonTilesGeometry(tiles, 0, _this._textureAtlas);
                 var material = new THREE.RawShaderMaterial({
                     uniforms: {
                         sineTime: { value: 0.0 },
-                        viewCenter: { type: "v3", value: new THREE.Vector3(0, 0, 0) },
                         camera: { type: "v3", value: new THREE.Vector3(0, 0, 0) },
-                        texture: { type: "t", value: diffuseMap }
+                        texture: { type: "t", value: textureLoader.load(_this._textureAtlas.image) },
+                        textureAtlasMeta: {
+                            type: "4f",
+                            value: new three_1.Vector4(atlas.width, atlas.height, atlas.cellSize, atlas.cellSpacing)
+                        },
+                        hillsNormal: {
+                            type: "t",
+                            value: hillNormal
+                        }
                     },
                     vertexShader: vertexShader,
                     fragmentShader: fragmentShader,
@@ -40,36 +55,56 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
         MapMesh.prototype.createWaterMesh = function (tiles) {
         };
         MapMesh.prototype.createMountainMesh = function (tiles) {
-        };
-        MapMesh.landProps = {
-            diffuseMap: textureLoader.load("textures/terrain-diffuse.png"),
-            fragmentShader: fileLoader.load("../../src/shaders/terrain.fragment.glsl?cachebuster=" + Math.random() * 9999999),
-            vertexShader: fileLoader.load("../../src/shaders/terrain.vertex.glsl?cachebuster=" + Math.random() * 9999999),
-            onLoaded: function (callback) {
-                es6_promise_1.Promise.all([
-                    MapMesh.landProps.diffuseMap,
-                    MapMesh.landProps.fragmentShader,
-                    MapMesh.landProps.vertexShader
-                ]).then(function (values) {
-                    callback(values[0], values[1], values[2]);
+            var _this = this;
+            var vertexShader = MapMesh.mountainShaders.vertexShader;
+            var fragmentShader = MapMesh.mountainShaders.fragmentShader;
+            var atlas = this._textureAtlas;
+            var hillNormal = textureLoader.load("textures/hills-normal.png");
+            hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping;
+            es6_promise_1.Promise.all([vertexShader, fragmentShader]).then(function (_a) {
+                var vertexShader = _a[0], fragmentShader = _a[1];
+                var geometry = createHexagonTilesGeometry(tiles, 1, _this._textureAtlas);
+                var material = new THREE.RawShaderMaterial({
+                    uniforms: {
+                        sineTime: { value: 0.0 },
+                        camera: { type: "v3", value: new THREE.Vector3(0, 0, 0) },
+                        texture: { type: "t", value: textureLoader.load(_this._textureAtlas.image) },
+                        textureAtlasMeta: {
+                            type: "4f",
+                            value: new three_1.Vector4(atlas.width, atlas.height, atlas.cellSize, atlas.cellSpacing)
+                        },
+                        hillsNormal: {
+                            type: "t",
+                            value: hillNormal
+                        }
+                    },
+                    vertexShader: vertexShader,
+                    fragmentShader: fragmentShader,
+                    side: THREE.FrontSide,
+                    wireframe: false,
+                    transparent: false
                 });
-            }
+                _this.mountains = new three_1.Mesh(geometry, material);
+                _this.add(_this.mountains);
+            });
         };
-        MapMesh.waterProps = {
-            diffuseMap: textureLoader.load("textures/terrain-diffuse.png"),
-            fragmentShader: fileLoader.load("shaders/water.fragment.glsl?cachebuster=" + Math.random() * 9999999),
-            vertexShader: fileLoader.load("shaders/water.vertex.glsl?cachebuster=" + Math.random() * 9999999)
+        MapMesh.landShaders = {
+            fragmentShader: util_1.loadFile("../../src/shaders/land.fragment.glsl"),
+            vertexShader: util_1.loadFile("../../src/shaders/land.vertex.glsl")
         };
-        MapMesh.mountainProps = {
-            diffuseMap: textureLoader.load("textures/terrain-diffuse.png"),
-            fragmentShader: fileLoader.load("shaders/mountains.fragment.glsl?cachebuster=" + Math.random() * 9999999),
-            vertexShader: fileLoader.load("shaders/mountains.vertex.glsl?cachebuster=" + Math.random() * 9999999)
+        MapMesh.waterShaders = {
+            fragmentShader: util_1.loadFile("../../src/shaders/water.fragment.glsl"),
+            vertexShader: util_1.loadFile("../../src/shaders/water.vertex.glsl")
+        };
+        MapMesh.mountainShaders = {
+            fragmentShader: util_1.loadFile("../../src/shaders/mountains.fragment.glsl"),
+            vertexShader: util_1.loadFile("../../src/shaders/mountains.vertex.glsl")
         };
         return MapMesh;
     }(THREE.Group));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = MapMesh;
-    function createHexagonTilesGeometry(tiles, numSubdivisions) {
+    function createHexagonTilesGeometry(tiles, numSubdivisions, textureAtlas) {
         var hexagon = hexagon_1.createHexagon(1.0, numSubdivisions);
         var geometry = new three_1.InstancedBufferGeometry();
         geometry.maxInstancedCount = tiles.length;
@@ -81,6 +116,22 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
         var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1);
         posAttr.copyVector2sArray(tilePositions);
         geometry.addAttribute("offset", posAttr);
+        //----------------
+        var cellSize = textureAtlas.cellSize;
+        var cellSpacing = textureAtlas.cellSpacing;
+        var numColumns = textureAtlas.width / cellSize;
+        var styles = tiles.map(function (tile) {
+            var cell = textureAtlas.textures[tile.terrain];
+            var cellIndex = cell.cellY * numColumns + cell.cellX;
+            var shadow = tile.fog ? 1 : 0;
+            //const clouds = tile.clouds          ? 1 << 1 : 0
+            var hills = interfaces_1.isHill(tile.height) ? 1 : 0;
+            var style = shadow * 1 + hills * 10;
+            return new three_1.Vector2(cellIndex, style);
+        });
+        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1);
+        styleAttr.copyVector2sArray(styles);
+        geometry.addAttribute("style", styleAttr);
         return geometry;
     }
 });
