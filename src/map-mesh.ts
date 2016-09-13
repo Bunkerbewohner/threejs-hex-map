@@ -193,7 +193,7 @@ function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
     const SE = bit(isWaterTile(tile.q, tile.r + 1))
     const SW = bit(isWaterTile(tile.q - 1, tile.r + 1))
     const W = bit(isWaterTile(tile.q - 1, tile.r))
-    const NW = bit(isWaterTile(tile.q, tile.r + 1))
+    const NW = bit(isWaterTile(tile.q, tile.r - 1))
 
     return parseInt(NE + E + SE + SW + W + NW, 2)
 }

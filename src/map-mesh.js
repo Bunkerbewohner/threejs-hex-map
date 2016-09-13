@@ -159,7 +159,7 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
         var SE = bit(isWaterTile(tile.q, tile.r + 1));
         var SW = bit(isWaterTile(tile.q - 1, tile.r + 1));
         var W = bit(isWaterTile(tile.q - 1, tile.r));
-        var NW = bit(isWaterTile(tile.q, tile.r + 1));
+        var NW = bit(isWaterTile(tile.q, tile.r - 1));
         return parseInt(NE + E + SE + SW + W + NW, 2);
     }
 });

@@ -38,7 +38,7 @@ void main() {
     vec3 color = lightAmbient + lambertian * texColor.xyz * lightDiffuse;
     gl_FragColor = vec4(color, 1.0);
 
-    if (vExtra > 0.97 && true) { // hex border
+    if (vExtra > 0.97 && false) { // hex border
         float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
         f = 0.34;
         gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);
