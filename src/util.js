@@ -12,4 +12,27 @@ define(["require", "exports", "es6-promise", "three"], function (require, export
         });
     }
     exports.loadFile = loadFile;
+    function qrRange(qrRadius) {
+        var _this = this;
+        var coords = [];
+        forEachRange(-qrRadius, qrRadius + 1, function (dx) {
+            forEachRange(Math.max(-qrRadius, -dx - qrRadius), Math.min(qrRadius, -dx + qrRadius) + 1, function (dy) {
+                var dz = -dx - dy;
+                coords.push({ q: _this.x + dx, r: _this.z + dz });
+            });
+        });
+        return coords;
+    }
+    exports.qrRange = qrRange;
+    function forEachRange(min, max, f) {
+        if (!max) {
+            return this.range(0, min);
+        }
+        else {
+            for (var i = min; i < max; i++) {
+                f(i);
+            }
+        }
+    }
+    exports.forEachRange = forEachRange;
 });

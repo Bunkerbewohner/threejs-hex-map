@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise", "./util"], function (require, exports, interfaces_1, hexagon_1, three_1, es6_promise_1, util_1) {
+define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise", "./util", "./tile-grid"], function (require, exports, interfaces_1, hexagon_1, three_1, es6_promise_1, util_1, tile_grid_1) {
     "use strict";
     var textureLoader = new three_1.TextureLoader();
     var MapMesh = (function (_super) {
@@ -15,8 +15,6 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
             this.createLandMesh(_tiles.filter(function (t) { return !interfaces_1.isMountain(t.height); }));
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height)))
             this.createMountainMesh(_tiles.filter(function (t) { return interfaces_1.isMountain(t.height); }));
-            var mountains = _tiles.filter(function (t) { return interfaces_1.isMountain(t.height); });
-            console.log("MOUNTAINS= ", mountains);
         }
         MapMesh.prototype.createLandMesh = function (tiles) {
             var _this = this;
@@ -25,6 +23,7 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
             var atlas = this._textureAtlas;
             var hillNormal = textureLoader.load("textures/hills-normal.png");
             hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping;
+            var coastAtlas = textureLoader.load("textures/coast-diffuse.png");
             es6_promise_1.Promise.all([vertexShader, fragmentShader]).then(function (_a) {
                 var vertexShader = _a[0], fragmentShader = _a[1];
                 var geometry = createHexagonTilesGeometry(tiles, 0, _this._textureAtlas);
@@ -40,6 +39,10 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
                         hillsNormal: {
                             type: "t",
                             value: hillNormal
+                        },
+                        coastAtlas: {
+                            type: "t",
+                            value: coastAtlas
                         }
                     },
                     vertexShader: vertexShader,
@@ -105,6 +108,7 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = MapMesh;
     function createHexagonTilesGeometry(tiles, numSubdivisions, textureAtlas) {
+        var grid = new tile_grid_1.default(tiles);
         var hexagon = hexagon_1.createHexagon(1.0, numSubdivisions);
         var geometry = new three_1.InstancedBufferGeometry();
         geometry.maxInstancedCount = tiles.length;
@@ -127,11 +131,35 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
             //const clouds = tile.clouds          ? 1 << 1 : 0
             var hills = interfaces_1.isHill(tile.height) ? 1 : 0;
             var style = shadow * 1 + hills * 10;
-            return new three_1.Vector2(cellIndex, style);
+            // Coast texture index
+            var coastIdx = computeCoastTextureIndex(grid, tile);
+            return new three_1.Vector3(cellIndex, style, coastIdx);
         });
-        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1);
-        styleAttr.copyVector2sArray(styles);
+        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 3, 1);
+        styleAttr.copyVector3sArray(styles);
         geometry.addAttribute("style", styleAttr);
         return geometry;
+    }
+    function computeCoastTextureIndex(grid, tile) {
+        function isWaterTile(q, r) {
+            var t = grid.get(q, r);
+            if (!t)
+                return false;
+            return interfaces_1.isWater(t.height);
+        }
+        function bit(x) {
+            return x ? "1" : "0";
+        }
+        if (isWaterTile(tile.q, tile.r)) {
+            // only land tiles have a coast
+            return 0;
+        }
+        var NE = bit(isWaterTile(tile.q + 1, tile.r - 1));
+        var E = bit(isWaterTile(tile.q + 1, tile.r));
+        var SE = bit(isWaterTile(tile.q, tile.r + 1));
+        var SW = bit(isWaterTile(tile.q - 1, tile.r + 1));
+        var W = bit(isWaterTile(tile.q - 1, tile.r));
+        var NW = bit(isWaterTile(tile.q, tile.r + 1));
+        return parseInt(NE + E + SE + SW + W + NW, 2);
     }
 });

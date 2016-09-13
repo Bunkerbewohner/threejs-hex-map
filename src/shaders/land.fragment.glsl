@@ -7,13 +7,16 @@ uniform float sineTime;
 uniform float zoom;
 uniform sampler2D texture;
 uniform sampler2D hillsNormal;
+uniform sampler2D coastAtlas;
 
+varying vec2 vUV;
 varying vec2 vTexCoord;
 varying vec3 vPosition;
 varying float vExtra;
 varying float vFogOfWar;
 varying float vHill;
 varying vec2 vOffset;
+varying vec2 vCoastTextureCell;
 
 const vec3 cameraPos = vec3(0, -25.0, 25.0);
 const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
@@ -39,6 +42,15 @@ void main() {
         float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
         f = 0.34;
         gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);
+    }
+
+    // Coast
+    vec2 coastUv = vec2(vCoastTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vCoastTextureCell.y / 8.0 + vUV.y / 8.0));
+    vec4 coastColor = texture2D(coastAtlas, coastUv);
+
+    if (coastColor.w > 0.0) {
+        vec3 coast = lightAmbient + lambertian * coastColor.xyz * lightDiffuse;
+        gl_FragColor = mix(gl_FragColor, vec4(coast, 1.0), coastColor.w);
     }
 
     // FOW

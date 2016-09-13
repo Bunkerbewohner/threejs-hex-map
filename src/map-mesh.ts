@@ -14,7 +14,8 @@ import {
     BufferAttribute
 } from "three"
 import {Promise} from "es6-promise"
-import {loadFile} from "./util"
+import {loadFile, qrRange} from "./util"
+import TileGrid from "./tile-grid";
 
 const textureLoader = new TextureLoader()
 
@@ -44,9 +45,6 @@ export default class MapMesh extends THREE.Group {
         this.createLandMesh(_tiles.filter(t => !isMountain(t.height)))
         //this.createWaterMesh(_tiles.filter(t => isWater(t.height)))
         this.createMountainMesh(_tiles.filter(t => isMountain(t.height)))
-
-        const mountains = _tiles.filter(t => isMountain(t.height))
-        console.log("MOUNTAINS= ", mountains)
     }
 
     createLandMesh(tiles: TileData[]) {
@@ -56,6 +54,8 @@ export default class MapMesh extends THREE.Group {
 
         const hillNormal = textureLoader.load("textures/hills-normal.png")
         hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping
+
+        const coastAtlas = textureLoader.load("textures/coast-diffuse.png")
 
         Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
             const geometry = createHexagonTilesGeometry(tiles, 0, this._textureAtlas)
@@ -71,6 +71,10 @@ export default class MapMesh extends THREE.Group {
                     hillsNormal: {
                         type: "t",
                         value: hillNormal
+                    },
+                    coastAtlas: {
+                        type: "t",
+                        value: coastAtlas
                     }
                 },
                 vertexShader: vertexShader,
@@ -126,8 +130,10 @@ export default class MapMesh extends THREE.Group {
 }
 
 function createHexagonTilesGeometry(tiles: TileData[], numSubdivisions: number, textureAtlas: TextureAtlas) {
+    const grid = new TileGrid(tiles)
     const hexagon = createHexagon(1.0, numSubdivisions)
     const geometry = new InstancedBufferGeometry()
+
     geometry.maxInstancedCount = tiles.length
     geometry.addAttribute("position", (hexagon.attributes as any).position)
     geometry.addAttribute("uv", (hexagon.attributes as any).uv)
@@ -153,12 +159,41 @@ function createHexagonTilesGeometry(tiles: TileData[], numSubdivisions: number, 
         const hills = isHill(tile.height)   ? 1 : 0
         const style = shadow * 1 + hills * 10
 
-        return new Vector2(cellIndex, style)
+        // Coast texture index
+        const coastIdx = computeCoastTextureIndex(grid, tile)
+
+        return new Vector3(cellIndex, style, coastIdx)
     })
 
-    var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1)
-    styleAttr.copyVector2sArray(styles)
+    var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 3, 1)
+    styleAttr.copyVector3sArray(styles)
     geometry.addAttribute("style", styleAttr)
 
     return geometry
+}
+
+function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
+    function isWaterTile(q: number, r: number) {
+        const t = grid.get(q, r)
+        if (!t) return false
+        return isWater(t.height)
+    }
+
+    function bit(x: boolean) {
+        return x ? "1" : "0"
+    }
+
+    if (isWaterTile(tile.q, tile.r)) {
+        // only land tiles have a coast
+        return 0
+    }
+
+    const NE = bit(isWaterTile(tile.q + 1, tile.r - 1))
+    const E = bit(isWaterTile(tile.q + 1, tile.r))
+    const SE = bit(isWaterTile(tile.q, tile.r + 1))
+    const SW = bit(isWaterTile(tile.q - 1, tile.r + 1))
+    const W = bit(isWaterTile(tile.q - 1, tile.r))
+    const NW = bit(isWaterTile(tile.q, tile.r + 1))
+
+    return parseInt(NE + E + SE + SW + W + NW, 2)
 }
