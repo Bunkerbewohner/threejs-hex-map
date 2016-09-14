@@ -19,8 +19,9 @@ varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
 
 const vec3 cameraPos = vec3(0, -25.0, 25.0);
+//const vec3 lightPos = vec3(500.0, 1000.0, 500.0);
 const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
-const vec3 lightAmbient = vec3(0.1, 0.1, 0.1);
+const vec3 lightAmbient = vec3(0.3, 0.3, 0.3);
 const vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);
 
 void main() {
@@ -30,12 +31,15 @@ void main() {
 
     if (vHill > 0.0) {
         normal = normalize((texture2D(hillsNormal, vTexCoord * 0.75 + vOffset * 0.5).xyz * 2.0) - 1.0);
+
+        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra);
     }
 
     vec3 lightDir = normalize(lightPos - vPosition);
     float lambertian = max(dot(lightDir, normal), 0.0);
+    //lambertian = sqrt(lambertian);
 
-    vec3 color = lightAmbient + lambertian * texColor.xyz * lightDiffuse;
+    vec3 color = lightAmbient * texColor.xyz + lambertian * texColor.xyz * lightDiffuse;
     gl_FragColor = vec4(color, 1.0);
 
     if (vExtra > 0.97 && false) { // hex border
@@ -49,7 +53,7 @@ void main() {
     vec4 coastColor = texture2D(coastAtlas, coastUv);
 
     if (coastColor.w > 0.0) {
-        vec3 coast = lightAmbient + lambertian * coastColor.xyz * lightDiffuse;
+        vec3 coast = lightAmbient * coastColor.xyz + lambertian * coastColor.xyz * lightDiffuse;
         gl_FragColor = mix(gl_FragColor, vec4(coast, 1.0), coastColor.w);
     }
 
