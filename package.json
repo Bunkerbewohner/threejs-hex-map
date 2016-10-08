@@ -24,7 +24,8 @@
   "homepage": "https://bitbucket.org/bunkerbewohner/hex-map#readme",
   "dependencies": {
     "es6-promise": "^3.2.1",
-    "three": "^0.79.0"
+    "three": "^0.79.0",
+    "typescript": "^2.0.3"
   },
   "devDependencies": {
     "express": "^4.14.0",
