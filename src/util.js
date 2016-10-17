@@ -13,12 +13,11 @@ define(["require", "exports", "es6-promise", "three"], function (require, export
     }
     exports.loadFile = loadFile;
     function qrRange(qrRadius) {
-        var _this = this;
         var coords = [];
         forEachRange(-qrRadius, qrRadius + 1, function (dx) {
             forEachRange(Math.max(-qrRadius, -dx - qrRadius), Math.min(qrRadius, -dx + qrRadius) + 1, function (dy) {
                 var dz = -dx - dy;
-                coords.push({ q: _this.x + dx, r: _this.z + dz });
+                coords.push({ q: dx, r: dz });
             });
         });
         return coords;
@@ -26,7 +25,7 @@ define(["require", "exports", "es6-promise", "three"], function (require, export
     exports.qrRange = qrRange;
     function forEachRange(min, max, f) {
         if (!max) {
-            return this.range(0, min);
+            return range(0, min);
         }
         else {
             for (var i = min; i < max; i++) {
@@ -35,4 +34,28 @@ define(["require", "exports", "es6-promise", "three"], function (require, export
         }
     }
     exports.forEachRange = forEachRange;
+    function shuffle(a) {
+        var j, x, i;
+        for (i = a.length; i; i--) {
+            j = Math.floor(Math.random() * i);
+            x = a[i - 1];
+            a[i - 1] = a[j];
+            a[j] = x;
+        }
+        return a;
+    }
+    exports.shuffle = shuffle;
+    function range(minOrMax, max) {
+        if (!max) {
+            return this.range(0, minOrMax);
+        }
+        else {
+            var values = [];
+            for (var i = minOrMax; i < max; i++) {
+                values.push(i);
+            }
+            return values;
+        }
+    }
+    exports.range = range;
 });

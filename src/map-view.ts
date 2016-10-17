@@ -1,6 +1,6 @@
 import {Camera} from "three"
 import {screenToWorld} from "./camera-utils";
-import Map from "./map";
+import Map from "./map-mesh";
 
 export default class MapView {
     private _zoom: number = 1

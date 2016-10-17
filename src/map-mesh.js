@@ -24,6 +24,7 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
             var hillNormal = textureLoader.load("textures/hills-normal.png");
             hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping;
             var coastAtlas = textureLoader.load("textures/coast-diffuse.png");
+            var riverAtlas = textureLoader.load("textures/river-diffuse.png");
             es6_promise_1.Promise.all([vertexShader, fragmentShader]).then(function (_a) {
                 var vertexShader = _a[0], fragmentShader = _a[1];
                 var geometry = createHexagonTilesGeometry(tiles, 0, _this._textureAtlas);
@@ -43,6 +44,10 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
                         coastAtlas: {
                             type: "t",
                             value: coastAtlas
+                        },
+                        riverAtlas: {
+                            type: "t",
+                            value: riverAtlas
                         }
                     },
                     vertexShader: vertexShader,
@@ -131,12 +136,13 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
             //const clouds = tile.clouds          ? 1 << 1 : 0
             var hills = interfaces_1.isHill(tile.height) ? 1 : 0;
             var style = shadow * 1 + hills * 10;
-            // Coast texture index
+            // Coast and River texture index
             var coastIdx = computeCoastTextureIndex(grid, tile);
-            return new three_1.Vector3(cellIndex, style, coastIdx);
+            var riverIdx = computeRiverTextureIndex(grid, tile);
+            return new three_1.Vector4(cellIndex, style, coastIdx, riverIdx);
         });
-        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 3, 1);
-        styleAttr.copyVector3sArray(styles);
+        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1);
+        styleAttr.copyVector4sArray(styles);
         geometry.addAttribute("style", styleAttr);
         return geometry;
     }
@@ -160,6 +166,27 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
         var SW = bit(isWaterTile(tile.q - 1, tile.r + 1));
         var W = bit(isWaterTile(tile.q - 1, tile.r));
         var NW = bit(isWaterTile(tile.q, tile.r - 1));
+        return parseInt(NE + E + SE + SW + W + NW, 2);
+    }
+    function computeRiverTextureIndex(grid, tile) {
+        function isRiver(q, r) {
+            var t = grid.get(q, r);
+            if (!t)
+                return false;
+            if (!t.river)
+                return false;
+            return true;
+            return Math.abs(t.river.riverTileIndex - tile.river.riverTileIndex) == 1;
+        }
+        function bit(x) {
+            return x ? "1" : "0";
+        }
+        var NE = bit(isRiver(tile.q + 1, tile.r - 1));
+        var E = bit(isRiver(tile.q + 1, tile.r));
+        var SE = bit(isRiver(tile.q, tile.r + 1));
+        var SW = bit(isRiver(tile.q - 1, tile.r + 1));
+        var W = bit(isRiver(tile.q - 1, tile.r));
+        var NW = bit(isRiver(tile.q, tile.r - 1));
         return parseInt(NE + E + SE + SW + W + NW, 2);
     }
 });

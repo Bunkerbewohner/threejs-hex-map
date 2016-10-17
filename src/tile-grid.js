@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "./util"], function (require, exports, util_1) {
     "use strict";
     var TileGrid = (function () {
         function TileGrid(_tiles) {
@@ -18,6 +18,24 @@ define(["require", "exports"], function (require, exports) {
             else if (typeof this.grid[q][r] == "undefined")
                 return null;
             return this.grid[q][r];
+        };
+        TileGrid.prototype.neighbors = function (q, r) {
+            var _this = this;
+            return util_1.qrRange(1).map(function (qr) {
+                return _this.get(q + qr.q, r + qr.r);
+            }).filter(function (x) { return x != null; });
+        };
+        TileGrid.prototype.list = function () {
+            var tiles = [];
+            for (var i in this.grid) {
+                for (var j in this.grid[i]) {
+                    var tile = this.grid[i][j];
+                    if (tile) {
+                        tiles.push(tile);
+                    }
+                }
+            }
+            return tiles;
         };
         return TileGrid;
     }());
