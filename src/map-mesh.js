@@ -176,7 +176,7 @@ define(["require", "exports", "./interfaces", "./hexagon", "three", "es6-promise
             if (!t.river)
                 return false;
             return true;
-            return Math.abs(t.river.riverTileIndex - tile.river.riverTileIndex) == 1;
+            //return Math.abs(t.river.riverTileIndex - tile.river.riverTileIndex) == 1
         }
         function bit(x) {
             return x ? "1" : "0";

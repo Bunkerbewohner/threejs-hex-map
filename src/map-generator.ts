@@ -64,16 +64,18 @@ function generateRivers(grid: TileGrid): TileGrid {
 
     // grow the river towards the water by following the height gradient
     const rivers = spawns.map(growRiver)
+    console.log(rivers)
 
     let riverIndex = 0
     for (let river of rivers) {
         let riverTileIndex = 0
         for (let tile of river) {
             tile.river = {
-                riverIndex: riverIndex++,
+                riverIndex: riverIndex,
                 riverTileIndex: riverTileIndex++
             }
         }
+        riverIndex++
     }
 
     return grid

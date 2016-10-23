@@ -211,7 +211,7 @@ function computeRiverTextureIndex(grid: TileGrid, tile: TileData): number {
         if (!t.river) return false
 
         return true
-        return Math.abs(t.river.riverTileIndex - tile.river.riverTileIndex) == 1
+        //return Math.abs(t.river.riverTileIndex - tile.river.riverTileIndex) == 1
     }
 
     function bit(x: boolean) {

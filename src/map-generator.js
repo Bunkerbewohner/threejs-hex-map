@@ -49,6 +49,7 @@ define(["require", "exports", "./perlin", "./interfaces", "es6-promise", "./tile
         }
         // grow the river towards the water by following the height gradient
         var rivers = spawns.map(growRiver);
+        console.log(rivers);
         var riverIndex = 0;
         for (var _i = 0, rivers_1 = rivers; _i < rivers_1.length; _i++) {
             var river = rivers_1[_i];
@@ -56,10 +57,11 @@ define(["require", "exports", "./perlin", "./interfaces", "es6-promise", "./tile
             for (var _a = 0, river_1 = river; _a < river_1.length; _a++) {
                 var tile = river_1[_a];
                 tile.river = {
-                    riverIndex: riverIndex++,
+                    riverIndex: riverIndex,
                     riverTileIndex: riverTileIndex++
                 };
             }
+            riverIndex++;
         }
         return grid;
         function randomSpring() {
