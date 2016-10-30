@@ -60,3 +60,25 @@ export function range(minOrMax: number, max?: number): number[] {
         return values;
     }
 }
+
+export function flatMap<T, R>(items: T[], map: (item: T) => R[]): R[] {
+    return [].concat(items.map(map))
+}
+
+export function sum(numbers: number[]): number {
+    return numbers.reduce((sum, item) => sum + item, 0)
+}
+
+export function qrEquals(a: QR, b: QR): boolean {
+    return a.q == b.q && a.r == b.r
+}
+
+export function minBy<T>(items: T[], by: (item: T)=>number): T | null {
+    if (items.length == 0) {
+        return null
+    } else if (items.length == 1) {
+        return items[0]
+    } else {
+        return items.reduce((min: T, cur: T) => by(cur) < by(min) ? cur : min, items[0])
+    }
+}

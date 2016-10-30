@@ -46,7 +46,7 @@ vec2 cellIndexToUV(float idx) {
     float y = floor(idx / cols);
 
     //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));
-    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));
+    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));
 }
 
 void main() {

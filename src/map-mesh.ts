@@ -204,26 +204,29 @@ function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
     return parseInt(NE + E + SE + SW + W + NW, 2)
 }
 
+function isNextOrPrevRiverTile(grid: TileGrid, tile: TileData, q: number, r: number) {
+    const neighbor = grid.get(q, r)
+    
+    if (neighbor && neighbor.river && tile && tile.river) {
+        return tile.river.riverIndex == neighbor.river.riverIndex && Math.abs(tile.river.riverTileIndex - neighbor.river.riverTileIndex) == 1
+    } else {
+        return false
+    }
+}
+
 function computeRiverTextureIndex(grid: TileGrid, tile: TileData): number {
-    function isRiver(q: number, r: number) {
-        const t = grid.get(q, r)
-        if (!t) return false
-        if (!t.river) return false
+    if (!tile.river) return 0
 
-        return true
-        //return Math.abs(t.river.riverTileIndex - tile.river.riverTileIndex) == 1
-    }
-
-    function bit(x: boolean) {
-        return x ? "1" : "0"
-    }
-
-    const NE = bit(isRiver(tile.q + 1, tile.r - 1))
-    const E = bit(isRiver(tile.q + 1, tile.r))
-    const SE = bit(isRiver(tile.q, tile.r + 1))
-    const SW = bit(isRiver(tile.q - 1, tile.r + 1))
-    const W = bit(isRiver(tile.q - 1, tile.r))
-    const NW = bit(isRiver(tile.q, tile.r - 1))
+    const NE = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q + 1, tile.r - 1))
+    const E = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q + 1, tile.r))
+    const SE = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q, tile.r + 1))
+    const SW = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q - 1, tile.r + 1))
+    const W = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q - 1, tile.r))
+    const NW = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q, tile.r - 1))
 
     return parseInt(NE + E + SE + SW + W + NW, 2)
+}
+
+function bitStr(x: boolean): string {
+    return x ? "1": "0"
 }
