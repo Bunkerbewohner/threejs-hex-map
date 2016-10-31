@@ -7,6 +7,10 @@ import {Promise} from "es6-promise"
 
 var lastTimestamp = Date.now()
 
+const mapSize = (parseInt(localStorage.getItem("size"))) || 96
+
+var zoom = (parseFloat(localStorage.getItem("zoom"))) || 25
+
 const vScroll     = new THREE.Vector3(0, 0, 0)
 const scrollSpeed = 10
 
@@ -76,6 +80,7 @@ function onWindowResize(event: Event) {
 
 function onExit() {
     localStorage.setItem("zoom", camera.position.z+"")
+    localStorage.setItem("size", mapSize+"")
 }
 
 function animate(timestamp: number) {
@@ -103,13 +108,12 @@ if (renderer.extensions.get('ANGLE_instanced_arrays') === false) {
     animate(0)
 }
 
-function init() {
-    var zoom = (parseFloat(localStorage.getItem("zoom"))) || 25
+function init() {    
     camera.position.z = zoom
-    camera.rotation.x = Math.PI / 4.5
+    camera.rotation.x = Math.PI / 4.5    
 
     const textureAtlas = loadFile("land-atlas.json").then(json => JSON.parse(json))
-    const tiles = generateRandomMap(96, (q, r, h) => {
+    const tiles = generateRandomMap(mapSize, (q, r, h) => {
         if (h < 0) return "water";
         if (h > 0.75) return "mountain";
         if (Math.random() > 0.5) return "grass"
