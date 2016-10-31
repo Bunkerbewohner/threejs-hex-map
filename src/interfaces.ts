@@ -15,6 +15,7 @@ export interface TileData {
     fog: boolean;
     clouds: boolean;
     terrain: string;
+    river?: {riverIndex: number; riverTileIndex: number};
 }
 
 export function isLand(height: Height) {

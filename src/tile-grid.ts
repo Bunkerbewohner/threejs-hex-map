@@ -1,5 +1,6 @@
-
 import {TileData} from "./interfaces";
+import {qrRange} from "./util";
+
 export default class TileGrid {
 
     private grid: TileData[][] = []
@@ -18,5 +19,26 @@ export default class TileGrid {
         if (typeof this.grid[q] == "undefined") return null
         else if (typeof this.grid[q][r] == "undefined") return null
         return this.grid[q][r]
+    }
+
+    neighbors(q: number, r: number): TileData[] {
+        return qrRange(1).map(qr => {
+            return this.get(q + qr.q, r + qr.r)
+        }).filter(x => x != null)
+    }
+
+    list(): TileData[] {
+        const tiles: TileData[] = []
+
+        for (let i in this.grid) {
+            for (let j in this.grid[i]) {
+                const tile = this.grid[i][j]
+                if (tile) {
+                    tiles.push(tile)
+                }
+            }
+        }
+
+        return tiles
     }
 }

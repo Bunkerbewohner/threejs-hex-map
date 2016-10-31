@@ -56,6 +56,7 @@ export default class MapMesh extends THREE.Group {
         hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping
 
         const coastAtlas = textureLoader.load("textures/coast-diffuse.png")
+        const riverAtlas = textureLoader.load("textures/river-diffuse.png")
 
         Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
             const geometry = createHexagonTilesGeometry(tiles, 0, this._textureAtlas)
@@ -75,6 +76,10 @@ export default class MapMesh extends THREE.Group {
                     coastAtlas: {
                         type: "t",
                         value: coastAtlas
+                    },
+                    riverAtlas: {
+                        type: "t",
+                        value: riverAtlas
                     }
                 },
                 vertexShader: vertexShader,
@@ -159,14 +164,15 @@ function createHexagonTilesGeometry(tiles: TileData[], numSubdivisions: number, 
         const hills = isHill(tile.height)   ? 1 : 0
         const style = shadow * 1 + hills * 10
 
-        // Coast texture index
+        // Coast and River texture index
         const coastIdx = computeCoastTextureIndex(grid, tile)
+        const riverIdx = computeRiverTextureIndex(grid, tile)
 
-        return new Vector3(cellIndex, style, coastIdx)
+        return new Vector4(cellIndex, style, coastIdx, riverIdx)
     })
 
-    var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 3, 1)
-    styleAttr.copyVector3sArray(styles)
+    var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
+    styleAttr.copyVector4sArray(styles)
     geometry.addAttribute("style", styleAttr)
 
     return geometry
@@ -196,4 +202,31 @@ function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
     const NW = bit(isWaterTile(tile.q, tile.r - 1))
 
     return parseInt(NE + E + SE + SW + W + NW, 2)
+}
+
+function isNextOrPrevRiverTile(grid: TileGrid, tile: TileData, q: number, r: number) {
+    const neighbor = grid.get(q, r)
+    
+    if (neighbor && neighbor.river && tile && tile.river) {
+        return tile.river.riverIndex == neighbor.river.riverIndex && Math.abs(tile.river.riverTileIndex - neighbor.river.riverTileIndex) == 1
+    } else {
+        return false
+    }
+}
+
+function computeRiverTextureIndex(grid: TileGrid, tile: TileData): number {
+    if (!tile.river) return 0
+
+    const NE = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q + 1, tile.r - 1))
+    const E = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q + 1, tile.r))
+    const SE = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q, tile.r + 1))
+    const SW = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q - 1, tile.r + 1))
+    const W = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q - 1, tile.r))
+    const NW = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q, tile.r - 1))
+
+    return parseInt(NE + E + SE + SW + W + NW, 2)
+}
+
+function bitStr(x: boolean): string {
+    return x ? "1": "0"
 }

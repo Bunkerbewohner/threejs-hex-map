@@ -23,7 +23,8 @@ attribute float border; // border = distance from hexagon center (0.0 = center, 
 // style.x = texture atlas cell index
 // style.y = bitmask
 // style.z = coast texture index (0 - 64)
-attribute vec3 style;
+// style.w = river texture index (0 - 64)
+attribute vec4 style;
 
 varying vec3 vPosition;
 varying vec2 vTexCoord;
@@ -33,6 +34,7 @@ varying float vFogOfWar; // 1.0 = tile is in fog of war, 0.0 otherwise
 varying float vHill;
 varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
+varying vec2 vRiverTextureCell;
 
 vec2 cellIndexToUV(float idx) {
     float atlasWidth = textureAtlasMeta.x;
@@ -44,7 +46,7 @@ vec2 cellIndexToUV(float idx) {
     float y = floor(idx / cols);
 
     //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));
-    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));
+    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));
 }
 
 void main() {
@@ -64,6 +66,7 @@ void main() {
     vUV = uv;
     vTexCoord = cellIndexToUV(style.x);
     vCoastTextureCell = vec2(mod(style.z, 8.0), floor(style.z / 8.0));
+    vRiverTextureCell = vec2(mod(style.w, 8.0), floor(style.w / 8.0));
 
     vExtra = border;
     vFogOfWar = style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0;
