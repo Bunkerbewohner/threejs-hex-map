@@ -53,7 +53,7 @@ export function generateRandomMap(size: number, terrainAt: (q: number, r: number
 function generateRivers(grid: TileGrid): TileGrid {
     // find a few river spawn points, preferably in mountains
     const tiles = grid.list()
-    const numRivers = 50
+    const numRivers = Math.max(1, Math.round(Math.sqrt(tiles.length) / 4)) 
     const spawns: TileData[] = shuffle(tiles.filter(t => isAccessibleMountain(t, grid))).slice(0, numRivers)
 
     // grow the river towards the water by following the height gradient
@@ -117,6 +117,6 @@ function generateRivers(grid: TileGrid): TileGrid {
 
 function isAccessibleMountain(tile: TileData, grid: TileGrid) {
     let ns = grid.neighbors(tile.q, tile.r)
-    let spring = isMountain(tile.height) || isHill(tile.height)
+    let spring = isMountain(tile.height)
     return spring && ns.filter(t => isLand(t.height)).length > 3
 }

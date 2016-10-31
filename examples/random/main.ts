@@ -34,6 +34,10 @@ if (renderer.extensions.get('ANGLE_instanced_arrays') === false) {
     animate(0)
 }
 
+window.onbeforeunload = () => {
+    localStorage.setItem("zoom", camera.position.z+"")
+}
+
 function init() {
     var zoom = (parseFloat(localStorage.getItem("zoom"))) || 25
     camera.position.z = zoom
