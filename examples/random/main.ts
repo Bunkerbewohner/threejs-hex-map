@@ -5,6 +5,11 @@ import {TextureAtlas} from "../../src/interfaces"
 import {loadFile} from "../../src/util"
 import {Promise} from "es6-promise"
 
+var lastTimestamp = Date.now()
+
+const vScroll     = new THREE.Vector3(0, 0, 0)
+const scrollSpeed = 10
+
 const camera    = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000)
 const scene     = new Scene()
 const renderer  = new THREE.WebGLRenderer({
@@ -12,15 +17,76 @@ const renderer  = new THREE.WebGLRenderer({
     devicePixelRatio: window.devicePixelRatio
 })
 
+const keyCodes = {
+    LEFT_ARROW: 37,
+    UP_ARROW: 38,
+    RIGHT_ARROW: 39,
+    DOWN_ARROW: 40
+}
+
+interface KeyActions {
+    [keyCode: number]: KeyAction;
+}
+
+interface KeyAction {
+    down?: () => void; // function to call when key is pressed
+    up?: () => void; // function to call when key is released
+}
+
+const keyActions: KeyActions = {
+    [keyCodes.LEFT_ARROW]: {
+        down: () => vScroll.x = -1,
+        up: () => vScroll.x = 0 
+    },
+    [keyCodes.RIGHT_ARROW]: {
+        down: () => vScroll.x = 1,
+        up: () => vScroll.x = 0
+    },
+    [keyCodes.UP_ARROW]: {
+        down: () => vScroll.y = 1,
+        up: () => vScroll.y = 0
+    },
+    [keyCodes.DOWN_ARROW]: {
+        down: () => vScroll.y = -1,
+        up: () => vScroll.y = 0
+    }
+}
+
+function onKeyDown(event: KeyboardEvent) {
+    const actions = keyActions[event.keyCode]
+
+    if (actions && "down" in actions) {
+        actions["down"]()
+    }
+}
+
+function onKeyUp(event: KeyboardEvent) {
+    const actions = keyActions[event.keyCode]
+
+    if (actions && "up" in actions) {
+        actions["up"]()
+    }
+}
+
 function onWindowResize(event: Event) {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function onExit() {
+    localStorage.setItem("zoom", camera.position.z+"")
+}
+
 function animate(timestamp: number) {
+    const dtS = (timestamp - lastTimestamp) / 1000.0
+
+    const scroll = vScroll.clone().normalize().multiplyScalar(scrollSpeed * dtS)
+    camera.position.add(scroll)
+
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
+    lastTimestamp = timestamp
 }
 
 if (renderer.extensions.get('ANGLE_instanced_arrays') === false) {
@@ -28,14 +94,13 @@ if (renderer.extensions.get('ANGLE_instanced_arrays') === false) {
     document.write("Your browser is not supported (missing extension ANGLE_instanced_arrays)")
 } else {
     window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('beforeunload', onExit, false)
+    window.addEventListener('keydown', onKeyDown, false)
+    window.addEventListener('keyup', onKeyUp, false)
     renderer.setClearColor(0x6495ED);
     renderer.setSize(window.innerWidth, window.innerHeight)
     init()
     animate(0)
-}
-
-window.onbeforeunload = () => {
-    localStorage.setItem("zoom", camera.position.z+"")
 }
 
 function init() {

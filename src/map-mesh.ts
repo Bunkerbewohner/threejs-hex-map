@@ -145,7 +145,7 @@ function createHexagonTilesGeometry(tiles: TileData[], numSubdivisions: number, 
     geometry.addAttribute("border", (hexagon.attributes as any).border)
 
     // positions for each hexagon tile
-    var tilePositions = tiles.map((tile) => new Vector2(Math.sqrt(3) * (tile.q + tile.r / 2), 3 / 2 * tile.r))
+    var tilePositions: Vector2[] = tiles.map((tile) => new Vector2(Math.sqrt(3) * (tile.q + tile.r / 2), 3 / 2 * tile.r))
     var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1)
     posAttr.copyVector2sArray(tilePositions)
     geometry.addAttribute("offset", posAttr)
@@ -174,6 +174,9 @@ function createHexagonTilesGeometry(tiles: TileData[], numSubdivisions: number, 
     var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
     styleAttr.copyVector4sArray(styles)
     geometry.addAttribute("style", styleAttr)
+
+    geometry.boundingSphere = new THREE.Sphere()
+    geometry.boundingSphere.setFromPoints(tilePositions.map(pos => new THREE.Vector3(pos.x, pos.y, 0)))
 
     return geometry
 }
