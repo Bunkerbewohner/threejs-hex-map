@@ -10,6 +10,7 @@ var lastTimestamp = Date.now()
 const mapSize = (parseInt(localStorage.getItem("size"))) || 96
 
 var zoom = (parseFloat(localStorage.getItem("zoom"))) || 25
+var speedUp = 1.0
 
 const vScroll     = new THREE.Vector3(0, 0, 0)
 const scrollSpeed = 10
@@ -25,7 +26,8 @@ const keyCodes = {
     LEFT_ARROW: 37,
     UP_ARROW: 38,
     RIGHT_ARROW: 39,
-    DOWN_ARROW: 40
+    DOWN_ARROW: 40,
+    SHIFT: 16
 }
 
 interface KeyActions {
@@ -53,6 +55,10 @@ const keyActions: KeyActions = {
     [keyCodes.DOWN_ARROW]: {
         down: () => vScroll.y = -1,
         up: () => vScroll.y = 0
+    },
+    [keyCodes.SHIFT]: {
+        down: () => speedUp = 2.0,
+        up: () => speedUp = 1.0
     }
 }
 
@@ -86,7 +92,7 @@ function onExit() {
 function animate(timestamp: number) {
     const dtS = (timestamp - lastTimestamp) / 1000.0
 
-    const scroll = vScroll.clone().normalize().multiplyScalar(scrollSpeed * dtS)
+    const scroll = vScroll.clone().normalize().multiplyScalar(scrollSpeed * speedUp * dtS)
     camera.position.add(scroll)
 
     renderer.render(scene, camera);
