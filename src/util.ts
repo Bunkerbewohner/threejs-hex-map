@@ -15,6 +15,10 @@ export function loadFile(path: string): Promise<string> {
     })
 }
 
+export function loadJSON<T>(path: string): Promise<T> {
+    return loadFile(path).then(str => JSON.parse(str) as T)
+}
+
 export function qrRange(qrRadius: number): QR[] {
     const coords: QR[] = [];
 
