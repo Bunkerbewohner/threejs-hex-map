@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "install": "npm run build",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
