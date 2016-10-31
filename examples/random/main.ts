@@ -7,9 +7,12 @@ import {Promise} from "es6-promise"
 
 var lastTimestamp = Date.now()
 
-const mapSize = (parseInt(localStorage.getItem("size"))) || 96
+const defaultZoom = 25
+const defaultSize = 96
 
-var zoom = (parseFloat(localStorage.getItem("zoom"))) || 25
+const mapSize = paramInt("size", defaultSize)
+
+var zoom = paramFloat("zoom", defaultZoom)
 var speedUp = 1.0
 
 const vScroll     = new THREE.Vector3(0, 0, 0)
@@ -131,4 +134,21 @@ function init() {
         mesh.position.y = zoom * 0.95
         scene.add(mesh)
     })
+}
+
+function paramString(name: string, defaultValue: string): string {
+    const queryMatch = document.location.href.match(new RegExp(name+"=([^&]+)"))
+    if (queryMatch) {
+        return (queryMatch[1])
+    } else {
+        return ((localStorage.getItem(name))) || defaultValue
+    }
+}
+
+function paramInt(name: string, defaultValue: number): number {
+    return parseInt(paramString(name, defaultValue+""))
+}
+
+function paramFloat(name: string, defaultValue: number): number {
+    return parseFloat(paramString(name, defaultValue+""))
 }
