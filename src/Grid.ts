@@ -28,8 +28,8 @@ export default class Grid<T> {
     forEachQR(f: (q: number, r: number, existingItem?: T)=>void) {
         const {_width, _height} = this
 
-        for (var i = -this.halfWidth; i < Math.ceil(_width/2); i++) {
-            for (var j = -this.halfHeight; j < Math.ceil(_height/2); j++) {
+        for (var i = -this.halfWidth; i < this.halfWidth; i++) {
+            for (var j = -this.halfHeight; j < this.halfHeight; j++) {
                 const q = i - j / 2 + ((-_height / 2 + j) % 2) / 2
                 const r = j
 

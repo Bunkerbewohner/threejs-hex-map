@@ -1,4 +1,4 @@
-import {TileData, isLand, isWater, isMountain, TextureAtlas, isHill} from "./interfaces"
+import { TileData, isLand, isWater, isMountain, TextureAtlas, isHill } from './interfaces';
 import {createHexagon} from "./hexagon"
 import {
     InstancedBufferGeometry,
@@ -9,9 +9,11 @@ import {
     Vector4,
     Texture,
     Mesh,
+    Group,
     TextureLoader,
     XHRLoader,
-    BufferAttribute
+    BufferAttribute,
+    Sphere
 } from "three"
 import {Promise} from "es6-promise"
 import {loadFile, qrRange} from "./util"
@@ -19,7 +21,7 @@ import TileGrid from "./tile-grid";
 
 const textureLoader = new TextureLoader()
 
-export default class MapMesh extends THREE.Group {
+export default class MapMesh extends Group {
 
     static landShaders = {
         fragmentShader: loadFile("../../src/shaders/land.fragment.glsl"),
@@ -40,11 +42,32 @@ export default class MapMesh extends THREE.Group {
     //private water: Mesh
     private mountains: Mesh
 
+    boundingSphere: Sphere
+
     constructor(private _tiles: TileData[], private _textureAtlas: TextureAtlas) {
         super()
-        this.createLandMesh(_tiles.filter(t => !isMountain(t.height)))
-        //this.createWaterMesh(_tiles.filter(t => isWater(t.height)))
-        this.createMountainMesh(_tiles.filter(t => isMountain(t.height)))
+
+        Promise.all([
+            this.createLandMesh(_tiles.filter(t => !isMountain(t.height))),            
+            this.createMountainMesh(_tiles.filter(t => isMountain(t.height))),
+            //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
+        ]).then(() => {
+            this.computeBoundingSphere()
+        })
+    }
+
+    private computeBoundingSphere() {
+        const bs = this.boundingSphere = new Sphere()
+        const childrenBounds = [this.land, this.mountains].map(x => x.geometry.boundingSphere)
+
+        const pts = [].concat(...childrenBounds.map(bounds => {
+            return [
+                bounds.center.clone().sub(new Vector3(bounds.radius, bounds.radius, 0)),
+                bounds.center.clone().add(new Vector3(bounds.radius, bounds.radius, 0))
+            ]
+        }))
+
+        bs.setFromPoints(pts)
     }
 
     createLandMesh(tiles: TileData[]) {
@@ -58,7 +81,7 @@ export default class MapMesh extends THREE.Group {
         const coastAtlas = textureLoader.load("textures/coast-diffuse.png")
         const riverAtlas = textureLoader.load("textures/river-diffuse.png")
 
-        Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
+        return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
             const geometry = createHexagonTilesGeometry(tiles, 0, this._textureAtlas)
             const material = new THREE.RawShaderMaterial({
                 uniforms: {
@@ -105,7 +128,7 @@ export default class MapMesh extends THREE.Group {
         const hillNormal = textureLoader.load("textures/hills-normal.png")
         hillNormal.wrapS = hillNormal.wrapT = THREE.RepeatWrapping
 
-        Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
+        return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
             const geometry = createHexagonTilesGeometry(tiles, 1, this._textureAtlas)
             const material = new THREE.RawShaderMaterial({
                 uniforms: {
