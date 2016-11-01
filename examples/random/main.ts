@@ -4,7 +4,7 @@ import MapMesh from "../../src/map-mesh"
 import {TextureAtlas} from "../../src/interfaces"
 import { loadFile, loadJSON } from '../../src/util';
 import {Promise} from "es6-promise"
-import MapView from './MapView';
+import MapView from '../../src/MapView';
 import { KeyActions, KEY_CODES, paramInt, paramFloat } from './util';
 
 const mapSize = paramInt("size", 96)

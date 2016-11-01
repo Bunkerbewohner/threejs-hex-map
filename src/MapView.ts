@@ -1,9 +1,10 @@
 import {PerspectiveCamera, Scene, WebGLRenderer, Vector3} from "three"
-import {generateRandomMap} from "../../src/map-generator"
-import MapMesh from "../../src/map-mesh"
-import { TextureAtlas, TileData } from '../../src/interfaces';
-import {loadFile} from "../../src/util"
+import {generateRandomMap} from "./map-generator"
+import MapMesh from "./map-mesh"
+import { TextureAtlas, TileData } from './interfaces';
+import {loadFile} from "./util"
 import {Promise} from "es6-promise"
+import { screenToWorld } from './camera-utils';
 
 export default class MapView {
     private static DEFAULT_ZOOM = 25
@@ -76,5 +77,10 @@ export default class MapView {
         this._camera.aspect = window.innerWidth / window.innerHeight;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    update() {
+        const frustrumMin = screenToWorld(0, 0, this._camera)
+        const frustrumMax = screenToWorld(window.innerWidth, window.innerHeight, this._camera)
     }
 }
