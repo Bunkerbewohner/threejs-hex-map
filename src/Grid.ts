@@ -1,31 +1,36 @@
 import { QR } from './interfaces';
 import { qrRange, range } from './util';
 
-export interface GridItem extends QR {
-}
-
-export default class Grid<T extends GridItem> {
+export default class Grid<T> {
     private data: T[][] = []
-    private halfWidth = this.width / 2
-    private halfHeight = this.height / 2
+    private halfWidth = this._width / 2
+    private halfHeight = this._height / 2
 
     get length(): number {
-        return this.width * this.height
+        return this._width * this._height
     }
 
-    constructor(private width: number, private height: number) {
-        if (width % 2 != 0 || height % 2 != 0) {
+    get width(): number {
+        return this._width
+    }
+
+    get height(): number {
+        return this._height
+    }
+
+    constructor(private _width: number, private _height: number) {
+        if (_width % 2 != 0 || _height % 2 != 0) {
             throw new Error("With and height of grid must be divisible by 2")
         }
         this.data = []
     }
 
     forEachQR(f: (q: number, r: number, existingItem?: T)=>void) {
-        const {width, height} = this
+        const {_width, _height} = this
 
-        for (var i = -this.halfWidth; i < Math.ceil(width/2); i++) {
-            for (var j = -this.halfHeight; j < Math.ceil(height/2); j++) {
-                const q = i - j / 2 + ((-height / 2 + j) % 2) / 2
+        for (var i = -this.halfWidth; i < Math.ceil(_width/2); i++) {
+            for (var j = -this.halfHeight; j < Math.ceil(_height/2); j++) {
+                const q = i - j / 2 + ((-_height / 2 + j) % 2) / 2
                 const r = j
 
                 f(q, r, this.get(q, r))
@@ -35,12 +40,18 @@ export default class Grid<T extends GridItem> {
         return this
     }
 
-    mapQR(f: (q: number, r: number, existingItem?: T) => T) {
-        return this.forEachQR((q,r,item) => this.add(f(q, r, item)))
+    initQR(f: (q: number, r: number, existingItem?: T) => T) {
+        return this.forEachQR((q,r,item) => this.add(q, r, f(q, r, item)))
+    }
+
+    mapQR<R>(f: (q: number, r: number, existingItem?: T) => R) {
+        const mapped = new Grid<R>(this._width, this._height)
+        this.forEachQR((q,r,item) => mapped.add(q, r, f(q, r, item)))
+        return mapped
     }
 
     toArray(): T[] {
-        const arr: T[] = new Array(this.width * this.height)
+        const arr: T[] = new Array(this._width * this._height)
         var i = 0
 
         for (let q in this.data) {
@@ -61,12 +72,12 @@ export default class Grid<T extends GridItem> {
         }
     }
 
-    add(item: T) {
-        if (item.q in this.data) {
-            this.data[item.q][item.r] = item
+    add(q: number, r: number, item: T) {
+        if (q in this.data) {
+            this.data[q][r] = item
         } else {
-            const col: T[] = this.data[item.q] = []
-            col[item.r] = item
+            const col: T[] = this.data[q] = []
+            col[r] = item
         }
     }
 

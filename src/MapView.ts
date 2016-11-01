@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, WebGLRenderer, Vector3} from "three"
+import {PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group} from "three"
 import {generateRandomMap} from "./map-generator"
 import MapMesh from "./MapMesh"
 import { TextureAtlas, TileData } from './interfaces';
@@ -16,6 +16,8 @@ export default class MapView {
     private _scrollDir = new Vector3(0, 0, 0)    
     private _lastTimestamp = Date.now()
     private _zoom: number = 25
+
+    private _textureAtlas: TextureAtlas;
 
     get zoom() {
         return this._zoom
@@ -57,8 +59,8 @@ export default class MapView {
     }
 
     load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
-        const mesh = new MapMesh(tiles.toArray(), textureAtlas)        
-        this._scene.add(mesh)
+        this._textureAtlas = textureAtlas
+        this._scene.add(new MapMesh(tiles.toArray(), textureAtlas))
     }
 
     private animate = (timestamp: number) => {

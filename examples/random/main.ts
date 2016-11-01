@@ -23,6 +23,8 @@ const tiles = generateRandomMap(mapSize, (q, r, h) => {
 
 Promise.all([tiles, textureAtlas]).then(([tiles, textureAtlas]) => {
     mapView.load(tiles, textureAtlas)
+}).catch(err => {
+    console.error(err)
 })
 
 const keyActions: KeyActions = {
