@@ -5,6 +5,7 @@ import { TextureAtlas, TileData } from './interfaces';
 import {loadFile} from "./util"
 import {Promise} from "es6-promise"
 import { screenToWorld } from './camera-utils';
+import Grid from './Grid';
 
 export default class MapView {
     private static DEFAULT_ZOOM = 25
@@ -55,8 +56,8 @@ export default class MapView {
         this.animate(0)
     }
 
-    load(tiles: TileData[], textureAtlas: TextureAtlas) {
-        const mesh = new MapMesh(tiles, textureAtlas)        
+    load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
+        const mesh = new MapMesh(tiles.toArray(), textureAtlas)        
         this._scene.add(mesh)
     }
 

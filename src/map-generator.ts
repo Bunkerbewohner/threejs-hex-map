@@ -3,6 +3,7 @@ import {Height, TileData, isLand, isWater, isMountain, isHill} from "./interface
 import {Promise} from "es6-promise"
 import TileGrid from "./tile-grid";
 import {shuffle, qrRange} from "./util";
+import Grid from './Grid';
 
 function randomHeight(q: number, r: number) {
     var noise1 = simplex2(q / 10, r / 10)
@@ -23,37 +24,29 @@ function randomHeight(q: number, r: number) {
  */
 export function generateMap(size: number,
                             heightAt: (q: number, r: number) => Height,
-                            terrainAt: (q: number, r: number, height: Height) => string): Promise<TileData[]> {
-    return new Promise((resolve, reject) => {
-        var tiles: TileData[] = []
+                            terrainAt: (q: number, r: number, height: Height) => string): Promise<Grid<TileData>> {
+    return new Promise((resolve, reject) => {        
+        const grid = new Grid<TileData>(size, size).setQR((q, r) => {
+            const height = heightAt(q, r)
+            const terrain = terrainAt(q, r, height)
+            return {q, r, height, terrain, fog: true, clouds: true, river: null}
+        })
 
-        for (var i = -size / 2; i < size / 2; i++) {
-            for (var j = -size / 2; j < size / 2; j++) {
-                const q = i - j / 2 + ((-size / 2 + j) % 2) * 0.5
-                const r = j
-                const height = heightAt(q, r)
-                const terrain = terrainAt(q, r, height)
+        const withRivers = generateRivers(grid)
 
-                tiles.push({q, r, height, terrain, fog: true, clouds: true, river: null})
-            }
-        }
-
-        const grid = generateRivers(new TileGrid(tiles))
-        tiles = grid.list()
-
-        resolve(tiles)
+        resolve(withRivers)
     })
 }
 
-export function generateRandomMap(size: number, terrainAt: (q: number, r: number, height: Height) => string): Promise<TileData[]> {
+export function generateRandomMap(size: number, terrainAt: (q: number, r: number, height: Height) => string): Promise<Grid<TileData>> {
     seed(Math.random())
     return generateMap(size, randomHeight, terrainAt)
 }
 
-function generateRivers(grid: TileGrid): TileGrid {
+function generateRivers(grid: Grid<TileData>): Grid<TileData> {
     // find a few river spawn points, preferably in mountains
-    const tiles = grid.list()
-    const numRivers = Math.max(1, Math.round(Math.sqrt(tiles.length) / 4)) 
+    const tiles = grid.toArray()
+    const numRivers = Math.max(1, Math.round(Math.sqrt(grid.length) / 4)) 
     const spawns: TileData[] = shuffle(tiles.filter(t => isAccessibleMountain(t, grid))).slice(0, numRivers)
 
     // grow the river towards the water by following the height gradient
@@ -115,7 +108,7 @@ function generateRivers(grid: TileGrid): TileGrid {
     }
 }
 
-function isAccessibleMountain(tile: TileData, grid: TileGrid) {
+function isAccessibleMountain(tile: TileData, grid: Grid<TileData>) {
     let ns = grid.neighbors(tile.q, tile.r)
     let spring = isMountain(tile.height)
     return spring && ns.filter(t => isLand(t.height)).length > 3

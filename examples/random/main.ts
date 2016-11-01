@@ -16,9 +16,13 @@ const tiles = generateRandomMap(mapSize, (q, r, h) => {
     if (h > 0.75) return "mountain";
     if (Math.random() > 0.5) return "grass"
     else return "plains"
+}).catch(err => {
+    console.error(err)
+    return null
 })
 
 Promise.all([tiles, textureAtlas]).then(([tiles, textureAtlas]) => {
+    console.log(tiles)
     mapView.load(tiles, textureAtlas)
 })
 
