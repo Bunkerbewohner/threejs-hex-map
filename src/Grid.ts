@@ -17,7 +17,7 @@ export default class Grid<T extends GridItem> {
         if (width % 2 != 0 || height % 2 != 0) {
             throw new Error("With and height of grid must be divisible by 2")
         }
-        this.data = range(0, width*2).map(x => [])
+        this.data = []
     }
 
     forEach(f: (existingItem: T) => void) {
@@ -55,7 +55,7 @@ export default class Grid<T extends GridItem> {
                 const q = i - j / 2 + ((-this.halfHeight + j) % 2) / 2
                 const r = j
 
-                this.set(f(q, r, this.get(q, r)))
+                this.add(f(q, r, this.get(q, r)))
             }
         }
 
@@ -70,7 +70,7 @@ export default class Grid<T extends GridItem> {
                 const q = i - j / 2 + ((-this.halfHeight + j) % 2) / 2
                 const r = j
 
-                this.set(f(q, r))
+                this.add(f(q, r))
             }
         }
 
@@ -78,37 +78,37 @@ export default class Grid<T extends GridItem> {
     }
 
     toArray(): T[] {
-        return [].concat(...this.data)
-    }
+        const arr: T[] = new Array(this.width * this.height)
+        var i = 0
 
-    add(item: T) {        
-        if (typeof this.get(item.q, item.r) != "undefined") {
-            throw new Error(`Grid already contains item at (${item.q},${item.r})`)
+        for (let q in this.data) {
+            for (let r in this.data[q]) {
+                arr[i++] = this.data[q][r]
+            }
         }
 
-        this.set(item)
+        return arr
     }
 
     get(q: number, r: number): T | undefined {
-        const indexR = r + this.halfHeight
-        const indexQ = q + this.halfWidth + indexR / 2 + ((-this.halfHeight + indexR) % 2) / 2
-        return this.data[indexQ][indexR]
+        return this.data[q][r]
     }
 
     getGuarded(q: number, r: number): T | undefined {
-        const indexR = r + this.halfHeight
-        const indexQ = q + this.halfWidth + indexR / 2 + ((-this.halfHeight + indexR) % 2) / 2
-        if (indexQ in this.data) {
-            return this.data[indexQ][indexR]
+        if (q in this.data) {
+            return this.data[q][r]
         } else {
             return undefined
         }
     }
 
-    set(item: T) {
-        const indexR = item.r + this.halfHeight
-        const indexQ = item.q + this.halfWidth + indexR / 2 + ((-this.halfHeight + indexR) % 2) / 2        
-        this.data[indexQ][indexR] = item
+    add(item: T) {
+        if (item.q in this.data) {
+            this.data[item.q][item.r] = item
+        } else {
+            const col: T[] = this.data[item.q] = []
+            col[item.r] = item
+        }
     }
 
     neighbors(q: number, r: number, range: number = 1): T[] {
