@@ -22,7 +22,6 @@ const tiles = generateRandomMap(mapSize, (q, r, h) => {
 })
 
 Promise.all([tiles, textureAtlas]).then(([tiles, textureAtlas]) => {
-    console.log(tiles, tiles.toArray())
     mapView.load(tiles, textureAtlas)
 })
 

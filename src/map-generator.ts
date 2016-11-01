@@ -26,7 +26,7 @@ export function generateMap(size: number,
                             heightAt: (q: number, r: number) => Height,
                             terrainAt: (q: number, r: number, height: Height) => string): Promise<Grid<TileData>> {
     return new Promise((resolve, reject) => {        
-        const grid = new Grid<TileData>(size, size).setQR((q, r) => {
+        const grid = new Grid<TileData>(size, size).mapQR((q, r) => {
             const height = heightAt(q, r)
             const terrain = terrainAt(q, r, height)
             return {q, r, height, terrain, fog: true, clouds: true, river: null}

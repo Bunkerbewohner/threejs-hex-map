@@ -20,14 +20,6 @@ export default class Grid<T extends GridItem> {
         this.data = []
     }
 
-    forEach(f: (existingItem: T) => void) {
-        for (let row of this.data) {
-            for (let item of row) {
-                f(item)
-            }
-        }
-    }
-
     forEachQR(f: (q: number, r: number, existingItem?: T)=>void) {
         const {width, height} = this
 
@@ -39,42 +31,12 @@ export default class Grid<T extends GridItem> {
                 f(q, r, this.get(q, r))
             }
         }
-    }
 
-    map(f: (existingItem: T) => T) {
-        this.data = this.data.map(row => {
-            return row.map(item => f(item))
-        })
+        return this
     }
 
     mapQR(f: (q: number, r: number, existingItem?: T) => T) {
-        const {width, height} = this
-
-        for (var i = -this.halfWidth; i < Math.ceil(width/2); i++) {
-            for (var j = -this.halfHeight; j < Math.ceil(height/2); j++) {
-                const q = i - j / 2 + ((-this.halfHeight + j) % 2) / 2
-                const r = j
-
-                this.add(f(q, r, this.get(q, r)))
-            }
-        }
-
-        return this
-    }
-
-    setQR(f: (q: number, r: number) => T) {
-        const {width, height} = this        
-
-        for (var i = -this.halfWidth; i < width/2; i++) {
-            for (var j = -this.halfHeight; j < height/2; j++) {
-                const q = i - j / 2 + ((-this.halfHeight + j) % 2) / 2
-                const r = j
-
-                this.add(f(q, r))
-            }
-        }
-
-        return this
+        return this.forEachQR((q,r,item) => this.add(f(q, r, item)))
     }
 
     toArray(): T[] {
@@ -91,12 +53,9 @@ export default class Grid<T extends GridItem> {
     }
 
     get(q: number, r: number): T | undefined {
-        return this.data[q][r]
-    }
-
-    getGuarded(q: number, r: number): T | undefined {
-        if (q in this.data) {
-            return this.data[q][r]
+        const col = this.data[q]    
+        if (col) {
+            return col[r]
         } else {
             return undefined
         }
@@ -113,7 +72,7 @@ export default class Grid<T extends GridItem> {
 
     neighbors(q: number, r: number, range: number = 1): T[] {
         return qrRange(range).map(qr => {            
-            return this.getGuarded(q + qr.q, r + qr.r)
+            return this.get(q + qr.q, r + qr.r)
         }).filter(x => x !== undefined)
     }
 }
