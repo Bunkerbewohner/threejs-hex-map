@@ -42,13 +42,7 @@ void main() {
     //lambertian = sqrt(lambertian);
 
     vec3 color = lightAmbient * texColor.xyz + lambertian * texColor.xyz * lightDiffuse;
-    gl_FragColor = vec4(color, 1.0);
-
-    if (vExtra > 0.97 && true) { // hex border
-        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
-        f = 0.34;
-        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);
-    }
+    gl_FragColor = vec4(color, 1.0);    
 
     // Coast
     vec2 coastUv = vec2(vCoastTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vCoastTextureCell.y / 8.0 + vUV.y / 8.0));
@@ -67,6 +61,12 @@ void main() {
         vec3 river = lightAmbient * riverColor.xyz + lambertian * riverColor.xyz * lightDiffuse;
         //gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);
         gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);
+    }
+
+    if (vExtra > 0.97 && true) { // hex border
+        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
+        f = 0.34;
+        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);
     }
 
     // FOW

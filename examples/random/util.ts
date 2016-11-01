@@ -22,7 +22,7 @@ export function paramString(name: string, defaultValue: string): string {
     if (queryMatch) {
         return (queryMatch[1])
     } else {
-        return ((localStorage.getItem(name))) || defaultValue
+        return defaultValue
     }
 }
 
