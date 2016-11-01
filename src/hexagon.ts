@@ -62,3 +62,26 @@ export function createHexagon(radius: number, numSubdivisions: number): BufferGe
 
     return geometry
 }
+
+/**
+ * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
+ */
+export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
+  // the hexagon consists of 6 triangles, construct one of them randomly
+  var startCornerIndex = Math.round(Math.random() * 6)
+  var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0)
+  var B = new THREE.Vector3(0, 0, 0)
+  var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0)
+
+  // random point in the triangle based on AB and AC
+  var r = Math.random(), s = Math.random()
+  var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s)
+
+  return A.clone().multiplyScalar((1 - rSqrt))
+    .add(B.clone().multiplyScalar(rSqrt*(1 - sSqrt)))
+    .add(C.clone().multiplyScalar(s*rSqrt))
+}
+
+function computeHexagonCorner(radius: number, angle: number): THREE.Vector3 {
+  return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
+}

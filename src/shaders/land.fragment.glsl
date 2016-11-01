@@ -63,7 +63,7 @@ void main() {
         gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);
     }
 
-    if (vExtra > 0.97 && true) { // hex border
+    if (vExtra > 0.97) { // hex border
         float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
         f = 0.34;
         gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);

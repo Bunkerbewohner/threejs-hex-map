@@ -29,7 +29,8 @@ export function generateMap(size: number,
         const grid = new Grid<TileData>(size, size).mapQR((q, r) => {
             const height = heightAt(q, r)
             const terrain = terrainAt(q, r, height)
-            return {q, r, height, terrain, fog: true, clouds: true, river: null}
+            const trees = !isMountain(height) && !isWater(height) && Math.random() > 0.5
+            return {q, r, height, terrain, fog: true, clouds: true, river: null, trees}
         })
 
         const withRivers = generateRivers(grid)

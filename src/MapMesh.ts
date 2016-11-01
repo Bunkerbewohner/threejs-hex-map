@@ -18,6 +18,7 @@ import {
 import {Promise} from "es6-promise"
 import {loadFile, qrRange} from "./util"
 import TileGrid from "./tile-grid";
+import Trees from './trees';
 
 const textureLoader = new TextureLoader()
 
@@ -52,6 +53,8 @@ export default class MapMesh extends Group {
             this.createMountainMesh(_tiles.filter(t => isMountain(t.height))),
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
         ]).then(() => {
+            const trees = new Trees(_tiles)
+            this.add(trees)
             this.computeBoundingSphere()
         })
     }

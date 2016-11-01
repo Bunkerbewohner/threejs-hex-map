@@ -53,7 +53,7 @@ void main() {
     vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);
 
     if (style.y / 10.0 >= 1.0 && border < 0.75) { // hill
-        pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;
+        //pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;
         vHill = 1.0;
     } else {
         vHill = 0.0;
