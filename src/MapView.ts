@@ -1,6 +1,6 @@
 import {PerspectiveCamera, Scene, WebGLRenderer, Vector3} from "three"
 import {generateRandomMap} from "./map-generator"
-import MapMesh from "./map-mesh"
+import MapMesh from "./MapMesh"
 import { TextureAtlas, TileData } from './interfaces';
 import {loadFile} from "./util"
 import {Promise} from "es6-promise"

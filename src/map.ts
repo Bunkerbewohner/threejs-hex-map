@@ -1,5 +1,5 @@
 import { TileData, TextureAtlas } from './interfaces';
-import MapMesh from './map-mesh';
+import MapMesh from './MapMesh';
 
 export default class Map {
     private grid: {[q: number]: {[r: number]: TileData}} = {}

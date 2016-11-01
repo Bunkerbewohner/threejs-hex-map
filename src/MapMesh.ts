@@ -210,7 +210,7 @@ function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
 function isNextOrPrevRiverTile(grid: TileGrid, tile: TileData, q: number, r: number) {
     const neighbor = grid.get(q, r)
     
-    if (neighbor && neighbor.river && tile && tile.river) {
+    if (neighbor && neighbor.river && tile && tile.river) {        
         return tile.river.riverIndex == neighbor.river.riverIndex && Math.abs(tile.river.riverTileIndex - neighbor.river.riverTileIndex) == 1
     } else {
         return false
@@ -227,7 +227,8 @@ function computeRiverTextureIndex(grid: TileGrid, tile: TileData): number {
     const W = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q - 1, tile.r))
     const NW = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q, tile.r - 1))
 
-    return parseInt(NE + E + SE + SW + W + NW, 2)
+    const combination = NE + E + SE + SW + W + NW
+    return parseInt(combination, 2)
 }
 
 function bitStr(x: boolean): string {
