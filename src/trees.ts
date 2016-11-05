@@ -2,6 +2,7 @@ import { Object3D, Vector3, Vector2 } from 'three';
 import { TileData } from './interfaces';
 import { randomPointInHexagon } from './hexagon';
 import { qrToWorld, qrToWorldX, qrToWorldY } from './coords';
+import MapMesh from './MapMesh';
 
 export default class Trees extends THREE.Object3D {
   private geometry: THREE.BufferGeometry;
@@ -10,7 +11,7 @@ export default class Trees extends THREE.Object3D {
   private treeSize = 1.2
   private numTreesPerForest = 50
 
-  constructor(private tiles: TileData[]) {
+  constructor(private tiles: TileData[], private positionCheck: (tile: TileData, pos: Vector3)=>boolean) {
     super()
 
     this.material = this.buildMaterial()
@@ -52,17 +53,25 @@ export default class Trees extends THREE.Object3D {
     for (var i = tiles.length - 1; i > 0; i--) {
       if (!tiles[i].trees) continue;
       var tile = tiles[i]
+      let x = qrToWorldX(tile.q, tile.r)
+      let y = qrToWorldY(tile.q, tile.r)
       var numTrees = this.getNumTrees(tile)
       var baseColor = this.getTreeColor(tile)
       let positions: Vector3[] = []
       let colors: number[][] = []
 
-      // generate random tree points on this tile
+      // generate random tree points on this tile      
       for (var t = 0; t < numTrees; t++) {
         var point = randomPointInHexagon(0.85)
         point.setZ(0.1)
 
-        positions.push(point)
+        point = new Vector3()
+
+        if (!this.positionCheck(tile, new Vector3(point.x, point.y, 0))) {
+          continue
+        }
+
+        positions.push(point)        
         colors.push(this.varyColor(baseColor))
       }
 
@@ -75,8 +84,6 @@ export default class Trees extends THREE.Object3D {
 
       // add the vertices for this tile
       for (var t = 0; t < positions.length; t++) {
-          let x = qrToWorldX(tile.q, tile.r)
-          let y = qrToWorldY(tile.q, tile.r)
         treePositions[vertexIndex + 0] = x + positions[t].x
         treePositions[vertexIndex + 1] = y + positions[t].y
         treePositions[vertexIndex + 2] = 0 + positions[t].z
@@ -89,8 +96,8 @@ export default class Trees extends THREE.Object3D {
       actualNumTrees += positions.length
     }
 
-    geometry.addAttribute("position", new THREE.BufferAttribute(treePositions.slice(0, actualNumTrees-1), 3))
-    geometry.addAttribute("color", new THREE.BufferAttribute(treeColors.slice(0, actualNumTrees-1), 3))
+    geometry.addAttribute("position", new THREE.BufferAttribute(treePositions.slice(0, (actualNumTrees-1)*3), 3))
+    geometry.addAttribute("color", new THREE.BufferAttribute(treeColors.slice(0, (actualNumTrees-1)*3), 3))
     return geometry;
   }
 
@@ -119,12 +126,6 @@ export default class Trees extends THREE.Object3D {
   }
 
   private getNumTrees(tile: TileData): number {
-    if (tile.river) {
-      // reduce the number of trees on this tile to make the resources
-      // more easily visible
-      return this.numTreesPerForest * 0.25;
-    } else {
-      return this.numTreesPerForest;
-    }
+    return this.numTreesPerForest;    
   }
 }

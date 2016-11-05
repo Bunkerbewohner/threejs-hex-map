@@ -1,10 +1,32 @@
 import {Promise} from "es6-promise"
-import {XHRLoader} from "three"
+import {XHRLoader, TextureLoader, Texture} from "three"
 import {QR} from "./interfaces"
 
 const fileLoader = new XHRLoader()
+const textureLoader = new TextureLoader()
+
+export function loadTexture(url: string, onProgress?: (percent: number, totalBytes: number, loadedBytes: number) => void): Promise<THREE.Texture> {
+    return new Promise((resolve, reject) => {
+        const onLoad = (texture: Texture) => {
+            resolve(texture)
+        }
+
+        const onProgressWrapper = (progress: {total: number, loaded: number}) => {
+            if (onProgress) {
+                onProgress(100 * (progress.loaded / progress.total), progress.total, progress.loaded)
+            }            
+        }
+
+        const onError = (error: Error) {
+            reject(error)
+        }
+
+        (textureLoader.load as any)(url, onLoad, onProgressWrapper, onError)
+    })
+}
 
 export function loadFile(path: string): Promise<string> {
+    // TODO: Remove cache buster
     const url = path + "?cachebuster=" + Math.random() * 9999999
     return new Promise((resolve, reject) => {
         fileLoader.load(url, (result) => {
