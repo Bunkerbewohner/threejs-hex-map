@@ -11,7 +11,7 @@ export default class Trees extends THREE.Object3D {
   private treeSize = 1.2
   private numTreesPerForest = 50
 
-  constructor(private tiles: TileData[], private positionCheck: (tile: TileData, pos: Vector3)=>boolean) {
+  constructor(private tiles: TileData[]) {
     super()
 
     this.material = this.buildMaterial()
@@ -64,12 +64,6 @@ export default class Trees extends THREE.Object3D {
       for (var t = 0; t < numTrees; t++) {
         var point = randomPointInHexagon(0.85)
         point.setZ(0.1)
-
-        point = new Vector3()
-
-        if (!this.positionCheck(tile, new Vector3(point.x, point.y, 0))) {
-          continue
-        }
 
         positions.push(point)        
         colors.push(this.varyColor(baseColor))

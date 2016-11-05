@@ -43,8 +43,6 @@ export default class MapMesh extends Group {
     private tileGrid: TileGrid
     private coastAtlas: Texture
     private riverAtlas: Texture
-    private coastAtlasImageData: ImageData
-    private riverAtlasImageData: ImageData
     private terrainDiffuseMap: Texture
     private hillsNormalMap: Texture
 
@@ -58,15 +56,8 @@ export default class MapMesh extends Group {
         super()
 
         this.tileGrid = new TileGrid(_tiles)
-        this.coastAtlas = textureLoader.load("textures/coast-diffuse.png", (tex) => {
-            this.coastAtlasImageData = this.getImageData(tex)
-            this.createTrees()
-        })
-        this.riverAtlas = textureLoader.load("textures/river-diffuse.png", (tex) => {
-            this.riverAtlasImageData = this.getImageData(tex)
-            this.createTrees()
-        })
-
+        this.coastAtlas = textureLoader.load("textures/coast-diffuse.png")
+        this.riverAtlas = textureLoader.load("textures/river-diffuse.png")
         this.terrainDiffuseMap = textureLoader.load(_textureAtlas.image)
         this.hillsNormalMap = textureLoader.load("textures/hills-normal.png")
         this.hillsNormalMap.wrapS = this.hillsNormalMap.wrapT = THREE.RepeatWrapping
@@ -76,86 +67,16 @@ export default class MapMesh extends Group {
             this.createMountainMesh(_tiles.filter(t => isMountain(t.height)))
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
         ]).then(() => {
-            this.computeBoundingSphere()            
+            this.computeBoundingSphere()
+            this.createTrees()
         }).catch((err) => {
             console.error(err)
         })
     }
 
     private createTrees() {
-        if (this.coastAtlasImageData == null || this.riverAtlasImageData == null) return;
-        const trees = new Trees(this._tiles, (tile: TileData, pos: Vector3) => this.allowTreeAt(tile, pos))
+        const trees = new Trees(this._tiles)
         this.add(trees)
-    }
-
-    private getImageData(tex: THREE.Texture): ImageData {
-        const canvas = document.createElement("canvas")
-        canvas.width = tex.image.width
-        canvas.height = tex.image.height
-
-        const context = canvas.getContext("2d")
-        context.drawImage(tex.image, 0, 0)
-
-        return context.getImageData(0, 0, tex.image.width, tex.image.height)
-    }
-
-    public getPixel(image: ImageData, uv: Vector2) {
-        if (!image) {
-            throw new Error("image is not defined")
-        }
-
-        let x = Math.round(uv.x * image.width)
-        let y = Math.round(uv.y * image.height)
-        let pos = (x + image.width * y) * 4
-        let data = image.data
-
-        return {
-            r: data[pos],
-            g: data[pos+1],
-            b: data[pos+2],
-            a: data[pos+3]
-        }
-    }
-
-    /**
-     * Use the coast and river textures to determine, whether a tree should be placed at a certain position.
-     */
-    private allowTreeAt(tile: TileData, pos: Vector3): boolean {        
-        const uv = new Vector2(0.02 + 0.96 * ((pos.x + 1) / 2), 0.02 - 0.96 * ((pos.y + 1) / 2))
-        
-        const coastIdx = computeCoastTextureIndex(this.tileGrid, tile)
-        const riverIdx = computeRiverTextureIndex(this.tileGrid, tile)
-
-        if (!coastIdx && !riverIdx) return false
-
-        if (coastIdx > 0) {
-            const coastUv = this.cellIndexToUV(coastIdx, uv)            
-            const color = this.getPixel(this.coastAtlasImageData, coastUv)            
-            if (color.r + color.g + color.b == 0) return false
-        }
-
-        if (riverIdx > 0) {
-            const riverUv = this.cellIndexToUV(riverIdx, uv)
-            const color = this.getPixel(this.riverAtlasImageData, riverUv)            
-            if (color.r + color.g + color.b == 0) {
-                return false
-            }
-        }
-
-        return true
-    }
-
-    private cellIndexToUV(idx: number, uv: Vector2): Vector2 {
-        const atlasWidth = this._textureAtlas.width
-        const atlasHeight = this._textureAtlas.height
-        const cellSize = this._textureAtlas.cellSize
-        const cols = atlasWidth / cellSize;
-        const rows = atlasHeight / cellSize;
-        const x = idx % cols;
-        const y = Math.floor(idx / cols);
-
-        //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));
-        return new Vector2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));
     }
 
     private computeBoundingSphere() {

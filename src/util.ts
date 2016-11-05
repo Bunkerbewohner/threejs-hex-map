@@ -17,7 +17,7 @@ export function loadTexture(url: string, onProgress?: (percent: number, totalByt
             }            
         }
 
-        const onError = (error: Error) {
+        const onError = (error: Error) => {
             reject(error)
         }
 
