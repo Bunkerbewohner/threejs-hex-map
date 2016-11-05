@@ -46,6 +46,7 @@ export default class Trees extends THREE.Object3D {
     var treeColors = new Float32Array(treesPerWood * numWoods * 3)
     var vertexIndex = 0
     var numTreesLeft = () => treePositions.length - vertexIndex
+    var actualNumTrees = 0
 
     // iterate from back to front to get automatic sorting by z-depth
     for (var i = tiles.length - 1; i > 0; i--) {
@@ -84,10 +85,12 @@ export default class Trees extends THREE.Object3D {
         treeColors[vertexIndex + 2] = colors[t][2]
         vertexIndex += 3
       }
+
+      actualNumTrees += positions.length
     }
 
-    geometry.addAttribute("position", new THREE.BufferAttribute(treePositions, 3))
-    geometry.addAttribute("color", new THREE.BufferAttribute(treeColors, 3))
+    geometry.addAttribute("position", new THREE.BufferAttribute(treePositions.slice(0, actualNumTrees-1), 3))
+    geometry.addAttribute("color", new THREE.BufferAttribute(treeColors.slice(0, actualNumTrees-1), 3))
     return geometry;
   }
 
