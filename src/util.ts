@@ -27,7 +27,7 @@ export function loadTexture(url: string, onProgress?: (percent: number, totalByt
 
 export function loadFile(path: string): Promise<string> {
     // TODO: Remove cache buster
-    const url = path + "?cachebuster=" + Math.random() * 9999999
+    const url = path// + "?cachebuster=" + Math.random() * 9999999
     return new Promise((resolve, reject) => {
         fileLoader.load(url, (result) => {
             resolve(result)

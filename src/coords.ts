@@ -61,3 +61,33 @@ export function worldToScreen(pos: THREE.Vector3, camera: Camera): Vector3 {
 
     return v
 }
+
+export function axialToCube(q: number, r: number) {    
+    return { x: q, y: -q-r, z: r}
+}
+
+export function cubeToAxial(x: any, y: number, z: number) {    
+    return { q: x, r: z }
+}
+
+/**
+ * Rounds fractal cube coordinates to the nearest full cube coordinates.
+ * @param cubeCoord
+ * @returns {{x: number, y: number, z: number}}
+ */
+export function roundToHex(cubeCoord: {x: number, y: number, z:number}) {
+    var x = cubeCoord.x, y = cubeCoord.y, z = cubeCoord.z
+    var rx = Math.round(x)
+    var ry = Math.round(y)
+    var rz = Math.round(z)
+
+    var x_diff = Math.abs(rx - x)
+    var y_diff = Math.abs(ry - y)
+    var z_diff = Math.abs(rz - z)
+
+    if (x_diff > y_diff && x_diff > z_diff) rx = -ry-rz
+    else if (y_diff > z_diff) ry = -rx-rz
+    else rz = -rx-ry
+
+    return {x: rx, y: ry, z: rz}
+}
