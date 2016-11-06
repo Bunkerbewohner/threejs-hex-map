@@ -2,7 +2,7 @@ import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
 import { screenToWorld, pickingRay } from './coords';
 import { TileData } from './interfaces';
-import { Vector3, Camera } from 'three';
+import { Vector3, Camera, Vector2 } from 'three';
 
 export default class Controller implements MapViewController {
     private controls: MapViewControls
@@ -27,12 +27,27 @@ export default class Controller implements MapViewController {
     }
 
     onMouseMove = (e: MouseEvent) => {
+        // scrolling via mouse drag
         if (this.mouseDownPos) {
             const mousePos = screenToWorld(e.clientX, e.clientY, this.pickingCamera)
             const dv = this.lastDrag = mousePos.sub(this.mouseDownPos).multiplyScalar(-1)
 
             const newCameraPos = dv.clone().add(this.dragStartCameraPos)
             this.controls.getCamera().position.copy(newCameraPos)
+        }
+
+        // scrolling via screen edge
+        if (!this.mouseDownPos) {
+            const scrollZoneSize = 20
+            const mousePos2D = new Vector2(e.clientX, e.clientY)
+            const screenCenter2D = new Vector2(window.innerWidth / 2, window.innerHeight / 2)
+            const diff = mousePos2D.clone().sub(screenCenter2D)
+
+            if (Math.abs(diff.x) > screenCenter2D.x - scrollZoneSize || Math.abs(diff.y) > screenCenter2D.y - scrollZoneSize) {
+                this.controls.setScrollDir(diff.x, -diff.y)
+            } else {
+                this.controls.setScrollDir(0, 0)
+            }
         }
     }
 
@@ -50,5 +65,6 @@ export default class Controller implements MapViewController {
 
     onMouseOut = (e: MouseEvent) => {
         this.mouseDownPos = null // end drag
+        this.controls.setScrollDir(0, 0)
     }
 }

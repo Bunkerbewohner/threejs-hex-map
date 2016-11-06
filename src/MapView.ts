@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group, Camera } from 'three';
+import { PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group, Camera, Vector2 } from 'three';
 import {generateRandomMap} from "./map-generator"
 import MapMesh from "./MapMesh"
 import { TextureAtlas, TileData } from './interfaces';
@@ -42,6 +42,12 @@ export default class MapView implements MapViewControls {
 
     get scrollDir() {
         return this._scrollDir
+    }
+
+    setScrollDir(x: number, y: number) {
+        this._scrollDir.setX(x)
+        this._scrollDir.setY(y)
+        this._scrollDir.normalize()
     }
 
     getCamera(): Camera {

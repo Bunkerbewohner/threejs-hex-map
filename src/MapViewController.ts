@@ -1,5 +1,5 @@
 import { TileData } from './interfaces';
-import { Vector3, Camera } from 'three';
+import { Vector2, Vector3, Camera } from 'three';
 
 interface MapViewController {
     init(controls: MapViewControls, canvas: HTMLCanvasElement): void;
@@ -17,6 +17,8 @@ export interface MapViewControls {
     selectTile(tile: TileData): void;
 
     getCamera(): Camera;
+
+    setScrollDir(x: number, y: number): void;
 }
 
 export default MapViewController
