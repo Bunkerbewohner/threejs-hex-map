@@ -76,12 +76,11 @@ export default class MapView implements MapViewControls {
         // tile selector
         this._tileSelector.position.setZ(0.1)
         this._scene.add(this._tileSelector)
-        this._tileSelector.visible = true
-
-        this._controller.init(this, canvas)
+        this._tileSelector.visible = true        
 
         // start rendering loop
         this.animate(0)
+        this._controller.init(this, canvas)
     }
 
     load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
