@@ -37,7 +37,7 @@ export default class Controller implements MapViewController {
         }
 
         // scrolling via screen edge
-        if (!this.mouseDownPos) {
+        if (window.innerHeight == screen.height && !this.mouseDownPos) {
             const scrollZoneSize = 20
             const mousePos2D = new Vector2(e.clientX, e.clientY)
             const screenCenter2D = new Vector2(window.innerWidth / 2, window.innerHeight / 2)
