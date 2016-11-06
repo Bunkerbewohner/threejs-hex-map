@@ -36,7 +36,7 @@ export default class Controller implements MapViewController {
             this.controls.getCamera().position.copy(newCameraPos)
         }
 
-        // scrolling via screen edge
+        // scrolling via screen edge only in fullscreen mode
         if (window.innerHeight == screen.height && !this.mouseDownPos) {
             const scrollZoneSize = 20
             const mousePos2D = new Vector2(e.clientX, e.clientY)
