@@ -18,12 +18,19 @@ export default class Controller implements MapViewController {
         canvas.addEventListener("mousemove", this.onMouseMove, false)
         canvas.addEventListener("mouseup", this.onMouseUp, false)
         canvas.addEventListener("mouseout", this.onMouseOut, false)
+        canvas.addEventListener("mouseenter", this.onMouseEnter, false)
     }
 
     onMouseDown = (e: MouseEvent) => {
         this.pickingCamera = this.controls.getCamera().clone()
         this.mouseDownPos = screenToWorld(e.clientX, e.clientY, this.pickingCamera)
-        this.dragStartCameraPos = this.controls.getCamera().position.clone()        
+        this.dragStartCameraPos = this.controls.getCamera().position.clone()                
+    }
+
+    onMouseEnter = (e: MouseEvent) => {
+        if (e.buttons === 1) {
+            this.onMouseDown(e)
+        }
     }
 
     onMouseMove = (e: MouseEvent) => {
