@@ -58,16 +58,17 @@ export default class Controller implements MapViewController {
         }
     }
 
-    onMouseUp = (e: MouseEvent) => {
-        this.mouseDownPos = null // end drag
-        
-        if (this.lastDrag.length() < 1) {
+    onMouseUp = (e: MouseEvent) => {                                
+        if (!this.lastDrag) {
             const mousePos = screenToWorld(e.clientX, e.clientY, this.controls.getCamera())
             const tile = this.controls.pickTile(mousePos)
             if (tile) {
                 this.controls.selectTile(tile)
-            }
+            }        
         }
+
+        this.mouseDownPos = null // end drag
+        this.lastDrag = null
     }
 
     onMouseOut = (e: MouseEvent) => {
