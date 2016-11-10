@@ -108,3 +108,7 @@ export function minBy<T>(items: T[], by: (item: T)=>number): T | null {
         return items.reduce((min: T, cur: T) => by(cur) < by(min) ? cur : min, items[0])
     }
 }
+
+export function isInteger(value: number): boolean {
+    return Math.floor(value) == value
+}

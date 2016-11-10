@@ -7,8 +7,8 @@ import Grid from "./Grid";
 
 export default class Trees extends THREE.Object3D {
     private geometry: THREE.BufferGeometry;
-    private material: THREE.PointCloudMaterial;
-    private pointCloud: THREE.PointCloud;
+    private material: THREE.PointsMaterial;
+    private pointCloud: THREE.Points;
     private treeSize = 1.2
     private numTreesPerForest = 50
 
@@ -22,15 +22,15 @@ export default class Trees extends THREE.Object3D {
 
         this.material = this.buildMaterial()
         this.geometry = this.buildGeometry()
-        this.pointCloud = new THREE.PointCloud(this.geometry, this.material)
+        this.pointCloud = new THREE.Points(this.geometry, this.material)
         this.add(this.pointCloud)
     }
 
-    buildMaterial(): THREE.PointCloudMaterial {
+    buildMaterial(): THREE.PointsMaterial {
         var texture = THREE.ImageUtils.loadTexture("textures/tree.png")
         texture.minFilter = THREE.LinearFilter
 
-        var material = new THREE.PointCloudMaterial({
+        var material = new THREE.PointsMaterial({
             map: texture,
             transparent: true,
             vertexColors: THREE.VertexColors,

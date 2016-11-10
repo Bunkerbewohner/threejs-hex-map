@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group, Camera, Vector2 } from 'three';
+import { PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group, Camera, Vector2, Object3D } from 'three';
 import {generateRandomMap} from "./map-generator"
 import MapMesh from "./MapMesh"
 import { TextureAtlas, TileData } from './interfaces';
@@ -11,6 +11,7 @@ import DefaultMapViewController from "./DefaultMapViewController"
 import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
 import { qrToWorld, axialToCube, roundToHex, cubeToAxial } from './coords';
+import ChunkedLazyMapMesh from "./ChunkedLazyMapMesh";
 
 export default class MapView implements MapViewControls {
     private static DEFAULT_ZOOM = 25
@@ -23,7 +24,7 @@ export default class MapView implements MapViewControls {
     private _zoom: number = 25
 
     private _textureAtlas: TextureAtlas
-    private _mapMesh: MapMesh
+    private _mapMesh: Object3D
     private _tileGrid: Grid<TileData> = new Grid<TileData>(0, 0)
 
     private _tileSelector: THREE.Object3D = DefaultTileSelector
@@ -82,8 +83,16 @@ export default class MapView implements MapViewControls {
     load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
         this._tileGrid = tiles
         this._textureAtlas = textureAtlas        
-        this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
-        this._scene.add(this._mapMesh)
+
+        if ((tiles.width * tiles.height) < Math.pow(64, 2)) {
+            this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
+            this._scene.add(this._mapMesh)
+            console.info("using single MapMesh for " + (tiles.width * tiles.height) + " tiles")
+        } else {
+            this._mapMesh = new ChunkedLazyMapMesh(tiles, textureAtlas)
+            this._scene.add(this._mapMesh)
+            console.info("using ChunkedLazyMapMesh for " + (tiles.width * tiles.height) + " tiles")
+        }
     }
 
     private animate = (timestamp: number) => {

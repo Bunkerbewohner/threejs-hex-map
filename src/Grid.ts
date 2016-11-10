@@ -1,5 +1,5 @@
 import { QR } from './interfaces';
-import { qrRange, range } from './util';
+import {qrRange, range, isInteger} from './util';
 
 export default class Grid<T> {
     private data: T[][] = []
@@ -70,6 +70,23 @@ export default class Grid<T> {
         } else {
             return undefined
         }
+    }
+
+    getOrCreate(q: number, r: number, defaultValue: T): T {
+        const col = this.data[q]
+        if (!col) {
+            this.data[q] = []
+            this.data[q][r] = defaultValue
+            return defaultValue
+        }
+
+        const cell = col[r]
+        if (!cell) {
+            this.data[q][r] = defaultValue
+            return defaultValue
+        }
+
+        return cell
     }
 
     add(q: number, r: number, item: T) {
