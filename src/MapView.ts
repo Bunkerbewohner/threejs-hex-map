@@ -82,7 +82,7 @@ export default class MapView implements MapViewControls {
     load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
         this._tileGrid = tiles
         this._textureAtlas = textureAtlas        
-        this._mapMesh = new MapMesh(tiles.toArray(), textureAtlas)
+        this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
         this._scene.add(this._mapMesh)
     }
 

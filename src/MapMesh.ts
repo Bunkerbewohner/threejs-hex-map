@@ -20,6 +20,7 @@ import { loadFile, qrRange, loadTexture } from './util';
 import TileGrid from "./tile-grid";
 import Trees from './trees';
 import { qrToWorld } from './coords';
+import Grid from "./Grid";
 
 const textureLoader = new TextureLoader()
 
@@ -40,7 +41,7 @@ export default class MapMesh extends Group {
         vertexShader: loadFile("../../src/shaders/mountains.vertex.glsl")
     }
 
-    private tileGrid: TileGrid
+    private tileGrid: Grid<TileData>
     private coastAtlas: Texture
     private riverAtlas: Texture
     private terrainDiffuseMap: Texture
@@ -52,10 +53,10 @@ export default class MapMesh extends Group {
 
     boundingSphere: Sphere
 
-    constructor(private _tiles: TileData[], private _textureAtlas: TextureAtlas) {
+    constructor(private _tiles: TileData[], grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
         super()
 
-        this.tileGrid = new TileGrid(_tiles)
+        this.tileGrid = grid
         this.coastAtlas = textureLoader.load("textures/coast-diffuse.png")
         this.riverAtlas = textureLoader.load("textures/river-diffuse.png")
         this.terrainDiffuseMap = textureLoader.load(_textureAtlas.image)
@@ -75,7 +76,7 @@ export default class MapMesh extends Group {
     }
 
     private createTrees() {
-        const trees = new Trees(this._tiles)
+        const trees = new Trees(this._tiles, this.tileGrid)
         this.add(trees)
     }
 
@@ -171,7 +172,7 @@ export default class MapMesh extends Group {
     }
 }
 
-function createHexagonTilesGeometry(tiles: TileData[], grid: TileGrid, numSubdivisions: number, textureAtlas: TextureAtlas) {    
+function createHexagonTilesGeometry(tiles: TileData[], grid: Grid<TileData>, numSubdivisions: number, textureAtlas: TextureAtlas) {
     const hexagon = createHexagon(1.0, numSubdivisions)
     const geometry = new InstancedBufferGeometry()
 
@@ -217,7 +218,7 @@ function createHexagonTilesGeometry(tiles: TileData[], grid: TileGrid, numSubdiv
     return geometry
 }
 
-function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
+function computeCoastTextureIndex(grid: Grid<TileData>, tile: TileData): number {
     function isWaterTile(q: number, r: number) {
         const t = grid.get(q, r)
         if (!t) return false
@@ -243,7 +244,7 @@ function computeCoastTextureIndex(grid: TileGrid, tile: TileData): number {
     return parseInt(NE + E + SE + SW + W + NW, 2)
 }
 
-function isNextOrPrevRiverTile(grid: TileGrid, tile: TileData, q: number, r: number) {
+function isNextOrPrevRiverTile(grid: Grid<TileData>, tile: TileData, q: number, r: number) {
     const neighbor = grid.get(q, r)
     
     if (neighbor && neighbor.river && tile && tile.river) {        
@@ -253,7 +254,7 @@ function isNextOrPrevRiverTile(grid: TileGrid, tile: TileData, q: number, r: num
     }
 }
 
-function computeRiverTextureIndex(grid: TileGrid, tile: TileData): number {
+function computeRiverTextureIndex(grid: Grid<TileData>, tile: TileData): number {
     if (!tile.river) return 0
 
     const NE = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q + 1, tile.r - 1))

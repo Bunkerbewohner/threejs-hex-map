@@ -1,5 +1,12 @@
 import {Vector3, BufferGeometry} from "three"
 
+export const NE = 0b100000
+export const E  = 0b010000
+export const SE = 0b001000
+export const SW = 0b000100
+export const W  = 0b000010
+export const NW = 0b000001
+
 export function subdivideTriangle(a: Vector3, b: Vector3, c: Vector3, numSubdivisions: number): Vector3[] {
     if ((numSubdivisions || 0) <= 0) return [a, b, c]
 
@@ -68,7 +75,7 @@ export function createHexagon(radius: number, numSubdivisions: number): BufferGe
  */
 export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
   // the hexagon consists of 6 triangles, construct one of them randomly
-  var startCornerIndex = Math.round(Math.random() * 6)
+  var startCornerIndex = Math.floor(Math.random() * 6)
   var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0)
   var B = new THREE.Vector3(0, 0, 0)
   var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0)
@@ -80,6 +87,27 @@ export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
   return A.clone().multiplyScalar((1 - rSqrt))
     .add(B.clone().multiplyScalar(rSqrt*(1 - sSqrt)))
     .add(C.clone().multiplyScalar(s*rSqrt))
+}
+
+/**
+ * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
+ */
+export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number)=>number): THREE.Vector3 {
+    // the hexagon consists of 6 triangles, construct one of them randomly
+    var startCornerIndex = Math.floor(Math.random() * 6)
+    var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0)
+    var B = new THREE.Vector3(0, 0, 0)
+    var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0)
+
+    // random point in the triangle based on AB and AC
+    var r = Math.random(), s = Math.random()
+    var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s)
+
+    const point = A.clone().multiplyScalar((1 - rSqrt))
+        .add(B.clone().multiplyScalar(rSqrt*(1 - sSqrt)))
+        .add(C.clone().multiplyScalar(s*rSqrt))
+
+    return point.multiplyScalar(modifier(startCornerIndex))
 }
 
 function computeHexagonCorner(radius: number, angle: number): THREE.Vector3 {
