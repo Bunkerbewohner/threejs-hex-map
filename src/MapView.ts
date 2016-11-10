@@ -25,6 +25,7 @@ export default class MapView implements MapViewControls {
 
     private _textureAtlas: TextureAtlas
     private _mapMesh: Object3D
+    private _chunkedMesh: ChunkedLazyMapMesh
     private _tileGrid: Grid<TileData> = new Grid<TileData>(0, 0)
 
     private _tileSelector: THREE.Object3D = DefaultTileSelector
@@ -89,9 +90,9 @@ export default class MapView implements MapViewControls {
             this._scene.add(this._mapMesh)
             console.info("using single MapMesh for " + (tiles.width * tiles.height) + " tiles")
         } else {
-            this._mapMesh = new ChunkedLazyMapMesh(tiles, textureAtlas)
+            const mesh = this._mapMesh = this._chunkedMesh = new ChunkedLazyMapMesh(tiles, textureAtlas)
             this._scene.add(this._mapMesh)
-            console.info("using ChunkedLazyMapMesh for " + (tiles.width * tiles.height) + " tiles")
+            console.info("using ChunkedLazyMapMesh with " + mesh.numChunks + " chunks for " + (tiles.width * tiles.height) + " tiles")
         }
     }
 
@@ -102,6 +103,10 @@ export default class MapView implements MapViewControls {
         const zoomRelative = camera.position.z / MapView.DEFAULT_ZOOM
         const scroll = this._scrollDir.clone().normalize().multiplyScalar(this.scrollSpeed * zoomRelative * dtS)
         camera.position.add(scroll)
+
+        if (this._chunkedMesh) {
+            this._chunkedMesh.updateVisibility(camera)
+        }
 
         this._renderer.render(this._scene, camera);
         requestAnimationFrame(this.animate);

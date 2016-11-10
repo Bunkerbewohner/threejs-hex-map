@@ -41,6 +41,11 @@ export default class MapMesh extends Group {
         vertexShader: loadFile("../../src/shaders/mountains.vertex.glsl")
     }
 
+    static coastAtlas = textureLoader.load("textures/coast-diffuse.png")
+    static riverAtlas = textureLoader.load("textures/river-diffuse.png")
+    static hillsNormal = textureLoader.load("textures/hills-normal.png")
+    static textureAtlas: Texture
+
     private tileGrid: Grid<TileData>
     private coastAtlas: Texture
     private riverAtlas: Texture
@@ -56,11 +61,15 @@ export default class MapMesh extends Group {
     constructor(private _tiles: TileData[], grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
         super()
 
+        if (!MapMesh.textureAtlas) {
+            MapMesh.textureAtlas = textureLoader.load(_textureAtlas.image)
+        }
+
         this.tileGrid = grid
-        this.coastAtlas = textureLoader.load("textures/coast-diffuse.png")
-        this.riverAtlas = textureLoader.load("textures/river-diffuse.png")
-        this.terrainDiffuseMap = textureLoader.load(_textureAtlas.image)
-        this.hillsNormalMap = textureLoader.load("textures/hills-normal.png")
+        this.coastAtlas = MapMesh.coastAtlas
+        this.riverAtlas = MapMesh.riverAtlas
+        this.terrainDiffuseMap = MapMesh.textureAtlas
+        this.hillsNormalMap = MapMesh.hillsNormal
         this.hillsNormalMap.wrapS = this.hillsNormalMap.wrapT = THREE.RepeatWrapping
 
         Promise.all([

@@ -4,6 +4,10 @@ import {randomPointInHexagon, randomPointInHexagonEx, NE, E, SE, SW, W, NW} from
 import {qrToWorld, qrToWorldX, qrToWorldY} from './coords';
 import MapMesh from './MapMesh';
 import Grid from "./Grid";
+import Texture = THREE.Texture;
+import TextureLoader = THREE.TextureLoader;
+
+const textureLoader = new TextureLoader()
 
 export default class Trees extends THREE.Object3D {
     private geometry: THREE.BufferGeometry;
@@ -11,6 +15,8 @@ export default class Trees extends THREE.Object3D {
     private pointCloud: THREE.Points;
     private treeSize = 1.2
     private numTreesPerForest = 50
+
+    static texture: Texture = textureLoader.load("textures/tree.png")
 
     /**
      *
@@ -27,7 +33,7 @@ export default class Trees extends THREE.Object3D {
     }
 
     buildMaterial(): THREE.PointsMaterial {
-        var texture = THREE.ImageUtils.loadTexture("textures/tree.png")
+        var texture = Trees.texture
         texture.minFilter = THREE.LinearFilter
 
         var material = new THREE.PointsMaterial({
