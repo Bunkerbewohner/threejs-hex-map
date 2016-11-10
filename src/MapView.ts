@@ -44,16 +44,6 @@ export default class MapView implements MapViewControls {
         return this._scrollDir
     }
 
-    setScrollDir(x: number, y: number) {
-        this._scrollDir.setX(x)
-        this._scrollDir.setY(y)
-        this._scrollDir.normalize()
-    }
-
-    getCamera(): Camera {
-        return this._camera
-    }
-
     public scrollSpeed: number = 10
 
     constructor(canvasElementQuery: string = "canvas") {
@@ -121,6 +111,16 @@ export default class MapView implements MapViewControls {
     }    
 
     //----- MapViewControls -----
+
+    setScrollDir(x: number, y: number) {
+        this._scrollDir.setX(x)
+        this._scrollDir.setY(y)
+        this._scrollDir.normalize()
+    }
+
+    getCamera(): Camera {
+        return this._camera
+    }
 
     selectTile(tile: TileData) {        
         const worldPos = qrToWorld(tile.q, tile.r)
