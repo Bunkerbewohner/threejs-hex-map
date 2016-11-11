@@ -92,20 +92,20 @@ export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
 /**
  * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
  */
-export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number)=>number): THREE.Vector3 {
+export function randomPointInHexagonEx(modifier: (cornerIndex: number)=>number): THREE.Vector3 {    
     // the hexagon consists of 6 triangles, construct one of them randomly
     var startCornerIndex = Math.floor(Math.random() * 6)
-    var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0)
-    var B = new THREE.Vector3(0, 0, 0)
-    var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0)
+    const A = hexagonCorners1[startCornerIndex].clone()
+    const B = new THREE.Vector3(0, 0, 0)
+    const C = hexagonCorners1[(startCornerIndex + 1) % 6].clone()
 
     // random point in the triangle based on AB and AC
     var r = Math.random(), s = Math.random()
     var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s)
 
-    const point = A.clone().multiplyScalar((1 - rSqrt))
-        .add(B.clone().multiplyScalar(rSqrt*(1 - sSqrt)))
-        .add(C.clone().multiplyScalar(s*rSqrt))
+    const point = A.multiplyScalar((1 - rSqrt))
+        .add(B.multiplyScalar(rSqrt*(1 - sSqrt)))
+        .add(C.multiplyScalar(s*rSqrt))
 
     return point.multiplyScalar(modifier(startCornerIndex))
 }
@@ -113,3 +113,17 @@ export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex
 function computeHexagonCorner(radius: number, angle: number): THREE.Vector3 {
   return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
 }
+
+function computeHexagonCorner1(angle: number): THREE.Vector3 {
+    const radius = 1.0
+    return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
+}
+
+const hexagonCorners1 = [
+    computeHexagonCorner1(0),
+    computeHexagonCorner1(1 / 6.0),
+    computeHexagonCorner1(2 / 6.0),
+    computeHexagonCorner1(3 / 6.0),
+    computeHexagonCorner1(4 / 6.0),
+    computeHexagonCorner1(5 / 6.0)
+]

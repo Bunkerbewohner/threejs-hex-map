@@ -77,8 +77,10 @@ export default class MapMesh extends Group {
             this.createMountainMesh(_tiles.filter(t => isMountain(t.height)))
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
         ]).then(() => {
-            this.computeBoundingSphere()
-            this.createTrees()
+            this.computeBoundingSphere()            
+            setTimeout(() => {
+                this.createTrees()
+            }, 250)            
         }).catch((err) => {
             console.error(err)
         })

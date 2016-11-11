@@ -75,7 +75,7 @@ export default class Trees extends THREE.Object3D {
 
             // generate random tree points on this tile
             for (var t = 0; t < numTrees; t++) {
-                var point = this.randomPointOnTile(0.85, waterAdjacency)
+                var point = this.randomPointOnTile(waterAdjacency)
                 point.setZ(0.1)
 
                 positions.push(point)
@@ -108,8 +108,8 @@ export default class Trees extends THREE.Object3D {
         return geometry;
     }
 
-    private randomPointOnTile(radius: number, water: WaterAdjacency): Vector3 {
-        return randomPointInHexagonEx(radius, corner => {
+    private randomPointOnTile(water: WaterAdjacency): Vector3 {
+        return randomPointInHexagonEx(corner => {
             corner = (2 + (6 - corner)) % 6
             if (corner == 0 && water.NE) return 0.5
             if (corner == 1 && water.E) return 0.5
