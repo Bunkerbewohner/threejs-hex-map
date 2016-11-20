@@ -1,6 +1,5 @@
 import {simplex2, perlin2, seed} from "./perlin"
 import {Height, TileData, isLand, isWater, isMountain, isHill} from "./interfaces"
-import {Promise} from "es6-promise"
 import TileGrid from "./tile-grid";
 import {shuffle, qrRange} from "./util";
 import Grid from './Grid';
@@ -11,8 +10,6 @@ function randomHeight(q: number, r: number) {
     var noise3 = perlin2(q / 30, r / 30)
     var noise = noise1 + noise2 + noise3
 
-    //if (Math.random() > 0.6) noise += 0.5
-
     return noise / 3.0 * 2.0
 }
 
@@ -22,26 +19,15 @@ function randomHeight(q: number, r: number) {
  * @param heightAt
  * @param terrainAt
  */
-export function generateMap(size: number,
-                            heightAt: (q: number, r: number) => Height,
-                            terrainAt: (q: number, r: number, height: Height) => string): Promise<Grid<TileData>> {
-    return new Promise((resolve, reject) => {        
-        const grid = new Grid<TileData>(size, size).mapQR((q, r) => {
-            const height = heightAt(q, r)
-            const terrain = terrainAt(q, r, height)
-            const trees = !isMountain(height) && !isWater(height) && Math.random() > 0.5
-            return {q, r, height, terrain, fog: true, clouds: true, river: null, trees}
-        })
-
-        const withRivers = generateRivers(grid)
-
-        resolve(withRivers)
-    })
+export async function generateMap(size: number, tile: (q: number, r: number) => TileData): Promise<Grid<TileData>> {
+    const grid = new Grid<TileData>(size, size).mapQR((q, r) => tile(q, r))
+    const withRivers = generateRivers(grid)
+    return withRivers
 }
 
-export function generateRandomMap(size: number, terrainAt: (q: number, r: number, height: Height) => string): Promise<Grid<TileData>> {
-    seed(Math.random())
-    return generateMap(size, randomHeight, terrainAt)
+export async function generateRandomMap(size: number, tile: (q: number, r: number, height: Height) => TileData): Promise<Grid<TileData>> {
+    seed(Date.now() + Math.random())
+    return generateMap(size, (q, r) => tile(q, r, randomHeight(q, r)))
 }
 
 function generateRivers(grid: Grid<TileData>): Grid<TileData> {
@@ -53,6 +39,7 @@ function generateRivers(grid: Grid<TileData>): Grid<TileData> {
     // grow the river towards the water by following the height gradient
     const rivers = spawns.map(growRiver)
 
+    // assign sequential indices to rivers and their tiles
     let riverIndex = 0
     for (let river of rivers) {
         let riverTileIndex = 0
@@ -89,14 +76,7 @@ function generateRivers(grid: Grid<TileData>): Grid<TileData> {
     }
 
     function sortByHeight(tiles: TileData[]): TileData[] {
-        function sort(a: TileData, b: TileData) {
-            return b.height - a.height
-        }
-
-        const arr = [].concat(tiles)
-        arr.sort(sort)
-
-        return arr
+        return tiles.sort((a, b) => b.height - a.height)
     }
 
     function contains(t: TileData, ts: TileData[]) {

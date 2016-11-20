@@ -3,8 +3,11 @@
         "module": "amd",
         "target": "es5",
         "noImplicitAny": true,
-        "sourceMap": false,
-        "outDir": "build/"
+        "sourceMap": true,
+        "outDir": "build/",
+        "lib": [
+            "es2015.promise", "es5", "dom"
+        ]
     },
     "exclude": [
         "node_modules",

@@ -33,3 +33,7 @@ export function paramInt(name: string, defaultValue: number): number {
 export function paramFloat(name: string, defaultValue: number): number {
     return parseFloat(paramString(name, defaultValue+""))
 }
+
+export function varying<T>(...values: T[]): T {
+    return values[Math.round(Math.random() * (values.length - 1))]
+}

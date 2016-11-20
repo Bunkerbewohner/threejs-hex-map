@@ -3,7 +3,6 @@ import {generateRandomMap} from "./map-generator"
 import MapMesh from "./MapMesh"
 import { TextureAtlas, TileData } from './interfaces';
 import {loadFile} from "./util"
-import {Promise} from "es6-promise"
 import { screenToWorld } from './camera-utils';
 import Grid from './Grid';
 import DefaultTileSelector from "./DefaultTileSelector"

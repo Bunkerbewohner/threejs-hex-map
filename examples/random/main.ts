@@ -1,31 +1,32 @@
 import {PerspectiveCamera, Scene, WebGLRenderer} from "three"
 import {generateRandomMap} from "../../src/map-generator"
-import {TextureAtlas} from "../../src/interfaces"
+import { TextureAtlas, isMountain, isWater } from '../../src/interfaces';
 import { loadFile, loadJSON } from '../../src/util';
-import {Promise} from "es6-promise"
 import MapView from '../../src/MapView';
-import { KeyActions, KEY_CODES, paramInt, paramFloat } from './util';
+import { KeyActions, KEY_CODES, paramInt, paramFloat, varying } from './util';
 
 const mapSize = paramInt("size", 96)
 const zoom = paramFloat("zoom", 25)
 const mapView = new MapView().setZoom(zoom)
 
-const textureAtlas = loadJSON<TextureAtlas>("land-atlas.json")
-const tiles = generateRandomMap(mapSize, (q, r, h) => {
-    if (h < 0) return "water";
-    if (h > 0.75) return "mountain";
-    if (Math.random() > 0.5) return "grass"
-    else return "plains"
-}).catch(err => {
-    console.error(err)
-    return null
-})
+async function init() {
+    async function loadTextureAtlas() {
+        return loadJSON<TextureAtlas>("land-atlas.json")
+    }
 
-Promise.all([tiles, textureAtlas]).then(([tiles, textureAtlas]) => {
-    mapView.load(tiles, textureAtlas)
-}).catch(err => {
-    console.error(err)
-})
+    async function generateMap() {        
+        return generateRandomMap(mapSize, (q, r, height) => {            
+            const terrain = (height < 0 && "water") || (height > 0.75 && "mountain") || varying("grass", "plains")
+            const trees = !isMountain(height) && !isWater(height) && varying(true, false)
+            return {q, r, height, terrain, trees, river: null, fog: false, clouds: false }
+        })
+    }
+
+    const [atlas, map] = await Promise.all([loadTextureAtlas(), generateMap()])
+    mapView.load(map, atlas)
+}
+
+init()
 
 const keyActions: KeyActions = {
     [KEY_CODES.LEFT_ARROW]: {

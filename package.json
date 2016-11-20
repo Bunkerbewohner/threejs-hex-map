@@ -25,10 +25,10 @@
   "license": "MIT",
   "homepage": "https://bitbucket.org/bunkerbewohner/hex-map#readme",
   "dependencies": {
+    "@types/three": "0.0.24",
     "d3-quadtree": "^1.0.1",
-    "es6-promise": "^3.2.1",
     "three": "^0.79.0",
-    "typescript": "^2.0.3"
+    "typescript": "^2.1.0"
   },
   "devDependencies": {
     "express": "^4.14.0",

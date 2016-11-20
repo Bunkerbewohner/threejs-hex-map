@@ -21,9 +21,10 @@ export default class ChunkedLazyMapMesh extends Object3D {
         super()
 
         // we're gonna handle frustrum culling ourselves
-        //this.frustumCulled = false
+        this.frustumCulled = false
 
         // create chunks
+        // TODO: Make this more efficient
         const chunkSize = Math.min((tileGrid.width * tileGrid.height) / 4, Math.pow(64, 2))
         let tree = new QuadTree<TileData>(tileGrid.toArray(), chunkSize, (tile: TileData) => qrToWorld(tile.q, tile.r))
 

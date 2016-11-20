@@ -1,4 +1,3 @@
-import {Promise} from "es6-promise"
 import {XHRLoader, TextureLoader, Texture} from "three"
 import {QR} from "./interfaces"
 
@@ -37,7 +36,7 @@ export function loadFile(path: string): Promise<string> {
     })
 }
 
-export function loadJSON<T>(path: string): Promise<T> {
+export async function loadJSON<T>(path: string): Promise<T> {
     return loadFile(path).then(str => JSON.parse(str) as T)
 }
 

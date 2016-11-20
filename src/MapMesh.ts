@@ -15,7 +15,6 @@ import {
     BufferAttribute,
     Sphere
 } from "three"
-import {Promise} from "es6-promise"
 import { loadFile, qrRange, loadTexture } from './util';
 import TileGrid from "./tile-grid";
 import Trees from './trees';
