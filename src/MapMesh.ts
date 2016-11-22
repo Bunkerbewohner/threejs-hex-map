@@ -75,8 +75,7 @@ export default class MapMesh extends Group {
             this.createLandMesh(_tiles.filter(t => !isMountain(t.height))),            
             this.createMountainMesh(_tiles.filter(t => isMountain(t.height)))
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
-        ]).then(() => {
-            this.computeBoundingSphere()            
+        ]).then(() => {   
             setTimeout(() => {
                 this.createTrees()
             }, 250)            
@@ -88,20 +87,6 @@ export default class MapMesh extends Group {
     private createTrees() {
         const trees = new Trees(this._tiles, this.tileGrid)
         this.add(trees)
-    }
-
-    private computeBoundingSphere() {
-        const bs = this.boundingSphere = new Sphere()
-        const childrenBounds = [this.land, this.mountains].map(x => x.geometry.boundingSphere)
-
-        const pts = [].concat(...childrenBounds.map(bounds => {
-            return [
-                bounds.center.clone().sub(new Vector3(bounds.radius, bounds.radius, 0)),
-                bounds.center.clone().add(new Vector3(bounds.radius, bounds.radius, 0))
-            ]
-        }))
-
-        bs.setFromPoints(pts)
     }
 
     createLandMesh(tiles: TileData[]) {
@@ -141,6 +126,8 @@ export default class MapMesh extends Group {
             })
 
             this.land = new Mesh(geometry, material)
+            this.land.frustumCulled = false
+
             this.add(this.land)
         })
     }
@@ -177,6 +164,8 @@ export default class MapMesh extends Group {
             })
 
             this.mountains = new Mesh(geometry, material)
+            this.mountains.frustumCulled = false            
+
             this.add(this.mountains)
         })
     }
@@ -221,9 +210,6 @@ function createHexagonTilesGeometry(tiles: TileData[], grid: Grid<TileData>, num
     var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
     styleAttr.copyVector4sArray(styles)
     geometry.addAttribute("style", styleAttr)
-
-    geometry.boundingSphere = new THREE.Sphere()
-    geometry.boundingSphere.setFromPoints(tilePositions.map(pos => new THREE.Vector3(pos.x, pos.y, 0)))
 
     return geometry
 }
