@@ -1,13 +1,12 @@
-import { Object3D } from "three"
+import { Object3D, Vector2, Vector3, Sphere } from "three"
 import {TileData, TextureAtlas} from "./interfaces";
 import Grid from "./Grid";
 import Camera = THREE.Camera;
 import QuadTree from "./QuadTree";
-import {qrToWorld, screenToWorld} from "./coords";
+import { qrToWorld, screenToWorld, qrToWorldX, qrToWorldY } from './coords';
 import MapMesh from "./MapMesh";
 import {BoundingBox} from "./BoundingBox";
-import Vector2 = THREE.Vector2;
-import Vector3 = THREE.Vector3;
+import { range } from './util';
 
 export default class ChunkedLazyMapMesh extends Object3D {
     private quadtree: QuadTree<MapThunk>
@@ -23,18 +22,30 @@ export default class ChunkedLazyMapMesh extends Object3D {
         // we're gonna handle frustrum culling ourselves
         this.frustumCulled = false
 
-        // create chunks
-        // TODO: Make this more efficient
-        const chunkSize = Math.min((tileGrid.width * tileGrid.height) / 4, Math.pow(64, 2))
-        let tree = new QuadTree<TileData>(tileGrid.toArray(), chunkSize, (tile: TileData) => qrToWorld(tile.q, tile.r))
+        // calculate size of map chunks so that there are at least 4 or each chunk contains 32^2 tiles
+        const chunkSize = Math.min((tileGrid.width * tileGrid.height) / 4, Math.pow(32, 2))
+        const chunkWidth = Math.ceil(Math.sqrt(chunkSize))
+        const numChunksX = Math.ceil(tileGrid.width / chunkWidth)
+        const numChunksY = Math.ceil(tileGrid.height / chunkWidth)
+        const chunks: TileData[][][] = range(numChunksX).map(x => range(numChunksY).map(_ => []))
 
-        this.quadtree = tree.mapReduce(tiles => {
-            const thunk = new MapThunk(tiles, tileGrid, _textureAtlas)
-            this.thunks.push(thunk)
-            return thunk
+        // assign tiles to cells in the coarser chunk grid
+        tileGrid.forEachIJ((i, j, q, r, tile) => {
+            const bx = Math.floor((i / tileGrid.width) * numChunksX)
+            const by = Math.floor((j / tileGrid.height) * numChunksY)
+            chunks[bx][by].push(tile)
         })
 
-        this.thunks.forEach(thunk => this.add(thunk))
+        // create a thunk for each chunk
+        chunks.forEach((row, x) => {
+            row.forEach((tiles, y) => {
+                const thunk = new MapThunk(tiles, tileGrid, _textureAtlas)
+                this.thunks.push(thunk)
+                this.add(thunk)
+            })
+        })
+
+        let tree = this.quadtree = new QuadTree<MapThunk>(this.thunks, 1, (thunk: MapThunk) => thunk.computeCenter())
     }
 
     /**
@@ -47,8 +58,8 @@ export default class ChunkedLazyMapMesh extends Object3D {
         const center = new Vector3().addVectors(min, max).multiplyScalar(0.5)
         const size = Math.max(max.x - min.x, max.y - min.y)
 
-        const boundingBox = new BoundingBox(new Vector2(center.x, center.y), size*2)
-        this.thunks.forEach(thunk => thunk.visible = false)
+        const boundingBox = new BoundingBox(new Vector2(center.x, center.y), size*1.5)
+        this.thunks.forEach(thunk => thunk.updateVisibility(false))
         this.quadtree.queryRange(boundingBox).forEach(thunk => thunk.updateVisibility(true))
     }
 }
@@ -56,6 +67,16 @@ export default class ChunkedLazyMapMesh extends Object3D {
 class MapThunk extends Object3D {
     private loaded = false
     private mesh: MapMesh
+
+    getTiles(): TileData[] {
+        return this.tiles
+    }
+
+    computeCenter(): Vector2 {
+        const sphere = new Sphere()
+        sphere.setFromPoints(this.tiles.map(tile => new Vector3(qrToWorldX(tile.q, tile.r), qrToWorldY(tile.q, tile.r))))
+        return new Vector2(sphere.center.x, sphere.center.y)
+    }
 
     constructor(private tiles: TileData[], private grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
         super()

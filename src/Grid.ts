@@ -1,5 +1,6 @@
 import { QR } from './interfaces';
 import {qrRange, range, isInteger} from './util';
+import { Vector3 } from 'three';
 
 export default class Grid<T> {
     private data: T[][] = []
@@ -34,6 +35,25 @@ export default class Grid<T> {
                 const r = j
 
                 f(q, r, this.get(q, r))
+            }
+        }
+
+        return this
+    }
+
+    /**
+     * Iterates over the grid using the indices (i,j), where i = [0..width-1] and j = [0..height-1].
+     * (0, 0) corresponds to the upper left corner, (width-1, height-1) to the bottom right corner.
+     */
+    forEachIJ(f: (i: number, j: number, q: number, r: number, item?: T)=>void) {
+        const {_width, _height} = this
+
+        for (var i = -this.halfWidth; i < this.halfWidth; i++) {
+            for (var j = -this.halfHeight; j < this.halfHeight; j++) {
+                const q = i - j / 2 + ((-_height / 2 + j) % 2) / 2
+                const r = j
+
+                f(i + this.halfWidth, j + this.halfHeight, q, r, this.get(q, r))
             }
         }
 
