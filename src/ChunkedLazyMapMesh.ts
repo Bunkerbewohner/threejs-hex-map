@@ -8,6 +8,7 @@ import MapMesh from "./MapMesh";
 import {BoundingBox} from "./BoundingBox";
 import { range } from './util';
 
+
 export default class ChunkedLazyMapMesh extends Object3D {
     private quadtree: QuadTree<MapThunk>
     private thunks: MapThunk[] = []
@@ -58,7 +59,7 @@ export default class ChunkedLazyMapMesh extends Object3D {
         const center = new Vector3().addVectors(min, max).multiplyScalar(0.5)
         const size = Math.max(max.x - min.x, max.y - min.y)
 
-        const boundingBox = new BoundingBox(new Vector2(center.x, center.y), size*1.5)
+        const boundingBox = new BoundingBox(new Vector2(center.x, center.y), size*2)
         this.thunks.forEach(thunk => thunk.updateVisibility(false))
         this.quadtree.queryRange(boundingBox).forEach(thunk => thunk.updateVisibility(true))
     }

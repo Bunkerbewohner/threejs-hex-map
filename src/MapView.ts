@@ -118,11 +118,6 @@ export default class MapView implements MapViewControls {
         this._renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    update() {
-        const frustrumMin = screenToWorld(0, 0, this._camera)
-        const frustrumMax = screenToWorld(window.innerWidth, window.innerHeight, this._camera)
-    }    
-
     //----- MapViewControls -----
 
     setScrollDir(x: number, y: number) {
@@ -141,8 +136,8 @@ export default class MapView implements MapViewControls {
     }
 
     pickTile(worldPos: THREE.Vector3): TileData | null {
-        var x = worldPos.x// - GameState.worldPos.value.x
-        var y = worldPos.y// - GameState.worldPos.value.y
+        var x = worldPos.x
+        var y = worldPos.y
 
         // convert from world coordinates into fractal axial coordinates
         var q = (1.0 / 3 * Math.sqrt(3) * x - 1.0 / 3 * y)

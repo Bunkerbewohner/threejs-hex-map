@@ -32,11 +32,11 @@ export default class QuadTree<T> {
         }
     }
 
-    isLeaf(): boolean {
+    private isLeaf(): boolean {
         return !!!this.northWest;
     }
 
-    insert(item: T): boolean {
+    private insert(item: T): boolean {
         const p = this.pos(item)
 
         if (!this.bounds.containsPoint(p)) {
@@ -52,7 +52,7 @@ export default class QuadTree<T> {
         return this.northWest.insert(item) || this.northEast.insert(item) || this.southWest.insert(item) || this.southEast.insert(item);
     }
 
-    subdivide(): void {
+    private subdivide(): void {
         var box: BoundingBox;
         var newBoundary: number = this.bounds.halfDimension / 2;
         box = new BoundingBox({
@@ -88,6 +88,9 @@ export default class QuadTree<T> {
         this.data = null;
     }
 
+    /**
+     * Returns a list of items within the given bounding box.
+     */
     queryRange(range: BoundingBox): T[] {
         var pointsInRange: T[] = [];
         if(!this.bounds.intersectsAABB(range)) {
