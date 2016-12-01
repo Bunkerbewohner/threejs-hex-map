@@ -40,7 +40,5 @@ void main() {
     }
 
     // FOW
-    //gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);
-
-    //gl_FragColor = vec4(vTexCoord.x, vTexCoord.y, 0, 1.0);
+    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);
 }

@@ -21,7 +21,6 @@ varying vec2 vCoastTextureCell;
 varying vec2 vRiverTextureCell;
 
 const vec3 cameraPos = vec3(0, -25.0, 25.0);
-//const vec3 lightPos = vec3(500.0, 1000.0, 500.0);
 const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
 const vec3 lightAmbient = vec3(0.3, 0.3, 0.3);
 const vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);
@@ -70,7 +69,5 @@ void main() {
     }
 
     // FOW
-    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);
-
-    //gl_FragColor = vec4(vTexCoord.x, vTexCoord.y, 0, 1.0);
+    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);    
 }

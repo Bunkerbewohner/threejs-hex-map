@@ -42,11 +42,12 @@ export default class ChunkedLazyMapMesh extends Object3D {
             row.forEach((tiles, y) => {
                 const thunk = new MapThunk(tiles, tileGrid, _textureAtlas)
                 this.thunks.push(thunk)
+                thunk.load() // preload
                 this.add(thunk)
             })
         })
 
-        let tree = this.quadtree = new QuadTree<MapThunk>(this.thunks, 1, (thunk: MapThunk) => thunk.computeCenter())
+        this.quadtree = new QuadTree<MapThunk>(this.thunks, 1, (thunk: MapThunk) => thunk.computeCenter())        
     }
 
     /**

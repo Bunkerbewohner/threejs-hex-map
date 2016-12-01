@@ -16,12 +16,18 @@ import {
     Sphere
 } from "three"
 import { loadFile, qrRange, loadTexture } from './util';
-import TileGrid from "./tile-grid";
+import TileGrid from "./TileGrid";
 import Trees from './trees';
 import { qrToWorld } from './coords';
 import Grid from "./Grid";
 
 const textureLoader = new TextureLoader()
+
+export interface MapMeshOptions {
+    diffuseMap: TextureAtlas;
+    cloudTexture: string;
+    hillsNormalMap: string;
+}
 
 export default class MapMesh extends Group {
 
@@ -57,6 +63,10 @@ export default class MapMesh extends Group {
 
     boundingSphere: Sphere
 
+    /**
+     * @param _tiles the tiles to actually render in this mesh
+     * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
+     */
     constructor(private _tiles: TileData[], grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
         super()
 

@@ -12,7 +12,7 @@ async function generateMap(mapSize: number) {
     return generateRandomMap(mapSize, (q, r, height) => {            
         const terrain = (height < 0 && "water") || (height > 0.75 && "mountain") || varying("grass", "plains")
         const trees = !isMountain(height) && !isWater(height) && varying(true, false)
-        return {q, r, height, terrain, trees, river: null, fog: false, clouds: false }
+        return {q, r, height, terrain, trees, river: null, fog: true, clouds: true }
     })
 }
 

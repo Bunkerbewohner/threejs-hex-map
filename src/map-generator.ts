@@ -1,6 +1,6 @@
 import {simplex2, perlin2, seed} from "./perlin"
 import {Height, TileData, isLand, isWater, isMountain, isHill} from "./interfaces"
-import TileGrid from "./tile-grid";
+import TileGrid from "./TileGrid";
 import {shuffle, qrRange} from "./util";
 import Grid from './Grid';
 
