@@ -16,7 +16,6 @@ import {
     Sphere
 } from "three"
 import { loadFile, qrRange, loadTexture } from './util';
-import TileGrid from "./TileGrid";
 import Trees from './trees';
 import { qrToWorld } from './coords';
 import Grid from "./Grid";
