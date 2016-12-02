@@ -1,6 +1,6 @@
 import MapView from '../../src/MapView';
 import { loadFile, loadJSON } from '../../src/util';
-import { TextureAtlas, isMountain, isWater } from '../../src/interfaces';
+import { TextureAtlas, isMountain, isWater, TileData } from '../../src/interfaces';
 import {generateRandomMap} from "../../src/map-generator"
 import { varying } from './util';
 
@@ -22,5 +22,24 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     mapView.setZoom(initialZoom)
     mapView.load(map, atlas)
 
+    mapView.onLoaded = () => {
+        setFogAround(mapView, mapView.selectedTile, 2, false)
+    }
+
+    mapView.onTileSelected = (tile: TileData) => {
+        setFogAround(mapView, tile, 2, false)
+    }
+
     return mapView
+}
+
+function setFogAround(mapView: MapView, tile: TileData, range: number, fog: boolean) {
+    const tiles = mapView.getTileGrid().neighbors(tile.q, tile.r, range)
+
+    const updated = tiles.map(t => {
+        t.fog = fog
+        return t
+    })
+
+    mapView.updateTiles(updated)
 }

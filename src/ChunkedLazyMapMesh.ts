@@ -1,5 +1,5 @@
 import { Object3D, Vector2, Vector3, Sphere } from "three"
-import {TileData, TextureAtlas} from "./interfaces";
+import { TileData, TextureAtlas, TileDataSource } from './interfaces';
 import Grid from "./Grid";
 import Camera = THREE.Camera;
 import QuadTree from "./QuadTree";
@@ -9,9 +9,11 @@ import {BoundingBox} from "./BoundingBox";
 import { range } from './util';
 
 
-export default class ChunkedLazyMapMesh extends Object3D {
+export default class ChunkedLazyMapMesh extends Object3D implements TileDataSource {
     private quadtree: QuadTree<MapThunk>
     private thunks: MapThunk[] = []
+
+    readonly loaded: Promise<void>
 
     get numChunks(): number {
         return this.thunks.length
@@ -37,16 +39,20 @@ export default class ChunkedLazyMapMesh extends Object3D {
             chunks[bx][by].push(tile)
         })
 
+        const promises: Promise<void>[] = []
+
         // create a thunk for each chunk
         chunks.forEach((row, x) => {
             row.forEach((tiles, y) => {
                 const thunk = new MapThunk(tiles, tileGrid, _textureAtlas)
                 this.thunks.push(thunk)
+                promises.push(thunk.loaded)
                 thunk.load() // preload
                 this.add(thunk)
             })
         })
 
+        this.loaded = Promise.all(promises).then(() => null)
         this.quadtree = new QuadTree<MapThunk>(this.thunks, 1, (thunk: MapThunk) => thunk.computeCenter())        
     }
 
@@ -64,14 +70,43 @@ export default class ChunkedLazyMapMesh extends Object3D {
         this.thunks.forEach(thunk => thunk.updateVisibility(false))
         this.quadtree.queryRange(boundingBox).forEach(thunk => thunk.updateVisibility(true))
     }
+
+    updateTiles(tiles: TileData[]) {
+        this.thunks.forEach(thunk => thunk.updateTiles(tiles))
+    }
+
+    getTile(q: number, r: number) {
+        const xy = qrToWorld(q, r)
+        const queryBounds = new BoundingBox(xy, 1)
+        const thunks = this.quadtree.queryRange(queryBounds)
+
+        for (let thunk of thunks) {
+            const tile = thunk.getTile(q, r)
+            if (tile) {
+                return tile
+            }
+        }
+
+        return null
+    }
 }
 
-class MapThunk extends Object3D {
-    private loaded = false
+class MapThunk extends Object3D implements TileDataSource {
+    private _loaded = false
     private mesh: MapMesh
+
+    private resolve: ()=>void
+
+    readonly loaded: Promise<void> = new Promise<void>((resolve, reject) => {
+        this.resolve = resolve
+    })
 
     getTiles(): TileData[] {
         return this.tiles
+    }
+
+    getTile(q: number, r: number) {
+        return this.mesh.getTile(q, r)
     }
 
     computeCenter(): Vector2 {
@@ -85,18 +120,27 @@ class MapThunk extends Object3D {
         this.frustumCulled = false
     }
 
+    updateTiles(tiles: TileData[]) {
+        if (!this.mesh) {
+            this.load()
+        }
+
+        this.mesh.updateTiles(tiles)        
+    }
+
     load() {
-        if (!this.loaded) {
-            this.loaded = true
+        if (!this._loaded) {
+            this._loaded = true
             const mesh = this.mesh = new MapMesh(this.tiles, this.grid, this._textureAtlas)
             mesh.frustumCulled = false
 
             this.add(mesh)
+            this.resolve()
         }
     }
 
     updateVisibility(value: boolean) {
-        if (value && !this.loaded) {
+        if (value && !this._loaded) {
             this.load()
         }
         this.visible = value

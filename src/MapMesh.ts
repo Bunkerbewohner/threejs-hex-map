@@ -1,7 +1,8 @@
-import { TileData, isLand, isWater, isMountain, TextureAtlas, isHill } from './interfaces';
+import { TileData, isLand, isWater, isMountain, TextureAtlas, isHill, TileDataSource } from './interfaces';
 import {createHexagon} from "./hexagon"
 import {
     InstancedBufferGeometry,
+    InstancedBufferAttribute,
     RawShaderMaterial,
     BufferGeometry,
     Vector2,
@@ -28,7 +29,16 @@ export interface MapMeshOptions {
     hillsNormalMap: string;
 }
 
-export default class MapMesh extends Group {
+interface MapMeshTile extends TileData {
+    /**
+     * Index of this tile in its vertex buffer
+     */
+    bufferIndex: number;
+
+    isMountain: boolean;
+}
+
+export default class MapMesh extends Group implements TileDataSource {
 
     static landShaders = {
         fragmentShader: loadFile("../../src/shaders/land.fragment.glsl"),
@@ -50,7 +60,21 @@ export default class MapMesh extends Group {
     static hillsNormal = textureLoader.load("textures/hills-normal.png")
     static textureAtlas: Texture
 
-    private tileGrid: Grid<TileData>
+    /**
+     * List of tiles displayed in this mesh
+     */
+    private tiles: MapMeshTile[]
+
+    /**
+     * Grid of the tiles displayed in this mesh containing the same elements as this.tiles
+     */
+    private localGrid: Grid<MapMeshTile>
+
+    /**
+     * Global grid of all tiles, even the ones not displayed in this mesh
+     */
+    private globalGrid: Grid<TileData>
+
     private coastAtlas: Texture
     private riverAtlas: Texture
     private terrainDiffuseMap: Texture
@@ -62,27 +86,36 @@ export default class MapMesh extends Group {
 
     boundingSphere: Sphere
 
+    readonly loaded: Promise<void>
+
     /**
      * @param _tiles the tiles to actually render in this mesh
      * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
      */
-    constructor(private _tiles: TileData[], grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
+    constructor(tiles: TileData[], grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
         super()
 
         if (!MapMesh.textureAtlas) {
             MapMesh.textureAtlas = textureLoader.load(_textureAtlas.image)
         }
 
-        this.tileGrid = grid
+        this.tiles = tiles.map(t => ({
+            bufferIndex: -1,
+            isMountain: isMountain(t.height),
+            ...t
+        }))
+
+        this.localGrid = new Grid<MapMeshTile>(0, 0).init(this.tiles)
+        this.globalGrid = grid
         this.coastAtlas = MapMesh.coastAtlas
         this.riverAtlas = MapMesh.riverAtlas
         this.terrainDiffuseMap = MapMesh.textureAtlas
         this.hillsNormalMap = MapMesh.hillsNormal
         this.hillsNormalMap.wrapS = this.hillsNormalMap.wrapT = THREE.RepeatWrapping
 
-        Promise.all([
-            this.createLandMesh(_tiles.filter(t => !isMountain(t.height))),            
-            this.createMountainMesh(_tiles.filter(t => isMountain(t.height)))
+        this.loaded = Promise.all([
+            this.createLandMesh(this.tiles.filter(t => !t.isMountain)),            
+            this.createMountainMesh(this.tiles.filter(t => t.isMountain))
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
         ]).then(() => {   
             setTimeout(() => {
@@ -93,18 +126,61 @@ export default class MapMesh extends Group {
         })
     }
 
+    updateTiles(tiles: TileData[]) {
+        this.updateFogAndClouds(tiles)
+    }
+
+    getTile(q: number, r: number) {
+        return this.localGrid.get(q, r)
+    }
+    
+    /**
+     * Updates only fog and clouds visualization of existing tiles.
+     * @param tiles changed tiles
+     */
+    updateFogAndClouds(tiles: TileData[]) {
+        const landGeometry = this.land.geometry as InstancedBufferGeometry
+        const landStyleAttr = landGeometry.getAttribute("style") as InstancedBufferAttribute
+        const mountainsGeometry = this.mountains.geometry as InstancedBufferGeometry
+        const mountainsStyleAttr = mountainsGeometry.getAttribute("style") as InstancedBufferAttribute
+
+        tiles.forEach(updated => {            
+            const old = this.localGrid.get(updated.q, updated.r)            
+            if (!old) return
+
+            if (updated.fog != old.fog) {
+                old.fog = updated.fog
+                const attribute = old.isMountain ? mountainsStyleAttr : landStyleAttr
+                this.updateFogStyle(attribute, old.bufferIndex, updated.fog)
+            }
+        })
+
+        landStyleAttr.needsUpdate = true
+        mountainsStyleAttr.needsUpdate = true
+    }
+
+    private updateFogStyle(attr: InstancedBufferAttribute, index: number, fog: boolean) {
+        const style = attr.getY(index)
+        const fogMask = 0b1
+        const newStyle = fog ? (style | fogMask) : (style & ~fogMask)
+
+        console.log("Updating style from " + style + " to " + newStyle)
+
+        attr.setY(index, newStyle)
+    }
+
     private createTrees() {
-        const trees = new Trees(this._tiles, this.tileGrid)
+        const trees = new Trees(this.tiles, this.globalGrid)
         this.add(trees)
     }
 
-    createLandMesh(tiles: TileData[]) {
+    private createLandMesh(tiles: MapMeshTile[]) {
         const vertexShader = MapMesh.landShaders.vertexShader
         const fragmentShader = MapMesh.landShaders.fragmentShader
         const atlas = this._textureAtlas
 
         return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
-            const geometry = createHexagonTilesGeometry(tiles, this.tileGrid, 0, this._textureAtlas)
+            const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this._textureAtlas)
             const material = new THREE.RawShaderMaterial({
                 uniforms: {
                     sineTime: {value: 0.0},
@@ -141,16 +217,16 @@ export default class MapMesh extends Group {
         })
     }
 
-    createWaterMesh(tiles: TileData[]) {
+    private createWaterMesh(tiles: TileData[]) {
     }
 
-    createMountainMesh(tiles: TileData[]) {
+    private createMountainMesh(tiles: MapMeshTile[]) {
         const vertexShader = MapMesh.mountainShaders.vertexShader
         const fragmentShader = MapMesh.mountainShaders.fragmentShader
         const atlas = this._textureAtlas
 
         return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
-            const geometry = createHexagonTilesGeometry(tiles, this.tileGrid, 1, this._textureAtlas)
+            const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this._textureAtlas)
             const material = new THREE.RawShaderMaterial({
                 uniforms: {
                     sineTime: {value: 0.0},
@@ -180,7 +256,7 @@ export default class MapMesh extends Group {
     }
 }
 
-function createHexagonTilesGeometry(tiles: TileData[], grid: Grid<TileData>, numSubdivisions: number, textureAtlas: TextureAtlas) {
+function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, numSubdivisions: number, textureAtlas: TextureAtlas) {
     const hexagon = createHexagon(1.0, numSubdivisions)
     const geometry = new InstancedBufferGeometry()
 
@@ -200,7 +276,7 @@ function createHexagonTilesGeometry(tiles: TileData[], grid: Grid<TileData>, num
     const cellSpacing = textureAtlas.cellSpacing
     const numColumns = textureAtlas.width / cellSize
 
-    var styles = tiles.map(function (tile) {
+    var styles = tiles.map(function (tile, index) {
         const cell = textureAtlas.textures[tile.terrain]
 
         const cellIndex = cell.cellY * numColumns + cell.cellX
@@ -212,6 +288,8 @@ function createHexagonTilesGeometry(tiles: TileData[], grid: Grid<TileData>, num
         // Coast and River texture index
         const coastIdx = computeCoastTextureIndex(grid, tile)
         const riverIdx = computeRiverTextureIndex(grid, tile)
+
+        tile.bufferIndex = index
 
         return new Vector4(cellIndex, style, coastIdx, riverIdx)
     })

@@ -1,7 +1,7 @@
 import { PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group, Camera, Vector2, Object3D } from 'three';
 import {generateRandomMap} from "./map-generator"
 import MapMesh from "./MapMesh"
-import { TextureAtlas, TileData } from './interfaces';
+import { TextureAtlas, TileData, TileDataSource } from './interfaces';
 import {loadFile} from "./util"
 import { screenToWorld } from './camera-utils';
 import Grid from './Grid';
@@ -12,7 +12,7 @@ import { MapViewControls } from './MapViewController';
 import { qrToWorld, axialToCube, roundToHex, cubeToAxial } from './coords';
 import ChunkedLazyMapMesh from "./ChunkedLazyMapMesh";
 
-export default class MapView implements MapViewControls {
+export default class MapView implements MapViewControls, TileDataSource {
     private static DEFAULT_ZOOM = 25
 
     private _camera: PerspectiveCamera
@@ -23,15 +23,27 @@ export default class MapView implements MapViewControls {
     private _zoom: number = 25
 
     private _textureAtlas: TextureAtlas
-    private _mapMesh: Object3D
+    private _mapMesh: Object3D & TileDataSource
     private _chunkedMesh: ChunkedLazyMapMesh
     private _tileGrid: Grid<TileData> = new Grid<TileData>(0, 0)
 
     private _tileSelector: THREE.Object3D = DefaultTileSelector
     private _controller: MapViewController = new DefaultMapViewController()
+    private _selectedTile: TileData
+
+    private _onTileSelected: (tile: TileData) => void
+    private _onLoaded: () => void
 
     get zoom() {
         return this._zoom
+    }
+
+    get selectedTile(): TileData {
+        return this._selectedTile
+    }
+
+    getTileGrid(): Grid<TileData> {
+        return this._tileGrid
     }
 
     setZoom(z: number) {
@@ -43,6 +55,14 @@ export default class MapView implements MapViewControls {
 
     get scrollDir() {
         return this._scrollDir
+    }
+
+    set onTileSelected(callback: (tile: TileData)=>void) {
+        this._onTileSelected = callback
+    }
+
+    set onLoaded(callback: ()=>void) {
+        this._onLoaded = callback
     }
 
     public scrollSpeed: number = 10
@@ -82,17 +102,32 @@ export default class MapView implements MapViewControls {
 
     load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
         this._tileGrid = tiles
-        this._textureAtlas = textureAtlas        
+        this._textureAtlas = textureAtlas
+        this._selectedTile = this._tileGrid.get(0, 0)        
 
         if ((tiles.width * tiles.height) < Math.pow(64, 2)) {
-            this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
+            const mesh = this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
             this._scene.add(this._mapMesh)
+            mesh.loaded.then(() => {
+                if (this._onLoaded) this._onLoaded()
+            })
             console.info("using single MapMesh for " + (tiles.width * tiles.height) + " tiles")
         } else {
             const mesh = this._mapMesh = this._chunkedMesh = new ChunkedLazyMapMesh(tiles, textureAtlas)
             this._scene.add(this._mapMesh)
+            mesh.loaded.then(() => {
+                if (this._onLoaded) this._onLoaded()
+            })
             console.info("using ChunkedLazyMapMesh with " + mesh.numChunks + " chunks for " + (tiles.width * tiles.height) + " tiles")
         }
+    }
+
+    updateTiles(tiles: TileData[]) {
+        this._mapMesh.updateTiles(tiles)
+    }
+
+    getTile(q: number, r: number) {
+        return this._mapMesh.getTile(q, r)
     }
 
     private animate = (timestamp: number) => {
@@ -133,6 +168,9 @@ export default class MapView implements MapViewControls {
     selectTile(tile: TileData) {        
         const worldPos = qrToWorld(tile.q, tile.r)
         this._tileSelector.position.set(worldPos.x, worldPos.y, 0.1)
+        if (this._onTileSelected) {
+            this._onTileSelected(tile)
+        }
     }
 
     pickTile(worldPos: THREE.Vector3): TileData | null {

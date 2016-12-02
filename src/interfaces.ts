@@ -55,3 +55,8 @@ export interface QR {
     q: number;
     r: number;
 }
+
+export interface TileDataSource {
+    getTile(q: number, r: number): TileData;
+    updateTiles(tiles: TileData[]): void;
+}

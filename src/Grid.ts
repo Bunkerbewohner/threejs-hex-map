@@ -2,7 +2,7 @@ import { QR } from './interfaces';
 import {qrRange, range, isInteger} from './util';
 import { Vector3 } from 'three';
 
-export default class Grid<T> {
+export default class Grid<T extends QR> {
     private data: T[][] = []
     private halfWidth = this._width / 2
     private halfHeight = this._height / 2
@@ -60,18 +60,18 @@ export default class Grid<T> {
         return this
     }
 
-    init(items: T[], getQR: (item: T) => QR) {
+    init(items: T[]) {
         items.forEach(item => {
-            const qr = getQR(item)
-            this.add(qr.q, qr.r, item)
+            this.add(item.q, item.r, item)
         })
+        return this
     }
 
     initQR(f: (q: number, r: number, existingItem?: T) => T) {
         return this.forEachQR((q,r,item) => this.add(q, r, f(q, r, item)))
     }
 
-    mapQR<R>(f: (q: number, r: number, existingItem?: T) => R) {
+    mapQR<R extends QR>(f: (q: number, r: number, existingItem?: T) => R) {
         const mapped = new Grid<R>(this._width, this._height)
         this.forEachQR((q,r,item) => mapped.add(q, r, f(q, r, item)))
         return mapped
