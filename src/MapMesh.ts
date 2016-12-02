@@ -164,8 +164,6 @@ export default class MapMesh extends Group implements TileDataSource {
         const fogMask = 0b1
         const newStyle = fog ? (style | fogMask) : (style & ~fogMask)
 
-        console.log("Updating style from " + style + " to " + newStyle)
-
         attr.setY(index, newStyle)
     }
 
