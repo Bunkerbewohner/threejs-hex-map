@@ -60,6 +60,13 @@ export default class Grid<T> {
         return this
     }
 
+    init(items: T[], getQR: (item: T) => QR) {
+        items.forEach(item => {
+            const qr = getQR(item)
+            this.add(qr.q, qr.r, item)
+        })
+    }
+
     initQR(f: (q: number, r: number, existingItem?: T) => T) {
         return this.forEachQR((q,r,item) => this.add(q, r, f(q, r, item)))
     }
