@@ -26,7 +26,7 @@ export default class ChunkedLazyMapMesh extends Object3D implements TileDataSour
         this.frustumCulled = false
 
         // calculate size of map chunks so that there are at least 4 or each chunk contains 32^2 tiles
-        const chunkSize = Math.min((tileGrid.width * tileGrid.height) / 4, Math.pow(128, 2))
+        const chunkSize = Math.min((tileGrid.width * tileGrid.height) / 4, Math.pow(32, 2))
         const chunkWidth = Math.ceil(Math.sqrt(chunkSize))
         const numChunksX = Math.ceil(tileGrid.width / chunkWidth)
         const numChunksY = Math.ceil(tileGrid.height / chunkWidth)

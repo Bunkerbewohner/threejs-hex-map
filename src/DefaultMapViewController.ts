@@ -19,6 +19,16 @@ export default class Controller implements MapViewController {
         canvas.addEventListener("mouseup", this.onMouseUp, false)
         canvas.addEventListener("mouseout", this.onMouseOut, false)
         canvas.addEventListener("mouseenter", this.onMouseEnter, false)
+
+        canvas.addEventListener("touchstart", (e) => {
+            this.onMouseDown(e.touches[0] as any)
+            e.preventDefault()
+        }, false)
+        canvas.addEventListener("touchmove", (e) => {
+            this.onMouseMove(e.touches[0] as any)
+            e.preventDefault()
+        }, false)
+        canvas.addEventListener("touchend", (e) => this.onMouseUp(e.touches[0] || e.changedTouches[0] as any), false)
     }
 
     onMouseDown = (e: MouseEvent) => {
