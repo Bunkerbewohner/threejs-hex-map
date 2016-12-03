@@ -105,7 +105,7 @@ export default class MapView implements MapViewControls, TileDataSource {
         this._textureAtlas = textureAtlas
         this._selectedTile = this._tileGrid.get(0, 0)        
 
-        if ((tiles.width * tiles.height) < Math.pow(64, 2)) {
+        if ((tiles.width * tiles.height) < Math.pow(256, 2)) {
             const mesh = this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
             this._scene.add(this._mapMesh)
             mesh.loaded.then(() => {

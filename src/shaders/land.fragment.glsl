@@ -9,6 +9,7 @@ uniform sampler2D texture;
 uniform sampler2D hillsNormal;
 uniform sampler2D coastAtlas;
 uniform sampler2D riverAtlas;
+uniform sampler2D mapTexture;
 
 varying vec2 vUV;
 varying vec2 vTexCoord;
@@ -16,6 +17,7 @@ varying vec3 vPosition;
 varying float vExtra;
 varying float vFogOfWar;
 varying float vHill;
+varying float vHidden;
 varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
 varying vec2 vRiverTextureCell;
@@ -69,5 +71,10 @@ void main() {
     }
 
     // FOW
-    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);    
+    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 && vHidden == 0.0 ? 0.66 : 1.0);
+
+    // Map Texture for hidden tiles
+    if (vHidden > 0.0) {
+        gl_FragColor = texture2D(mapTexture, vec2(vPosition.x * 0.05, vPosition.y * 0.05));
+    }    
 }

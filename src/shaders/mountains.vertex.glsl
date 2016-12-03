@@ -21,13 +21,15 @@ attribute vec2 uv; // texture coordinates
 attribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)
 
 // style.x = texture atlas cell index
-// style.y = bitmask
+// style.y = "decimal bitmask" (fog=1xx, hills=x1x, clouds=xx1)
+// style.z = coast texture index (0 - 64)
+// style.w = river texture index (0 - 64)
 attribute vec2 style;
 
 varying vec3 vPosition;
 varying vec2 vTexCoord;
 varying float vExtra;
-varying float vFogOfWar; // 1.0 = tile is in fog of war, 0.0 otherwise
+varying float vFogOfWar; // 2.0 = not discovered, 1.0 = shadow, 0.0 = visible
 varying float vHill;
 varying vec2 vOffset;
 
@@ -57,5 +59,5 @@ void main() {
     vTexCoord = cellIndexToUV(style.x);
 
     vExtra = border;
-    vFogOfWar = style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0;
+    vFogOfWar = style.y > 100.0 ? 2.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
 }

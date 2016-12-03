@@ -58,6 +58,7 @@ export default class MapMesh extends Group implements TileDataSource {
     static coastAtlas = textureLoader.load("textures/coast-diffuse.png")
     static riverAtlas = textureLoader.load("textures/river-diffuse.png")
     static hillsNormal = textureLoader.load("textures/hills-normal.png")
+    static mapTexture = textureLoader.load("textures/paper.jpg")
     static textureAtlas: Texture
 
     /**
@@ -79,6 +80,7 @@ export default class MapMesh extends Group implements TileDataSource {
     private riverAtlas: Texture
     private terrainDiffuseMap: Texture
     private hillsNormalMap: Texture
+    private mapTexture: Texture
 
     private land: Mesh
     //private water: Mesh
@@ -112,6 +114,8 @@ export default class MapMesh extends Group implements TileDataSource {
         this.terrainDiffuseMap = MapMesh.textureAtlas
         this.hillsNormalMap = MapMesh.hillsNormal
         this.hillsNormalMap.wrapS = this.hillsNormalMap.wrapT = THREE.RepeatWrapping
+        this.mapTexture = MapMesh.mapTexture
+        this.mapTexture.wrapS = this.mapTexture.wrapT = THREE.RepeatWrapping
 
         this.loaded = Promise.all([
             this.createLandMesh(this.tiles.filter(t => !t.isMountain)),            
@@ -148,10 +152,10 @@ export default class MapMesh extends Group implements TileDataSource {
             const old = this.localGrid.get(updated.q, updated.r)            
             if (!old) return
 
-            if (updated.fog != old.fog) {
+            if (updated.fog != old.fog || updated.clouds != old.clouds) {
                 old.fog = updated.fog
                 const attribute = old.isMountain ? mountainsStyleAttr : landStyleAttr
-                this.updateFogStyle(attribute, old.bufferIndex, updated.fog)
+                this.updateFogStyle(attribute, old.bufferIndex, updated.fog, updated.clouds)
             }
         })
 
@@ -159,12 +163,13 @@ export default class MapMesh extends Group implements TileDataSource {
         mountainsStyleAttr.needsUpdate = true
     }
 
-    private updateFogStyle(attr: InstancedBufferAttribute, index: number, fog: boolean) {
+    private updateFogStyle(attr: InstancedBufferAttribute, index: number, fog: boolean, clouds: boolean) {
         const style = attr.getY(index)
         const fogMask = 0b1
         const newStyle = fog ? (style | fogMask) : (style & ~fogMask)
+        const withClouds = !clouds ? newStyle % 100 : 100 + newStyle
 
-        attr.setY(index, newStyle)
+        attr.setY(index, withClouds)
     }
 
     private createTrees() {
@@ -199,6 +204,10 @@ export default class MapMesh extends Group implements TileDataSource {
                     riverAtlas: {
                         type: "t",
                         value: this.riverAtlas
+                    },
+                    mapTexture: {
+                        type: "t",
+                        value: this.mapTexture
                     }
                 },
                 vertexShader: vertexShader,
@@ -237,6 +246,10 @@ export default class MapMesh extends Group implements TileDataSource {
                     hillsNormal: {
                         type: "t",
                         value: this.hillsNormalMap
+                    },
+                    mapTexture: {
+                        type: "t",
+                        value: this.mapTexture
                     }
                 },
                 vertexShader: vertexShader,
@@ -279,9 +292,9 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
 
         const cellIndex = cell.cellY * numColumns + cell.cellX
         const shadow = tile.fog             ? 1 : 0
-        //const clouds = tile.clouds          ? 1 << 1 : 0
+        const clouds = tile.clouds          ? 1 : 0
         const hills = isHill(tile.height)   ? 1 : 0
-        const style = shadow * 1 + hills * 10
+        const style = shadow * 1 + hills * 10 + clouds * 100
 
         // Coast and River texture index
         const coastIdx = computeCoastTextureIndex(grid, tile)

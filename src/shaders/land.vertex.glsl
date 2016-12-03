@@ -21,7 +21,7 @@ attribute vec2 uv; // texture coordinates
 attribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)
 
 // style.x = texture atlas cell index
-// style.y = bitmask
+// style.y = "decimal bitmask" (fog=1xx, hills=x1x, clouds=xx1)
 // style.z = coast texture index (0 - 64)
 // style.w = river texture index (0 - 64)
 attribute vec4 style;
@@ -30,7 +30,8 @@ varying vec3 vPosition;
 varying vec2 vTexCoord;
 varying vec2 vUV;
 varying float vExtra;
-varying float vFogOfWar; // 1.0 = tile is in fog of war, 0.0 otherwise
+varying float vFogOfWar; // 1.0 = shadow, 0.0 = visible
+varying float vHidden; // 1.0 = hidden, 0.0 = visible
 varying float vHill;
 varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
@@ -52,7 +53,10 @@ vec2 cellIndexToUV(float idx) {
 void main() {
     vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);
 
-    if (style.y / 10.0 >= 1.0 && border < 0.75) { // hill
+    // its a hill if style's 2nd decimal is 1, i.e. any number matching x1x, e.g. 10, 11, 110
+    float hill = floor(mod(style.y / 10.0, 10.0)); // 0 = no, 1 = yes
+
+    if (hill > 0.0 && border < 0.75) { // hill
         //pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;
         vHill = 1.0;
     } else {
@@ -69,5 +73,6 @@ void main() {
     vRiverTextureCell = vec2(mod(style.w, 8.0), floor(style.w / 8.0));
 
     vExtra = border;
-    vFogOfWar = style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0;
+    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
+    vHidden = style.y >= 100.0 ? 1.0 : 0.0;
 }

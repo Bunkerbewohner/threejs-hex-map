@@ -23,21 +23,23 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     mapView.load(map, atlas)
 
     mapView.onLoaded = () => {
-        setFogAround(mapView, mapView.selectedTile, 2, false)
+        setFogAround(mapView, mapView.selectedTile, 6, true, false)
+        setFogAround(mapView, mapView.selectedTile, 2, false, false)
     }
 
     mapView.onTileSelected = (tile: TileData) => {
-        setFogAround(mapView, tile, 2, false)
+        setFogAround(mapView, tile, 2, false, false)
     }
 
     return mapView
 }
 
-function setFogAround(mapView: MapView, tile: TileData, range: number, fog: boolean) {
+function setFogAround(mapView: MapView, tile: TileData, range: number, fog: boolean, clouds: boolean) {
     const tiles = mapView.getTileGrid().neighbors(tile.q, tile.r, range)
 
     const updated = tiles.map(t => {
         t.fog = fog
+        t.clouds= clouds
         return t
     })
 
