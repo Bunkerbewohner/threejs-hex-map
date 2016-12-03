@@ -85,6 +85,7 @@ export default class MapMesh extends Group implements TileDataSource {
     private land: Mesh
     //private water: Mesh
     private mountains: Mesh
+    private trees: Trees
 
     boundingSphere: Sphere
 
@@ -122,9 +123,9 @@ export default class MapMesh extends Group implements TileDataSource {
             this.createMountainMesh(this.tiles.filter(t => t.isMountain))
             //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
         ]).then(() => {   
-            setTimeout(() => {
-                this.createTrees()
-            }, 250)            
+            //setTimeout(() => {
+            this.createTrees()
+            //}, 250)            
         }).catch((err) => {
             console.error(err)
         })
@@ -132,6 +133,7 @@ export default class MapMesh extends Group implements TileDataSource {
 
     updateTiles(tiles: TileData[]) {
         this.updateFogAndClouds(tiles)
+        this.trees.updateTiles(tiles)
     }
 
     getTile(q: number, r: number) {
@@ -160,7 +162,7 @@ export default class MapMesh extends Group implements TileDataSource {
         })
 
         landStyleAttr.needsUpdate = true
-        mountainsStyleAttr.needsUpdate = true
+        mountainsStyleAttr.needsUpdate = true        
     }
 
     private updateFogStyle(attr: InstancedBufferAttribute, index: number, fog: boolean, clouds: boolean) {
@@ -173,7 +175,7 @@ export default class MapMesh extends Group implements TileDataSource {
     }
 
     private createTrees() {
-        const trees = new Trees(this.tiles, this.globalGrid)
+        const trees = this.trees = new Trees(this.tiles, this.globalGrid)
         this.add(trees)
     }
 
