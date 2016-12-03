@@ -29,8 +29,9 @@ attribute vec2 style;
 varying vec3 vPosition;
 varying vec2 vTexCoord;
 varying float vExtra;
-varying float vFogOfWar; // 2.0 = not discovered, 1.0 = shadow, 0.0 = visible
+varying float vFogOfWar; // 1.0 = shadow, 0.0 = no shadow
 varying float vHill;
+varying float vHidden; // 1.0 = hidden, 0.0 = visible
 varying vec2 vOffset;
 
 vec2 cellIndexToUV(float idx) {
@@ -48,7 +49,7 @@ vec2 cellIndexToUV(float idx) {
 void main() {
     vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);
 
-    if (border < 0.95) {
+    if (border < 0.95 && style.y < 100.0) {
         pos.z = 0.2 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.5;
     }
 
@@ -59,5 +60,6 @@ void main() {
     vTexCoord = cellIndexToUV(style.x);
 
     vExtra = border;
-    vFogOfWar = style.y > 100.0 ? 2.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
+    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
+    vHidden = style.y >= 100.0 ? 1.0 : 0.0;
 }
