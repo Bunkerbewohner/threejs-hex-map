@@ -5,7 +5,7 @@ import {generateRandomMap} from "../../src/map-generator"
 import { varying } from './util';
 
 async function loadTextureAtlas() {
-    return loadJSON<TextureAtlas>("land-atlas.json")
+    return loadJSON<TextureAtlas>("../../assets/land-atlas.json")
 }
 
 async function generateMap(mapSize: number) {        

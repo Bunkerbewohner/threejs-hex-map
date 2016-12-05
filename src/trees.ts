@@ -22,7 +22,7 @@ export default class Trees extends THREE.Object3D {
     private tiles: TreeTile[]
     private localGrid: Grid<TreeTile>
 
-    static texture: Texture = textureLoader.load("textures/tree.png")
+    static texture: Texture = textureLoader.load("../../assets/tree.png")
 
     /**
      *

@@ -55,10 +55,10 @@ export default class MapMesh extends Group implements TileDataSource {
         vertexShader: loadFile("../../src/shaders/mountains.vertex.glsl")
     }
 
-    static coastAtlas = textureLoader.load("textures/coast-diffuse.png")
-    static riverAtlas = textureLoader.load("textures/river-diffuse.png")
-    static hillsNormal = textureLoader.load("textures/hills-normal.png")
-    static mapTexture = textureLoader.load("textures/paper.jpg")
+    static coastAtlas = textureLoader.load("../../assets/coast-diffuse.png")
+    static riverAtlas = textureLoader.load("../../assets/river-diffuse.png")
+    static hillsNormal = textureLoader.load("../../assets/hills-normal.png")
+    static mapTexture = textureLoader.load("../../assets/paper.jpg")
     static textureAtlas: Texture
 
     /**
@@ -99,7 +99,7 @@ export default class MapMesh extends Group implements TileDataSource {
         super()
 
         if (!MapMesh.textureAtlas) {
-            MapMesh.textureAtlas = textureLoader.load(_textureAtlas.image)
+            MapMesh.textureAtlas = textureLoader.load("../../assets/" + _textureAtlas.image)
         }
 
         this.tiles = tiles.map(t => ({

@@ -1,5 +1,5 @@
 {
-  "image": "textures/terrain-diffuse.png",
+  "image": "terrain-diffuse.png",
   "width": 1024,
   "height": 1024,
   "cellSize": 256,
