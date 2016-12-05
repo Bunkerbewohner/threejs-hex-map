@@ -136,7 +136,7 @@ export default class MapMesh extends Group implements TileDataSource {
         this.trees.updateTiles(tiles)
     }
 
-    getTile(q: number, r: number) {
+    getTile(q: number, r: number): TileData {
         return this.localGrid.get(q, r)
     }
     

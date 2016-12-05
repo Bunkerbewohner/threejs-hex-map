@@ -1,9 +1,9 @@
-interface XY {
+export interface XY {
     x: number;
     y: number;
 }
 
-interface AABB {
+export interface AABB {
     center: XY;
     halfDimension: number;
     containsPoint(point: XY): boolean;
