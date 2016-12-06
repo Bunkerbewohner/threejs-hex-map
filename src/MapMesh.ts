@@ -149,18 +149,17 @@ export default class MapMesh extends Group implements TileDataSource {
 
         this.localGrid = new Grid<MapMeshTile>(0, 0).init(this.tiles)
         this.globalGrid = grid
+
         options.hillsNormalTexture.wrapS = options.hillsNormalTexture.wrapT = RepeatWrapping
         options.terrainAtlasTexture.wrapS = options.terrainAtlasTexture.wrapT = RepeatWrapping
         options.undiscoveredTexture.wrapS = options.undiscoveredTexture.wrapT = RepeatWrapping
-
-        console.log(options)
 
         this.loaded = Promise.all([
             this.createLandMesh(this.tiles.filter(t => !t.isMountain)),            
             this.createMountainMesh(this.tiles.filter(t => t.isMountain)),
             this.createTrees()
         ]).catch((err) => {
-            console.error(err)
+            console.error("Could not create MapMesh", err)
         })
     }
 
