@@ -14,19 +14,71 @@ import {
     TextureLoader,
     XHRLoader,
     BufferAttribute,
-    Sphere
+    Sphere,
+    RepeatWrapping
 } from "three"
 import { loadFile, qrRange, loadTexture } from './util';
 import Trees from './trees';
 import { qrToWorld } from './coords';
 import Grid from "./Grid";
-
-const textureLoader = new TextureLoader()
+import { LAND_FRAGMENT_SHADER } from './shaders/land.fragment';
+import { LAND_VERTEX_SHADER } from './shaders/land.vertex';
+import { MOUNTAINS_FRAGMENT_SHADER } from './shaders/mountains.fragment';
+import { MOUNTAINS_VERTEX_SHADER } from './shaders/mountains.vertex';
 
 export interface MapMeshOptions {
-    diffuseMap: TextureAtlas;
-    cloudTexture: string;
-    hillsNormalMap: string;
+
+    /**
+     * Texture containing the sub textures referenced in the terrain texture atlas.
+     */
+    terrainAtlasTexture: Texture;
+
+    /**
+     * Texture atlas describing the sub textures for each terrain type.
+     */
+    terrainAtlas: TextureAtlas;
+
+    /**
+     * River tile atlas texture containing parts for each possible river variation.
+     * Use /tools/river-atlas.py to generate.
+     */
+    riverAtlasTexture: Texture;
+
+    /**
+     * Coast tile atlas texture containg parts for each possible coast variation. 
+     * Use /tools/coast-atlas.py to generate.
+     */
+    coastAtlasTexture: Texture;
+
+    /**
+     * The texture used for undiscovered tiles
+     */
+    undiscoveredTexture: Texture; 
+
+    /**
+     * Normal map for hills
+     */
+    hillsNormalTexture: Texture;
+
+    /**
+     * GLSL code of the land fragment shader. For default see /src/shaders/land.fragment.ts.
+     */
+    landFragmentShader?: string;
+
+    /**
+     * GLSL code of the land vertex shader. For default see /src/shaders/land.vertex.ts.
+     */
+    landVertexShader?: string;
+
+    /**
+     * GLSL code of the mountain fragment shader. For default see /src/shaders/mountains.fragment.ts.
+     */
+    mountainsFragmentShader?: string;
+
+    /**
+     * GLSL code of the mountain vertex shader. For default see /src/shaders/mountains.vertex.ts.
+     */
+    mountainsVertexShader?: string;
 }
 
 interface MapMeshTile extends TileData {
@@ -39,27 +91,6 @@ interface MapMeshTile extends TileData {
 }
 
 export default class MapMesh extends Group implements TileDataSource {
-
-    static landShaders = {
-        fragmentShader: loadFile("../../src/shaders/land.fragment.glsl"),
-        vertexShader: loadFile("../../src/shaders/land.vertex.glsl")
-    }
-
-    static waterShaders = {
-        fragmentShader: loadFile("../../src/shaders/water.fragment.glsl"),
-        vertexShader: loadFile("../../src/shaders/water.vertex.glsl")
-    }
-
-    static mountainShaders = {
-        fragmentShader: loadFile("../../src/shaders/mountains.fragment.glsl"),
-        vertexShader: loadFile("../../src/shaders/mountains.vertex.glsl")
-    }
-
-    static coastAtlas = textureLoader.load("../../assets/coast-diffuse.png")
-    static riverAtlas = textureLoader.load("../../assets/river-diffuse.png")
-    static hillsNormal = textureLoader.load("../../assets/hills-normal.png")
-    static mapTexture = textureLoader.load("../../assets/paper.jpg")
-    static textureAtlas: Texture
 
     /**
      * List of tiles displayed in this mesh
@@ -76,14 +107,7 @@ export default class MapMesh extends Group implements TileDataSource {
      */
     private globalGrid: Grid<TileData>
 
-    private coastAtlas: Texture
-    private riverAtlas: Texture
-    private terrainDiffuseMap: Texture
-    private hillsNormalMap: Texture
-    private mapTexture: Texture
-
     private land: Mesh
-    //private water: Mesh
     private mountains: Mesh
     private trees: Trees
 
@@ -94,14 +118,29 @@ export default class MapMesh extends Group implements TileDataSource {
     /**
      * @param _tiles the tiles to actually render in this mesh
      * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
+     * @param options map mesh configuration options
      */
-    constructor(tiles: TileData[], grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
+    constructor(tiles: TileData[], grid: Grid<TileData>, private options: MapMeshOptions) {
         super()
 
-        if (!MapMesh.textureAtlas) {
-            MapMesh.textureAtlas = textureLoader.load("../../assets/" + _textureAtlas.image)
+        // use default shaders if none are provided
+        if (!options.landFragmentShader) {
+            options.landFragmentShader = LAND_FRAGMENT_SHADER
         }
 
+        if (!options.landVertexShader) {
+            options.landVertexShader = LAND_VERTEX_SHADER
+        }
+
+        if (!options.mountainsFragmentShader) {
+            options.mountainsFragmentShader = MOUNTAINS_FRAGMENT_SHADER
+        }
+
+        if (!options.mountainsVertexShader) {
+            options.mountainsVertexShader = MOUNTAINS_VERTEX_SHADER
+        }
+
+        // local, extended copy of tile data
         this.tiles = tiles.map(t => ({
             bufferIndex: -1,
             isMountain: isMountain(t.height),
@@ -110,23 +149,17 @@ export default class MapMesh extends Group implements TileDataSource {
 
         this.localGrid = new Grid<MapMeshTile>(0, 0).init(this.tiles)
         this.globalGrid = grid
-        this.coastAtlas = MapMesh.coastAtlas
-        this.riverAtlas = MapMesh.riverAtlas
-        this.terrainDiffuseMap = MapMesh.textureAtlas
-        this.hillsNormalMap = MapMesh.hillsNormal
-        this.hillsNormalMap.wrapS = this.hillsNormalMap.wrapT = THREE.RepeatWrapping
-        this.mapTexture = MapMesh.mapTexture
-        this.mapTexture.wrapS = this.mapTexture.wrapT = THREE.RepeatWrapping
+        options.hillsNormalTexture.wrapS = options.hillsNormalTexture.wrapT = RepeatWrapping
+        options.terrainAtlasTexture.wrapS = options.terrainAtlasTexture.wrapT = RepeatWrapping
+        options.undiscoveredTexture.wrapS = options.undiscoveredTexture.wrapT = RepeatWrapping
+
+        console.log(options)
 
         this.loaded = Promise.all([
             this.createLandMesh(this.tiles.filter(t => !t.isMountain)),            
-            this.createMountainMesh(this.tiles.filter(t => t.isMountain))
-            //this.createWaterMesh(_tiles.filter(t => isWater(t.height))) 
-        ]).then(() => {   
-            //setTimeout(() => {
+            this.createMountainMesh(this.tiles.filter(t => t.isMountain)),
             this.createTrees()
-            //}, 250)            
-        }).catch((err) => {
+        ]).catch((err) => {
             console.error(err)
         })
     }
@@ -174,98 +207,85 @@ export default class MapMesh extends Group implements TileDataSource {
         attr.setY(index, withClouds)
     }
 
-    private createTrees() {
+    private async createTrees() {
         const trees = this.trees = new Trees(this.tiles, this.globalGrid)
         this.add(trees)
     }
 
-    private createLandMesh(tiles: MapMeshTile[]) {
-        const vertexShader = MapMesh.landShaders.vertexShader
-        const fragmentShader = MapMesh.landShaders.fragmentShader
-        const atlas = this._textureAtlas
-
-        return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
-            const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this._textureAtlas)
-            const material = new THREE.RawShaderMaterial({
-                uniforms: {
-                    sineTime: {value: 0.0},
-                    camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
-                    texture: {type: "t", value: this.terrainDiffuseMap},
-                    textureAtlasMeta: {
-                        type: "4f",
-                        value: new Vector4(atlas.width, atlas.height, atlas.cellSize, atlas.cellSpacing)
-                    },
-                    hillsNormal: {
-                        type: "t",
-                        value: this.hillsNormalMap
-                    },
-                    coastAtlas: {
-                        type: "t",
-                        value: this.coastAtlas
-                    },
-                    riverAtlas: {
-                        type: "t",
-                        value: this.riverAtlas
-                    },
-                    mapTexture: {
-                        type: "t",
-                        value: this.mapTexture
-                    }
+    private async createLandMesh(tiles: MapMeshTile[]) {
+        const atlas = this.options.terrainAtlas
+        const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this.options.terrainAtlas)
+        const material = new THREE.RawShaderMaterial({
+            uniforms: {
+                sineTime: {value: 0.0},
+                camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
+                texture: {type: "t", value: this.options.terrainAtlasTexture},
+                textureAtlasMeta: {
+                    type: "4f",
+                    value: new Vector4(atlas.width, atlas.height, atlas.cellSize, atlas.cellSpacing)
                 },
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader,
-                side: THREE.FrontSide,
-                wireframe: false,
-                transparent: false
-            })
-
-            this.land = new Mesh(geometry, material)
-            this.land.frustumCulled = false
-
-            this.add(this.land)
+                hillsNormal: {
+                    type: "t",
+                    value: this.options.hillsNormalTexture
+                },
+                coastAtlas: {
+                    type: "t",
+                    value: this.options.coastAtlasTexture
+                },
+                riverAtlas: {
+                    type: "t",
+                    value: this.options.riverAtlasTexture
+                },
+                mapTexture: {
+                    type: "t",
+                    value: this.options.undiscoveredTexture
+                }
+            },
+            vertexShader: this.options.landVertexShader,
+            fragmentShader: this.options.landFragmentShader,
+            side: THREE.FrontSide,
+            wireframe: false,
+            transparent: false
         })
+
+        this.land = new Mesh(geometry, material)
+        this.land.frustumCulled = false
+
+        this.add(this.land)
     }
 
-    private createWaterMesh(tiles: TileData[]) {
-    }
-
-    private createMountainMesh(tiles: MapMeshTile[]) {
-        const vertexShader = MapMesh.mountainShaders.vertexShader
-        const fragmentShader = MapMesh.mountainShaders.fragmentShader
-        const atlas = this._textureAtlas
-
-        return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
-            const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this._textureAtlas)
-            const material = new THREE.RawShaderMaterial({
-                uniforms: {
-                    sineTime: {value: 0.0},
-                    camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
-                    texture: {type: "t", value: this.terrainDiffuseMap},
-                    textureAtlasMeta: {
-                        type: "4f",
-                        value: new Vector4(atlas.width, atlas.height, atlas.cellSize, atlas.cellSpacing)
-                    },
-                    hillsNormal: {
-                        type: "t",
-                        value: this.hillsNormalMap
-                    },
-                    mapTexture: {
-                        type: "t",
-                        value: this.mapTexture
-                    }
+    private async createMountainMesh(tiles: MapMeshTile[]) {
+        const atlas = this.options.terrainAtlas
+        const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this.options.terrainAtlas)
+        const material = new THREE.RawShaderMaterial({
+            uniforms: {
+                sineTime: {value: 0.0},
+                camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
+                texture: {type: "t", value: this.options.terrainAtlasTexture},
+                textureAtlasMeta: {
+                    type: "4f",
+                    value: new Vector4(atlas.width, atlas.height, atlas.cellSize, atlas.cellSpacing)
                 },
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader,
-                side: THREE.FrontSide,
-                wireframe: false,
-                transparent: false
-            })
-
-            this.mountains = new Mesh(geometry, material)
-            this.mountains.frustumCulled = false            
-
-            this.add(this.mountains)
+                hillsNormal: {
+                    type: "t",
+                    value: this.options.hillsNormalTexture
+                },
+                mapTexture: {
+                    type: "t",
+                    value: this.options.undiscoveredTexture
+                }
+            },
+            vertexShader: this.options.mountainsVertexShader,
+            fragmentShader: this.options.mountainsFragmentShader,
+            side: THREE.FrontSide,
+            wireframe: false,
+            transparent: false
         })
+
+        this.mountains = new Mesh(geometry, material)
+        this.mountains.frustumCulled = false            
+
+        this.add(this.mountains)
     }
 }
 

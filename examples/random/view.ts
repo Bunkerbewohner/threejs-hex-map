@@ -1,11 +1,17 @@
 import MapView from '../../src/MapView';
-import { loadFile, loadJSON } from '../../src/util';
+import { loadFile, loadJSON, loadTexture } from '../../src/util';
 import { TextureAtlas, isMountain, isWater, TileData } from '../../src/interfaces';
 import {generateRandomMap} from "../../src/map-generator"
 import { varying } from './util';
+import { TextureLoader } from 'three'
+import { MapMeshOptions } from '../../src/MapMesh';
+
+function asset(relativePath: string): string {
+    return "../../assets/" + relativePath
+}
 
 async function loadTextureAtlas() {
-    return loadJSON<TextureAtlas>("../../assets/land-atlas.json")
+    return loadJSON<TextureAtlas>(asset("land-atlas.json"))
 }
 
 async function generateMap(mapSize: number) {        
@@ -17,10 +23,21 @@ async function generateMap(mapSize: number) {
 }
 
 export async function initView(mapSize: number, initialZoom: number): Promise<MapView> {
+    const textureLoader = new TextureLoader()
+    const loadTexture = (name: string) => textureLoader.load(asset(name))
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
+    const options: MapMeshOptions = {
+        terrainAtlas: atlas,
+        terrainAtlasTexture: loadTexture("terrain-diffuse.png"),
+        hillsNormalTexture: loadTexture("hills-normal.png"),
+        coastAtlasTexture: loadTexture("coast-diffuse.png"),
+        riverAtlasTexture: loadTexture("river-diffuse.png"),
+        undiscoveredTexture: loadTexture("paper.jpg")
+    }
+
     const mapView = new MapView()
     mapView.setZoom(initialZoom)
-    mapView.load(map, atlas)
+    mapView.load(map, options)
 
     mapView.onLoaded = () => {
         setFogAround(mapView, mapView.selectedTile, 6, true, false)

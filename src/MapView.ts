@@ -11,6 +11,7 @@ import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
 import { qrToWorld, axialToCube, roundToHex, cubeToAxial } from './coords';
 import ChunkedLazyMapMesh from "./ChunkedLazyMapMesh";
+import { MapMeshOptions } from './MapMesh';
 
 export default class MapView implements MapViewControls, TileDataSource {
     private static DEFAULT_ZOOM = 25
@@ -22,7 +23,6 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _lastTimestamp = Date.now()
     private _zoom: number = 25
 
-    private _textureAtlas: TextureAtlas
     private _mapMesh: Object3D & TileDataSource
     private _chunkedMesh: ChunkedLazyMapMesh
     private _tileGrid: Grid<TileData> = new Grid<TileData>(0, 0)
@@ -100,20 +100,19 @@ export default class MapView implements MapViewControls, TileDataSource {
         this._controller.init(this, canvas)
     }
 
-    load(tiles: Grid<TileData>, textureAtlas: TextureAtlas) {
+    load(tiles: Grid<TileData>, options: MapMeshOptions) {
         this._tileGrid = tiles
-        this._textureAtlas = textureAtlas
         this._selectedTile = this._tileGrid.get(0, 0)        
 
         if ((tiles.width * tiles.height) < Math.pow(512, 2)) {
-            const mesh = this._mapMesh = new MapMesh(tiles.toArray(), tiles, textureAtlas)
+            const mesh = this._mapMesh = new MapMesh(tiles.toArray(), tiles, options)
             this._scene.add(this._mapMesh)
             mesh.loaded.then(() => {
                 if (this._onLoaded) this._onLoaded()
             })
             console.info("using single MapMesh for " + (tiles.width * tiles.height) + " tiles")
         } else {
-            const mesh = this._mapMesh = this._chunkedMesh = new ChunkedLazyMapMesh(tiles, textureAtlas)
+            const mesh = this._mapMesh = this._chunkedMesh = new ChunkedLazyMapMesh(tiles, options)
             this._scene.add(this._mapMesh)
             mesh.loaded.then(() => {
                 if (this._onLoaded) this._onLoaded()

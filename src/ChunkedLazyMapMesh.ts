@@ -7,6 +7,7 @@ import { qrToWorld, screenToWorld, qrToWorldX, qrToWorldY } from './coords';
 import MapMesh from "./MapMesh";
 import {BoundingBox} from "./BoundingBox";
 import { range } from './util';
+import { MapMeshOptions } from './MapMesh';
 
 
 export default class ChunkedLazyMapMesh extends Object3D implements TileDataSource {
@@ -19,7 +20,7 @@ export default class ChunkedLazyMapMesh extends Object3D implements TileDataSour
         return this.thunks.length
     }
 
-    constructor(private tileGrid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
+    constructor(private tileGrid: Grid<TileData>, private options: MapMeshOptions) {
         super()
 
         // we're gonna handle frustrum culling ourselves
@@ -44,7 +45,7 @@ export default class ChunkedLazyMapMesh extends Object3D implements TileDataSour
         // create a thunk for each chunk
         chunks.forEach((row, x) => {
             row.forEach((tiles, y) => {
-                const thunk = new MapThunk(tiles, tileGrid, _textureAtlas)
+                const thunk = new MapThunk(tiles, tileGrid, options)
                 this.thunks.push(thunk)
                 promises.push(thunk.loaded)
                 thunk.load() // preload
@@ -115,7 +116,7 @@ class MapThunk extends Object3D implements TileDataSource {
         return new Vector2(sphere.center.x, sphere.center.y)
     }
 
-    constructor(private tiles: TileData[], private grid: Grid<TileData>, private _textureAtlas: TextureAtlas) {
+    constructor(private tiles: TileData[], private grid: Grid<TileData>, private options: MapMeshOptions) {
         super()
         this.frustumCulled = false
     }
@@ -131,7 +132,7 @@ class MapThunk extends Object3D implements TileDataSource {
     load() {
         if (!this._loaded) {
             this._loaded = true
-            const mesh = this.mesh = new MapMesh(this.tiles, this.grid, this._textureAtlas)
+            const mesh = this.mesh = new MapMesh(this.tiles, this.grid, this.options)
             mesh.frustumCulled = false
 
             this.add(mesh)

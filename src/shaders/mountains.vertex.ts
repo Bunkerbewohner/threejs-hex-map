@@ -1,3 +1,4 @@
+export const MOUNTAINS_VERTEX_SHADER = `
 //
 // Vertex Shader for Land
 //
@@ -24,18 +25,15 @@ attribute float border; // border = distance from hexagon center (0.0 = center, 
 // style.y = "decimal bitmask" (fog=1xx, hills=x1x, clouds=xx1)
 // style.z = coast texture index (0 - 64)
 // style.w = river texture index (0 - 64)
-attribute vec4 style;
+attribute vec2 style;
 
 varying vec3 vPosition;
 varying vec2 vTexCoord;
-varying vec2 vUV;
 varying float vExtra;
-varying float vFogOfWar; // 1.0 = shadow, 0.0 = visible
-varying float vHidden; // 1.0 = hidden, 0.0 = visible
+varying float vFogOfWar; // 1.0 = shadow, 0.0 = no shadow
 varying float vHill;
+varying float vHidden; // 1.0 = hidden, 0.0 = visible
 varying vec2 vOffset;
-varying vec2 vCoastTextureCell;
-varying vec2 vRiverTextureCell;
 
 vec2 cellIndexToUV(float idx) {
     float atlasWidth = textureAtlasMeta.x;
@@ -46,33 +44,24 @@ vec2 cellIndexToUV(float idx) {
     float x = mod(idx, cols);
     float y = floor(idx / cols);
 
-    //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));
-    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));
+    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));
 }
 
 void main() {
     vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);
 
-    // its a hill if style's 2nd decimal is 1, i.e. any number matching x1x, e.g. 10, 11, 110
-    float hill = floor(mod(style.y / 10.0, 10.0)); // 0 = no, 1 = yes
-
-    if (hill > 0.0 && border < 0.75) { // hill
-        //pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;
-        vHill = 1.0;
-    } else {
-        vHill = 0.0;
+    if (border < 0.95 && style.y < 100.0) {
+        pos.z = 0.2 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.5;
     }
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     vPosition = pos;
     vOffset = offset;
 
-    vUV = uv;
     vTexCoord = cellIndexToUV(style.x);
-    vCoastTextureCell = vec2(mod(style.z, 8.0), floor(style.z / 8.0));
-    vRiverTextureCell = vec2(mod(style.w, 8.0), floor(style.w / 8.0));
 
     vExtra = border;
     vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
     vHidden = style.y >= 100.0 ? 1.0 : 0.0;
 }
+`

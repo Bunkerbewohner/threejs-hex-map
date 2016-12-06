@@ -1,3 +1,4 @@
+import { Texture } from 'three';
 /**
  * Height between -1.0 and 1.0:
  * [-1.00,-0.25) == deep water
