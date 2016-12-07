@@ -1,6 +1,6 @@
 # threejs-hex-map
 
-This is a simple implementation of a 3D hexagonal terrain map.
+A simple 3D hexagonal terrain map based on three.js.
  
 ![Screenshot](examples/random/screenshot.jpg)
 
