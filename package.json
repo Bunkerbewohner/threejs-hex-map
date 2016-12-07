@@ -1,7 +1,7 @@
 {
   "name": "threejs-hex-map",
   "version": "0.1.0",
-  "description": "A WebGL hexagon map renderer based on THREE.js",
+  "description": "A simple 3D hexagonal terrain map based on three.js.",
   "main": "lib/src/index.js",
   "types": "lib/src/index",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/bunkerbewohner/hex-map.git"
+    "url": "git+ssh://git@github.com:Bunkerbewohner/threejs-hex-map.git"
   },
   "keywords": [
     "webgl",
@@ -24,7 +24,7 @@
   ],
   "author": "Mathias Kahl <mathias.kahl@gmail.com>",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/bunkerbewohner/hex-map#readme",
+  "homepage": "https://github.com/Bunkerbewohner/threejs-hex-map",
   "dependencies": {
     "@types/three": "0.0.24",
     "three": "^0.79.0"
