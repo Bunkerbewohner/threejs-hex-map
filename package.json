@@ -1,6 +1,6 @@
 {
   "name": "threejs-hex-map",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple 3D hexagonal terrain map based on three.js.",
   "main": "lib/src/index.js",
   "types": "lib/src/index",
@@ -25,7 +25,7 @@
   "author": "Mathias Kahl <mathias.kahl@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/Bunkerbewohner/threejs-hex-map",
-  "dependencies": {    
+  "dependencies": {
     "three": "^0.79.0"
   },
   "devDependencies": {
