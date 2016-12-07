@@ -1,11 +1,11 @@
 {
-  "name": "hex-map",
+  "name": "threejs-hex-map",
   "version": "0.1.0",
   "description": "A WebGL hexagon map renderer based on THREE.js",
   "main": "lib/src/index.js",
   "types": "lib/src/index",
   "scripts": {
-    "start": "node index.js",
+    "start": "node server.js",
     "install": "npm run build",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
