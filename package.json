@@ -25,11 +25,11 @@
   "author": "Mathias Kahl <mathias.kahl@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/Bunkerbewohner/threejs-hex-map",
-  "dependencies": {
-    "@types/three": "0.0.24",
+  "dependencies": {    
     "three": "^0.79.0"
   },
   "devDependencies": {
+    "@types/three": "0.0.24",
     "express": "^4.14.0",
     "requirejs": "^2.2.0",
     "typescript": "^2.1.4"
