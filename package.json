@@ -2,8 +2,8 @@
   "name": "hex-map",
   "version": "0.1.0",
   "description": "A WebGL hexagon map renderer based on THREE.js",
-  "main": "lib/index.js",
-  "types": "lib/index",
+  "main": "lib/src/index.js",
+  "types": "lib/src/index",
   "scripts": {
     "start": "node index.js",
     "install": "npm run build",

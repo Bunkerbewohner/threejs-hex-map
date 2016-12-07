@@ -120,7 +120,7 @@ export default class MapMesh extends Group implements TileDataSource {
      * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
      * @param options map mesh configuration options
      */
-    constructor(tiles: TileData[], grid: Grid<TileData>, private options: MapMeshOptions) {
+    constructor(tiles: TileData[], private options: MapMeshOptions, globalGrid?: Grid<TileData>) {
         super()
 
         // use default shaders if none are provided
@@ -148,7 +148,7 @@ export default class MapMesh extends Group implements TileDataSource {
         }))
 
         this.localGrid = new Grid<MapMeshTile>(0, 0).init(this.tiles)
-        this.globalGrid = grid
+        this.globalGrid = globalGrid || this.localGrid
 
         options.hillsNormalTexture.wrapS = options.hillsNormalTexture.wrapT = RepeatWrapping
         options.terrainAtlasTexture.wrapS = options.terrainAtlasTexture.wrapT = RepeatWrapping

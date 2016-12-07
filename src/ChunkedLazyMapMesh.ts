@@ -132,7 +132,7 @@ class MapThunk extends Object3D implements TileDataSource {
     load() {
         if (!this._loaded) {
             this._loaded = true
-            const mesh = this.mesh = new MapMesh(this.tiles, this.grid, this.options)
+            const mesh = this.mesh = new MapMesh(this.tiles, this.options, this.grid)
             mesh.frustumCulled = false
 
             this.add(mesh)
