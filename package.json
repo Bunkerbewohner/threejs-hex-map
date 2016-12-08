@@ -1,6 +1,6 @@
 {
   "name": "threejs-hex-map",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A simple 3D hexagonal terrain map based on three.js.",
   "main": "lib/src/index.js",
   "types": "lib/src/index",
