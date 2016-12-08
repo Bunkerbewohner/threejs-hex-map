@@ -7,6 +7,6 @@ module.exports = {
         libraryTarget: "amd"
     },
     externals: {
-        "three": "THREE"
+        "three": "three"
     }
 }
