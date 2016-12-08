@@ -310,6 +310,9 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
 
     var styles = tiles.map(function (tile, index) {
         const cell = textureAtlas.textures[tile.terrain]
+        if (!cell) {
+            throw new Error(`Terrain '${tile.terrain}' not in texture atlas\r\n` + JSON.stringify(textureAtlas))
+        }
 
         const cellIndex = cell.cellY * numColumns + cell.cellX
         const shadow = tile.fog             ? 1 : 0
