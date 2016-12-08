@@ -22,16 +22,17 @@ export default class Trees extends THREE.Object3D {
     private tiles: TreeTile[]
     private localGrid: Grid<TreeTile>
 
-    static texture: Texture = textureLoader.load("../../assets/tree.png")
+    private texture: Texture
 
     /**
      *
      * @param tiles tiles with trees to be rendered
      * @param _grid grid of all tiles
      */
-    constructor(tiles: TileData[], private _grid: Grid<TileData>) {
+    constructor(tiles: TileData[], private _grid: Grid<TileData>, texture: Texture) {
         super()
 
+        this.texture = texture
         this.tiles = tiles.filter(t => t.trees).map(t => ({bufferIndex: -1, ...t}))
         this.localGrid = new Grid<TreeTile>(0, 0).init(this.tiles)
 
@@ -63,7 +64,7 @@ export default class Trees extends THREE.Object3D {
     }
 
     buildMaterial(): THREE.PointsMaterial {
-        var texture = Trees.texture
+        var texture = this.texture
         texture.minFilter = THREE.LinearFilter
 
         var material = new THREE.PointsMaterial({

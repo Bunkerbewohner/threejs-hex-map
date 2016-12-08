@@ -61,6 +61,11 @@ export interface MapMeshOptions {
     hillsNormalTexture: Texture;
 
     /**
+     * Diffuse map for tree sprites
+     */
+    treeTexture: Texture;
+
+    /**
      * GLSL code of the land fragment shader. For default see /src/shaders/land.fragment.ts.
      */
     landFragmentShader?: string;
@@ -207,7 +212,7 @@ export default class MapMesh extends Group implements TileDataSource {
     }
 
     private async createTrees() {
-        const trees = this.trees = new Trees(this.tiles, this.globalGrid)
+        const trees = this.trees = new Trees(this.tiles, this.globalGrid, this.options.treeTexture)
         this.add(trees)
     }
 
