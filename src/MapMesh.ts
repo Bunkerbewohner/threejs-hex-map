@@ -66,6 +66,16 @@ export interface MapMeshOptions {
     treeTexture: Texture;
 
     /**
+     * Default 1.0
+     */
+    treeSize?: number;
+
+    /**
+     * Overall scale of the geometry. Default 1.0
+     */
+    scale?: number;
+
+    /**
      * GLSL code of the land fragment shader. For default see /src/shaders/land.fragment.ts.
      */
     landFragmentShader?: string;
@@ -212,13 +222,13 @@ export default class MapMesh extends Group implements TileDataSource {
     }
 
     private async createTrees() {
-        const trees = this.trees = new Trees(this.tiles, this.globalGrid, this.options.treeTexture)
+        const trees = this.trees = new Trees(this.tiles, this.globalGrid, this.options)
         this.add(trees)
     }
 
     private async createLandMesh(tiles: MapMeshTile[]) {
         const atlas = this.options.terrainAtlas
-        const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this.options.terrainAtlas)
+        const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this.options)
         const material = new THREE.RawShaderMaterial({
             uniforms: {
                 sineTime: {value: 0.0},
@@ -260,7 +270,7 @@ export default class MapMesh extends Group implements TileDataSource {
 
     private async createMountainMesh(tiles: MapMeshTile[]) {
         const atlas = this.options.terrainAtlas
-        const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this.options.terrainAtlas)
+        const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this.options)
         const material = new THREE.RawShaderMaterial({
             uniforms: {
                 sineTime: {value: 0.0},
@@ -293,9 +303,11 @@ export default class MapMesh extends Group implements TileDataSource {
     }
 }
 
-function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, numSubdivisions: number, textureAtlas: TextureAtlas) {
-    const hexagon = createHexagon(1.0, numSubdivisions)
+function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, numSubdivisions: number, options: MapMeshOptions) {
+    const scale = options.scale || 1.0
+    const hexagon = createHexagon(scale, numSubdivisions)
     const geometry = new InstancedBufferGeometry()
+    const textureAtlas = options.terrainAtlas
 
     geometry.maxInstancedCount = tiles.length
     geometry.addAttribute("position", (hexagon.attributes as any).position)
@@ -303,7 +315,7 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
     geometry.addAttribute("border", (hexagon.attributes as any).border)
 
     // positions for each hexagon tile
-    var tilePositions: Vector2[] = tiles.map((tile) => new Vector2(Math.sqrt(3) * (tile.q + tile.r / 2), 3 / 2 * tile.r))
+    var tilePositions: Vector2[] = tiles.map((tile) => qrToWorld(tile.q, tile.r, scale))
     var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1)
     posAttr.copyVector2sArray(tilePositions)
     geometry.addAttribute("offset", posAttr)

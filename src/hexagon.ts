@@ -92,7 +92,7 @@ export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
 /**
  * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
  */
-export function randomPointInHexagonEx(modifier: (cornerIndex: number)=>number): THREE.Vector3 {    
+export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number)=>number): THREE.Vector3 {    
     // the hexagon consists of 6 triangles, construct one of them randomly
     var startCornerIndex = Math.floor(Math.random() * 6)
     const A = hexagonCorners1[startCornerIndex].clone()
@@ -107,7 +107,7 @@ export function randomPointInHexagonEx(modifier: (cornerIndex: number)=>number):
         .add(B.multiplyScalar(rSqrt*(1 - sSqrt)))
         .add(C.multiplyScalar(s*rSqrt))
 
-    return point.multiplyScalar(modifier(startCornerIndex))
+    return point.multiplyScalar(modifier(startCornerIndex) * hexRadius)
 }
 
 function computeHexagonCorner(radius: number, angle: number): THREE.Vector3 {

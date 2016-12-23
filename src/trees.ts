@@ -4,6 +4,7 @@ import {randomPointInHexagon, randomPointInHexagonEx, NE, E, SE, SW, W, NW} from
 import {qrToWorld, qrToWorldX, qrToWorldY} from './coords';
 import MapMesh from './MapMesh';
 import Grid from "./Grid";
+import { MapMeshOptions } from './MapMesh';
 import Texture = THREE.Texture;
 import TextureLoader = THREE.TextureLoader;
 
@@ -23,16 +24,18 @@ export default class Trees extends THREE.Object3D {
     private localGrid: Grid<TreeTile>
 
     private texture: Texture
+    private _scale: number
 
     /**
      *
      * @param tiles tiles with trees to be rendered
      * @param _grid grid of all tiles
      */
-    constructor(tiles: TileData[], private _grid: Grid<TileData>, texture: Texture) {
+    constructor(tiles: TileData[], private _grid: Grid<TileData>, private options: MapMeshOptions) {
         super()
 
-        this.texture = texture
+        this._scale = options.scale || 1.0
+        this.texture = options.treeTexture
         this.tiles = tiles.filter(t => t.trees).map(t => ({bufferIndex: -1, ...t}))
         this.localGrid = new Grid<TreeTile>(0, 0).init(this.tiles)
 
@@ -73,7 +76,7 @@ export default class Trees extends THREE.Object3D {
             vertexColors: THREE.VertexColors,
             opacity: 1,
             alphaTest: 0.20,
-            size: this.treeSize
+            size: this.treeSize * this._scale * (this.options.treeSize || 1.0)
         })
 
         return material;
@@ -96,8 +99,8 @@ export default class Trees extends THREE.Object3D {
         // iterate from back to front to get automatic sorting by z-depth
         for (var i = tiles.length - 1; i >= 0; i--) {
             const tile = tiles[i]
-            const x = qrToWorldX(tile.q, tile.r)
-            const y = qrToWorldY(tile.q, tile.r)
+            const x = qrToWorldX(tile.q, tile.r, this._scale)
+            const y = qrToWorldY(tile.q, tile.r, this._scale)
             const z = tile.clouds ? 9999 : 0.1
             const numTrees = treesPerWood
             const baseColor = this.getTreeColor(tile)
@@ -143,7 +146,7 @@ export default class Trees extends THREE.Object3D {
     }
 
     private randomPointOnTile(water: WaterAdjacency): Vector3 {
-        return randomPointInHexagonEx(corner => {
+        return randomPointInHexagonEx(this._scale, corner => {
             corner = (2 + (6 - corner)) % 6
             if (corner == 0 && water.NE) return 0.5
             if (corner == 1 && water.E) return 0.5

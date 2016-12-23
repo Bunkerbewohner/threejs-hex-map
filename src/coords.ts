@@ -3,16 +3,16 @@ import { QR } from './interfaces';
 
 const Z_PLANE = new Plane(new Vector3(0, 0, 1), 0)
 
-export function qrToWorld(q: number, r: number) {
-    return new Vector2(Math.sqrt(3) * (q + r / 2), 3 / 2 * r)
+export function qrToWorld(q: number, r: number, scale = 1.0) {
+    return new Vector2(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale)
 }
 
-export function qrToWorldX(q: number, r: number) {
-    return Math.sqrt(3) * (q + r / 2)
+export function qrToWorldX(q: number, r: number, scale = 1.0) {
+    return Math.sqrt(3) * (q + r / 2) * scale
 }
 
-export function qrToWorldY(q: number, r: number) {
-    return 3 / 2 * r
+export function qrToWorldY(q: number, r: number, scale = 1.0) {
+    return (3 / 2) * r * scale
 }
 
 export function qrDistance(a: QR, b: QR) {
