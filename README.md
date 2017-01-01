@@ -1,5 +1,7 @@
 # threejs-hex-map
 
+[![Build Status](https://travis-ci.org/Bunkerbewohner/threejs-hex-map.svg?branch=master)](https://travis-ci.org/Bunkerbewohner/threejs-hex-map)
+
 A simple 3D hexagonal terrain map based on three.js.
  
 ![Screenshot](examples/random/screenshot.jpg)
