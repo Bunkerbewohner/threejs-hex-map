@@ -315,7 +315,7 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
     geometry.addAttribute("border", (hexagon.attributes as any).border)
 
     // positions for each hexagon tile
-    var tilePositions: Vector2[] = tiles.map((tile) => qrToWorld(tile.q, tile.r, scale))
+    var tilePositions: Vector3[] = tiles.map((tile) => qrToWorld(tile.q, tile.r, scale))
     var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1)
     posAttr.copyVector2sArray(tilePositions)
     geometry.addAttribute("offset", posAttr)

@@ -35,7 +35,6 @@ export default class Controller implements MapViewController {
         canvas.addEventListener("touchend", (e) => this.onMouseUp(e.touches[0] || e.changedTouches[0] as any), false)
         
         setInterval(() => this.showDebugInfo(), 100)
-        this.controls.focus(0, 0)
     }
 
     onKeyDown = (e: KeyboardEvent) => {

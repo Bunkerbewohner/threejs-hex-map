@@ -38,6 +38,10 @@ export default class MapView implements MapViewControls, TileDataSource {
         return this._zoom
     }
 
+    getZoom(): number {
+        return this._zoom
+    }
+
     set zoom(value: number) {
         this.setZoom(value)
     }
@@ -51,11 +55,22 @@ export default class MapView implements MapViewControls, TileDataSource {
     }
 
     /**
-     * Sets up the camera with the given Z position (height) and so that QR(0, 0) will be roughly in the middle of the screen.
+     * Sets up the camera with the given Z position (height) and so that the view center (the point the camera is pointed at) doesn't change.
      */
     setZoom(z: number) {
+        // position the camera is currently centered at
+        const lookAt = this.getViewCenter()
+
+        // move camera along the Z axis to adjust the view distance
         this._zoom = z
         this._camera.position.z = z
+        this._camera.updateMatrixWorld(false)
+        
+        if (lookAt != null) {
+            // reposition camera so that the view center stays the same
+            this._camera.position.copy(this.getCameraFocusPositionWorld(lookAt))
+        }
+
         return this
     }
 
@@ -92,8 +107,9 @@ export default class MapView implements MapViewControls, TileDataSource {
         window.addEventListener('resize', (e) => this.onWindowResize(e), false);
                 
         // setup camera
-        camera.rotation.x = Math.PI / 4.5        
+        camera.rotation.x = Math.PI / 4.5
         this.setZoom(MapView.DEFAULT_ZOOM)
+        this.focus(0, 0)
 
         // tile selector
         this._tileSelector.position.setZ(0.1)
@@ -177,14 +193,15 @@ export default class MapView implements MapViewControls, TileDataSource {
     }
 
     getCameraFocusPosition(pos: QR): Vector3 {
+        return this.getCameraFocusPositionWorld(qrToWorld(pos.q, pos.r))
+    }
+
+    getCameraFocusPositionWorld(pos: Vector3): Vector3 {
         const currentPos = this._camera.position.clone()
         const viewCenter = this.getViewCenter()
         const viewOffset = currentPos.sub(viewCenter)
 
-        const destXY = qrToWorld(pos.q, pos.r)
-        const worldPos = new Vector3(destXY.x, destXY.y, 0)
-
-        return worldPos.add(viewOffset)
+        return pos.add(viewOffset)
     }
 
     focus(q: number, r: number) {

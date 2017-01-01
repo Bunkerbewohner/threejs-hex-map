@@ -4,6 +4,8 @@ export declare const KEY_CODES: {
     RIGHT_ARROW: number;
     DOWN_ARROW: number;
     SHIFT: number;
+    Q: number;
+    E: number;
 };
 export interface KeyActions {
     [keyCode: number]: KeyAction;

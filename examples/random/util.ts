@@ -5,7 +5,9 @@ export const KEY_CODES = {
     UP_ARROW: 38,
     RIGHT_ARROW: 39,
     DOWN_ARROW: 40,
-    SHIFT: 16
+    SHIFT: 16,
+    Q: 81,
+    E: 69
 }
 
 export interface KeyActions {

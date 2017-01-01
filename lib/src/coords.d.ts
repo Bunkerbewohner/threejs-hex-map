@@ -1,7 +1,7 @@
 /// <reference types="three" />
-import { Vector2, Vector3, Camera } from "three";
+import { Vector3, Camera } from "three";
 import { QR } from './interfaces';
-export declare function qrToWorld(q: number, r: number, scale?: number): Vector2;
+export declare function qrToWorld(q: number, r: number, scale?: number): Vector3;
 export declare function qrToWorldX(q: number, r: number, scale?: number): number;
 export declare function qrToWorldY(q: number, r: number, scale?: number): number;
 export declare function qrDistance(a: QR, b: QR): number;

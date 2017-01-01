@@ -3,8 +3,8 @@ import { QR } from './interfaces';
 
 const Z_PLANE = new Plane(new Vector3(0, 0, 1), 0)
 
-export function qrToWorld(q: number, r: number, scale = 1.0) {
-    return new Vector2(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale)
+export function qrToWorld(q: number, r: number, scale = 1.0): Vector3 {
+    return new Vector3(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale, 0)
 }
 
 export function qrToWorldX(q: number, r: number, scale = 1.0) {

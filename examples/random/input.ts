@@ -18,6 +18,12 @@ export function initInput(mapView: MapView) {
         [KEY_CODES.DOWN_ARROW]: {
             down: () => mapView.scrollDir.y = -1,
             up: () => mapView.scrollDir.y = 0
+        },
+        [KEY_CODES.E]: {
+            down: () => mapView.setZoom(mapView.getZoom() * 0.9)
+        },
+        [KEY_CODES.Q]: {
+            down: () => mapView.setZoom(mapView.getZoom() * 1.1)
         }
     }
 

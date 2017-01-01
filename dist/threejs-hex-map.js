@@ -374,7 +374,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	    var Z_PLANE = new three_1.Plane(new three_1.Vector3(0, 0, 1), 0);
 	    function qrToWorld(q, r, scale) {
 	        if (scale === void 0) { scale = 1.0; }
-	        return new three_1.Vector2(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale);
+	        return new three_1.Vector3(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale, 0);
 	    }
 	    exports.qrToWorld = qrToWorld;
 	    function qrToWorldX(q, r, scale) {

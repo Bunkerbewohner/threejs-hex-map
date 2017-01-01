@@ -40,6 +40,10 @@ export interface MapViewControls {
      * Center the view on the given QR coordinates.
      */
     focus(q: number, r: number): void;
+
+    getZoom(): number;
+
+    setZoom(z: number): void;
 }
 
 export default MapViewController

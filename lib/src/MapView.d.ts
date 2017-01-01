@@ -21,10 +21,11 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _onTileSelected;
     private _onLoaded;
     zoom: number;
+    getZoom(): number;
     readonly selectedTile: TileData;
     getTileGrid(): Grid<TileData>;
     /**
-     * Sets up the camera with the given Z position (height) and so that QR(0, 0) will be roughly in the middle of the screen.
+     * Sets up the camera with the given Z position (height) and so that the view center (the point the camera is pointed at) doesn't change.
      */
     setZoom(z: number): this;
     readonly scrollDir: Vector3;
@@ -44,6 +45,7 @@ export default class MapView implements MapViewControls, TileDataSource {
      */
     getViewCenter(): Vector3;
     getCameraFocusPosition(pos: QR): Vector3;
+    getCameraFocusPositionWorld(pos: Vector3): Vector3;
     focus(q: number, r: number): void;
     selectTile(tile: TileData): void;
     pickTile(worldPos: THREE.Vector3): TileData | null;
