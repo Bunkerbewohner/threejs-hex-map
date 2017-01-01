@@ -6,8 +6,7 @@
   "types": "lib/src/index",
   "scripts": {
     "start": "node server.js",
-    "install": "npm run build",
-    "build": "./node_modules/.bin/tsc && ./node_modules/.bin/webpack",
+    "build": "tsc && webpack",
     "test": "echo \"No tests yet.\" && exit 0"
   },
   "repository": {

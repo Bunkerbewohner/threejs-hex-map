@@ -1,9 +1,8 @@
 import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
 import { screenToWorld, pickingRay, qrToWorld } from './coords';
-import { TileData } from './interfaces';
+import { TileData, QR } from './interfaces';
 import { Vector3, Camera, Vector2 } from 'three';
-import { QR } from '../lib/src/interfaces';
 
 export default class Controller implements MapViewController {
     private controls: MapViewControls
