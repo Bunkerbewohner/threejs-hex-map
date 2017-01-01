@@ -1,8 +1,9 @@
 import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
-import { screenToWorld, pickingRay } from './coords';
+import { screenToWorld, pickingRay, qrToWorld } from './coords';
 import { TileData } from './interfaces';
 import { Vector3, Camera, Vector2 } from 'three';
+import { QR } from '../lib/src/interfaces';
 
 export default class Controller implements MapViewController {
     private controls: MapViewControls
@@ -10,6 +11,8 @@ export default class Controller implements MapViewController {
     private mouseDownPos: Vector3
     private dragStartCameraPos: Vector3
     private lastDrag: Vector3 = new Vector3(0, 0, 0)
+    private debugText: HTMLDivElement = document.getElementById("debug") as HTMLDivElement
+    private selectedQR: QR = {q: 0, r: 0}
 
     init(controls: MapViewControls, canvas: HTMLCanvasElement) {
         this.controls = controls        
@@ -29,6 +32,8 @@ export default class Controller implements MapViewController {
             e.preventDefault()
         }, false)
         canvas.addEventListener("touchend", (e) => this.onMouseUp(e.touches[0] || e.changedTouches[0] as any), false)
+        
+        setInterval(() => this.showDebugInfo(), 100)
     }
 
     onMouseDown = (e: MouseEvent) => {
@@ -74,6 +79,8 @@ export default class Controller implements MapViewController {
             const tile = this.controls.pickTile(mousePos)
             if (tile) {
                 this.controls.selectTile(tile)
+                this.selectedQR = tile
+                this.showDebugInfo()
             }        
         }
 
@@ -84,5 +91,14 @@ export default class Controller implements MapViewController {
     onMouseOut = (e: MouseEvent) => {
         this.mouseDownPos = null // end drag
         this.controls.setScrollDir(0, 0)
+    }
+
+    showDebugInfo() {
+        const tileQR = this.selectedQR
+        const tileXYZ = qrToWorld(tileQR.q, tileQR.r) // world space
+        const camPos = this.controls.getCamera().position
+
+        this.debugText.innerHTML = `Selected Tile: QR(${tileQR.q}, ${tileQR.r}), XY(${tileXYZ.x.toFixed(2)}, ${tileXYZ.y.toFixed(2)})
+            Camera Position: XYZ(${camPos.x.toFixed(2)}, ${camPos.y.toFixed(2)}, ${camPos.z.toFixed(2)})`
     }
 }

@@ -18,9 +18,29 @@
             height: 100%;
             background-color: cornflowerblue;
         }
+
+        #text, #debug {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        #debug {
+            top: auto;
+            bottom: 0;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
+
+    <div id="text">Use arrow keys or mouse drag to move the map. Click to uncover tiles.</div>
+    <div id="debug">DEBUG</div>
 
 <canvas></canvas>
 
