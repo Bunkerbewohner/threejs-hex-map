@@ -1,7 +1,7 @@
 import { PerspectiveCamera, Scene, WebGLRenderer, Vector3, Group, Camera, Vector2, Object3D } from 'three';
 import {generateRandomMap} from "./map-generator"
 import MapMesh from "./MapMesh"
-import { TextureAtlas, TileData, TileDataSource } from './interfaces';
+import { TextureAtlas, TileData, TileDataSource, QR } from './interfaces';
 import {loadFile} from "./util"
 import { screenToWorld } from './camera-utils';
 import Grid from './Grid';
@@ -9,7 +9,7 @@ import DefaultTileSelector from "./DefaultTileSelector"
 import DefaultMapViewController from "./DefaultMapViewController"
 import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
-import { qrToWorld, axialToCube, roundToHex, cubeToAxial } from './coords';
+import { qrToWorld, axialToCube, roundToHex, cubeToAxial, mouseToWorld } from './coords';
 import ChunkedLazyMapMesh from "./ChunkedLazyMapMesh";
 import { MapMeshOptions } from './MapMesh';
 
@@ -38,6 +38,10 @@ export default class MapView implements MapViewControls, TileDataSource {
         return this._zoom
     }
 
+    set zoom(value: number) {
+        this.setZoom(value)
+    }
+
     get selectedTile(): TileData {
         return this._selectedTile
     }
@@ -46,10 +50,12 @@ export default class MapView implements MapViewControls, TileDataSource {
         return this._tileGrid
     }
 
+    /**
+     * Sets up the camera with the given Z position (height) and so that QR(0, 0) will be roughly in the middle of the screen.
+     */
     setZoom(z: number) {
         this._zoom = z
         this._camera.position.z = z
-        this._camera.position.y = -this.zoom * 0.95
         return this
     }
 
@@ -88,7 +94,6 @@ export default class MapView implements MapViewControls, TileDataSource {
         // setup camera
         camera.rotation.x = Math.PI / 4.5        
         this.setZoom(MapView.DEFAULT_ZOOM)
-        camera.position.y = -this.zoom * 0.95
 
         // tile selector
         this._tileSelector.position.setZ(0.1)
@@ -96,7 +101,7 @@ export default class MapView implements MapViewControls, TileDataSource {
         this._tileSelector.visible = true        
 
         // start rendering loop
-        this.animate(0)
+        this.animate(0)        
         this._controller.init(this, canvas)
     }
 
@@ -162,6 +167,28 @@ export default class MapView implements MapViewControls, TileDataSource {
 
     getCamera(): Camera {
         return this._camera
+    }
+
+    /**
+     * Returns the world space position on the Z plane (the plane with the tiles) at the center of the view.
+     */
+    getViewCenter(): Vector3 {
+        return mouseToWorld({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }, this._camera)
+    }
+
+    getCameraFocusPosition(pos: QR): Vector3 {
+        const currentPos = this._camera.position.clone()
+        const viewCenter = this.getViewCenter()
+        const viewOffset = currentPos.sub(viewCenter)
+
+        const destXY = qrToWorld(pos.q, pos.r)
+        const worldPos = new Vector3(destXY.x, destXY.y, 0)
+
+        return worldPos.add(viewOffset)
+    }
+
+    focus(q: number, r: number) {
+        this._camera.position.copy(this.getCameraFocusPosition({q, r}))
     }
 
     selectTile(tile: TileData) {        

@@ -38,7 +38,7 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     options.terrainAtlas = atlas
 
     const mapView = new MapView()
-    mapView.setZoom(initialZoom)
+    mapView.zoom = initialZoom
     mapView.load(map, options)
 
     mapView.onLoaded = () => {

@@ -9,6 +9,7 @@ export default class Controller implements MapViewController {
     private debugText;
     private selectedQR;
     init(controls: MapViewControls, canvas: HTMLCanvasElement): void;
+    onKeyDown: (e: KeyboardEvent) => void;
     onMouseDown: (e: MouseEvent) => void;
     onMouseEnter: (e: MouseEvent) => void;
     onMouseMove: (e: MouseEvent) => void;

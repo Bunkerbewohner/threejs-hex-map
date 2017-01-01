@@ -16,6 +16,8 @@ export default class Controller implements MapViewController {
     init(controls: MapViewControls, canvas: HTMLCanvasElement) {
         this.controls = controls        
 
+        document.addEventListener("keydown", this.onKeyDown, false)
+
         canvas.addEventListener("mousedown", this.onMouseDown, false)
         canvas.addEventListener("mousemove", this.onMouseMove, false)
         canvas.addEventListener("mouseup", this.onMouseUp, false)
@@ -33,6 +35,14 @@ export default class Controller implements MapViewController {
         canvas.addEventListener("touchend", (e) => this.onMouseUp(e.touches[0] || e.changedTouches[0] as any), false)
         
         setInterval(() => this.showDebugInfo(), 100)
+        this.controls.focus(0, 0)
+    }
+
+    onKeyDown = (e: KeyboardEvent) => {
+        if (e.keyCode == 32) { // SPACE BAR
+            console.log(`center view on QR(${this.selectedQR.q},${this.selectedQR.r})`)
+            this.controls.focus(this.selectedQR.q, this.selectedQR.r)
+        }
     }
 
     onMouseDown = (e: MouseEvent) => {
@@ -95,9 +105,9 @@ export default class Controller implements MapViewController {
     showDebugInfo() {
         const tileQR = this.selectedQR
         const tileXYZ = qrToWorld(tileQR.q, tileQR.r) // world space
-        const camPos = this.controls.getCamera().position
+        const camPos = this.controls.getViewCenter() //  this.controls.getCamera().position        
 
         this.debugText.innerHTML = `Selected Tile: QR(${tileQR.q}, ${tileQR.r}), XY(${tileXYZ.x.toFixed(2)}, ${tileXYZ.y.toFixed(2)})
-            Camera Position: XYZ(${camPos.x.toFixed(2)}, ${camPos.y.toFixed(2)}, ${camPos.z.toFixed(2)})`
+            &nbsp; &bull; &nbsp; Camera Looks At (Center): XYZ(${camPos.x.toFixed(2)}, ${camPos.y.toFixed(2)}, ${camPos.z.toFixed(2)})`
     }
 }

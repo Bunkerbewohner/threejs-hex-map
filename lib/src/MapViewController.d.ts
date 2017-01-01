@@ -1,5 +1,5 @@
 /// <reference types="three" />
-import { TileData } from './interfaces';
+import { TileData, QR } from './interfaces';
 import { Vector3, Camera } from 'three';
 interface MapViewController {
     init(controls: MapViewControls, canvas: HTMLCanvasElement): void;
@@ -13,7 +13,25 @@ export interface MapViewControls {
      * Move the tile selector to the given tile's position
      */
     selectTile(tile: TileData): void;
+    /**
+     * Return the camera used by the map view.
+     */
     getCamera(): Camera;
+    /**
+     * Returns the world space position at the center of the view on the Z plane (the plane with the tiles).
+     */
+    getViewCenter(): Vector3;
+    /**
+     * Set the direction for continuous scrolling of the view. (0, 0) stops the scrolling.
+     */
     setScrollDir(x: number, y: number): void;
+    /**
+     * Given a QR coordinate returns the camera position that will focus them in the center of the view.
+     */
+    getCameraFocusPosition(pos: QR): Vector3;
+    /**
+     * Center the view on the given QR coordinates.
+     */
+    focus(q: number, r: number): void;
 }
 export default MapViewController;
