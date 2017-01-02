@@ -42,17 +42,25 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     mapView.load(map, options)
 
     mapView.onLoaded = () => {
+        // uncover tiles around initial selection
         setFogAround(mapView, mapView.selectedTile, 6, true, false)
         setFogAround(mapView, mapView.selectedTile, 2, false, false)
     }
 
     mapView.onTileSelected = (tile: TileData) => {
+        // uncover tiles around selection
         setFogAround(mapView, tile, 2, false, false)
     }
 
     return mapView
 }
 
+/**
+ * @param fog whether there should be fog on this tile making it appear darker
+ * @param clouds whether there should be "clouds", i.e. an opaque texture, hiding the tile
+ * @param range number of tiles around the given tile that should be updated
+ * @param tile tile around which fog should be updated
+ */
 function setFogAround(mapView: MapView, tile: TileData, range: number, fog: boolean, clouds: boolean) {
     const tiles = mapView.getTileGrid().neighbors(tile.q, tile.r, range)
 

@@ -44,6 +44,11 @@ export interface MapViewControls {
     getZoom(): number;
 
     setZoom(z: number): void;
+
+    /**
+     * Set a function that is called each frame when the view is updated
+     */
+    setOnAnimateCallback(callback: (dtS: number) => void): void;
 }
 
 export default MapViewController

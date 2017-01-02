@@ -4,6 +4,39 @@ import { screenToWorld, pickingRay, qrToWorld } from './coords';
 import { TileData, QR } from './interfaces';
 import { Vector3, Camera, Vector2 } from 'three';
 
+class Animation {
+    /**
+     * Progress of the animation between 0.0 (start) and 1.0 (end).
+     */
+    private progress: number = 0.0
+
+    /**
+     * Simple animation helper
+     * @param durationMs duration of the animation in milliseconds
+     * @param update animation function which will receive values between 0.0 and 1.0 over the duration of the animation
+     * @param easingFunction function that determines the progression of the animation over time
+     */
+    constructor(private durationMs: number, private update: (progress: number)=>void, private easingFunction = Animation.easeInOutQuad) {
+    }
+
+    /**
+     * Advances the animation by the given amount of time in seconds.
+     * Returns true if the animation is finished.
+     */
+    animate(dtS: number) {
+        this.progress = this.progress + dtS * 1000 / this.durationMs
+        this.update(this.easingFunction(this.progress))
+        return this.progress >= 1.0
+    }
+
+    static easeInOutQuad = (t: number) => {
+        if ((t/=0.5) < 1) return 0.5*t*t;
+		return -0.5 * ((--t)*(t-2) - 1);
+    }
+
+    static easeLinear = (t: number) => t
+}
+
 export default class Controller implements MapViewController {
     private controls: MapViewControls
     private pickingCamera: Camera
@@ -12,6 +45,7 @@ export default class Controller implements MapViewController {
     private lastDrag: Vector3 = new Vector3(0, 0, 0)
     private debugText: HTMLDivElement = document.getElementById("debug") as HTMLDivElement
     private selectedQR: QR = {q: 0, r: 0}
+    private animations: Animation[] = []
 
     init(controls: MapViewControls, canvas: HTMLCanvasElement) {
         this.controls = controls        
@@ -35,12 +69,37 @@ export default class Controller implements MapViewController {
         canvas.addEventListener("touchend", (e) => this.onMouseUp(e.touches[0] || e.changedTouches[0] as any), false)
         
         setInterval(() => this.showDebugInfo(), 100)
+
+        this.controls.setOnAnimateCallback(this.onAnimate)
+    }
+
+    onAnimate = (dtS: number) => {
+        const animations = this.animations
+
+        for (let i = 0; i < animations.length; i++) {
+            // advance the animation
+            const animation = animations[i]
+            const finished = animation.animate(dtS)
+
+            // if the animation is finished (returned true) remove it
+            if (finished) {
+                // remove the animation
+                animations[i] = animations[animations.length - 1]
+                animations[animations.length-1] = animation
+                animations.pop()
+            }
+        }
+    }
+
+    private addAnimation(animation: Animation) {
+        this.animations.push(animation)
     }
 
     onKeyDown = (e: KeyboardEvent) => {
         if (e.keyCode == 32) { // SPACE BAR
             console.log(`center view on QR(${this.selectedQR.q},${this.selectedQR.r})`)
-            this.controls.focus(this.selectedQR.q, this.selectedQR.r)
+            //this.controls.focus(this.selectedQR.q, this.selectedQR.r)
+            this.panCameraTo(this.selectedQR, 600 /*ms*/)
         }
     }
 
@@ -108,5 +167,14 @@ export default class Controller implements MapViewController {
 
         this.debugText.innerHTML = `Selected Tile: QR(${tileQR.q}, ${tileQR.r}), XY(${tileXYZ.x.toFixed(2)}, ${tileXYZ.y.toFixed(2)})
             &nbsp; &bull; &nbsp; Camera Looks At (Center): XYZ(${camPos.x.toFixed(2)}, ${camPos.y.toFixed(2)}, ${camPos.z.toFixed(2)})`
+    }
+
+    panCameraTo(qr: QR, durationMs: number) {
+        const from = this.controls.getCamera().position.clone()
+        const to = this.controls.getCameraFocusPosition(qr)
+
+        this.addAnimation(new Animation(durationMs, (a) => {
+            this.controls.getCamera().position.copy(from.clone().lerp(to, a))
+        }))
     }
 }

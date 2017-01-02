@@ -20,6 +20,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _selectedTile;
     private _onTileSelected;
     private _onLoaded;
+    private _onAnimate;
     zoom: number;
     getZoom(): number;
     readonly selectedTile: TileData;
@@ -31,6 +32,8 @@ export default class MapView implements MapViewControls, TileDataSource {
     readonly scrollDir: Vector3;
     onTileSelected: (tile: TileData) => void;
     onLoaded: () => void;
+    onAnimate: (dtS: number) => void;
+    setOnAnimateCallback(callback: (dtS: number) => void): void;
     scrollSpeed: number;
     constructor(canvasElementQuery?: string);
     load(tiles: Grid<TileData>, options: MapMeshOptions): void;

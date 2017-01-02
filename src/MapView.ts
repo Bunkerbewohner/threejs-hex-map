@@ -33,6 +33,7 @@ export default class MapView implements MapViewControls, TileDataSource {
 
     private _onTileSelected: (tile: TileData) => void
     private _onLoaded: () => void
+    private _onAnimate: (dtS: number) => void = (dtS) => {}
 
     get zoom() {
         return this._zoom
@@ -84,6 +85,17 @@ export default class MapView implements MapViewControls, TileDataSource {
 
     set onLoaded(callback: ()=>void) {
         this._onLoaded = callback
+    }
+
+    set onAnimate(callback: (dtS: number)=>void) {
+        if (!callback) {
+            throw new Error("Invalid onAnimate callback")
+        }
+        this._onAnimate = callback
+    }
+
+    setOnAnimateCallback(callback: (dtS: number)=>void) {
+        this.onAnimate = callback
     }
 
     public scrollSpeed: number = 10
@@ -161,6 +173,8 @@ export default class MapView implements MapViewControls, TileDataSource {
         if (this._chunkedMesh) {
             this._chunkedMesh.updateVisibility(camera)
         }
+
+        this._onAnimate(dtS)
 
         this._renderer.render(this._scene, camera);
         requestAnimationFrame(this.animate);
