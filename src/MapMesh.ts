@@ -149,7 +149,6 @@ export default class MapMesh extends Group implements TileDataSource {
 
         const landMaterial: any = this.land.material
         landMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0
-        console.log(landMaterial)
 
         const mountainMaterial: any = this.land.material
         mountainMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0
