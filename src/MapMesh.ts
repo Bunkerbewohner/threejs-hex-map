@@ -105,6 +105,14 @@ interface MapMeshTile extends TileData {
     isMountain: boolean;
 }
 
+export interface TextureReplacements {
+    terrainAtlasTexture?: Texture;
+    riverAtlasTexture?: Texture;
+    coastAtlasTexture?: Texture;
+    undiscoveredTexture?: Texture;
+    treeTexture?: Texture;
+}
+
 export default class MapMesh extends Group implements TileDataSource {
 
     /**
@@ -176,6 +184,25 @@ export default class MapMesh extends Group implements TileDataSource {
         ]).catch((err) => {
             console.error("Could not create MapMesh", err)
         })
+    }
+
+    /**
+     * "Hot-swaps" the given textures.
+     * @param textures
+     */
+    replaceTextures(textures: TextureReplacements) {
+        for (let name in textures) {
+            const replacement: Texture = (textures as any)[name]
+            if (replacement) {
+                const old: Texture = (this.options as any)[name]
+                const {wrapT, wrapS} = old
+
+                old.copy(replacement)
+                old.wrapT = wrapT
+                old.wrapS = wrapS
+                old.needsUpdate = true
+            }
+        }
     }
 
     updateTiles(tiles: TileData[]) {

@@ -1,7 +1,9 @@
 /// <reference types="three" />
 import { Vector3, Camera } from 'three';
+import MapMesh from "./MapMesh";
 import { TileData, TileDataSource, QR } from './interfaces';
 import Grid from './Grid';
+import MapViewController from './MapViewController';
 import { MapViewControls } from './MapViewController';
 import { MapMeshOptions } from './MapMesh';
 export default class MapView implements MapViewControls, TileDataSource {
@@ -21,10 +23,12 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _onTileSelected;
     private _onLoaded;
     private _onAnimate;
+    readonly controller: MapViewController;
     zoom: number;
     getZoom(): number;
     readonly selectedTile: TileData;
     getTileGrid(): Grid<TileData>;
+    readonly mapMesh: MapMesh;
     /**
      * Sets up the camera with the given Z position (height) and so that the view center (the point the camera is pointed at) doesn't change.
      */

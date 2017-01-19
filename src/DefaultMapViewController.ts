@@ -43,9 +43,13 @@ export default class Controller implements MapViewController {
     private mouseDownPos: Vector3
     private dragStartCameraPos: Vector3
     private lastDrag: Vector3 = new Vector3(0, 0, 0)
-    private debugText: HTMLDivElement = document.getElementById("debug") as HTMLDivElement
+    private debugText: HTMLElement = null
     private selectedQR: QR = {q: 0, r: 0}
     private animations: Animation[] = []
+
+    set debugOutput(elem: HTMLElement | null) {
+        this.debugText = elem
+    }
 
     init(controls: MapViewControls, canvas: HTMLCanvasElement) {
         this.controls = controls        
@@ -161,6 +165,10 @@ export default class Controller implements MapViewController {
     }
 
     showDebugInfo() {
+        if (this.debugText == null) {
+            return;
+        }
+
         const tileQR = this.selectedQR
         const tileXYZ = qrToWorld(tileQR.q, tileQR.r) // world space
         const camPos = this.controls.getViewCenter() //  this.controls.getCamera().position        

@@ -58,6 +58,13 @@ export interface MapMeshOptions {
      */
     mountainsVertexShader?: string;
 }
+export interface TextureReplacements {
+    terrainAtlasTexture?: Texture;
+    riverAtlasTexture?: Texture;
+    coastAtlasTexture?: Texture;
+    undiscoveredTexture?: Texture;
+    treeTexture?: Texture;
+}
 export default class MapMesh extends Group implements TileDataSource {
     private options;
     /**
@@ -83,6 +90,11 @@ export default class MapMesh extends Group implements TileDataSource {
      * @param options map mesh configuration options
      */
     constructor(tiles: TileData[], options: MapMeshOptions, globalGrid?: Grid<TileData>);
+    /**
+     * "Hot-swaps" the given textures.
+     * @param textures
+     */
+    replaceTextures(textures: TextureReplacements): void;
     updateTiles(tiles: TileData[]): void;
     getTile(q: number, r: number): TileData;
     /**

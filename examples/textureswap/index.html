@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hex-Map</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <script src="../../node_modules/three/build/three.min.js"></script>
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            height: 100%;
+            background-color: cornflowerblue;
+        }
+
+        #text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 1.5em;
+            text-align: center;
+            pointer-events: none;
+            color: white;
+            text-shadow: 0 0 1px black;
+            box-sizing: border-box;
+        }
+
+        #debug {
+            position: absolute;
+            left: 0;
+            top: auto;
+            bottom: 0;
+            text-align: left;
+        }
+
+        #textures {
+            max-width: 100%;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #textures > div {
+            flex: 1;
+            margin: 10px;
+        }
+
+        #textures img {
+            border: 4px solid white;
+            max-width: 100%;
+            height: 200px;
+            height: 15vh;
+            width: auto;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="text">Use arrow keys or mouse drag to move the map, Q/E to zoom. Click to select tile, Space to focus on selection.</div>
+
+<div id="debug">
+    <div id="textures">
+        <div id="terrainAtlasTexture"><img src="../../assets/terrain-diffuse.png"></div>
+        <div id="riverAtlasTexture"><img src="../../assets/river-diffuse.png"></div>
+        <div id="coastAtlasTexture"><img src="../../assets/coast-diffuse.png"></div>
+        <div id="undiscoveredTexture"><img src="../../assets/paper.jpg"></div>
+    </div>
+</div>
+
+<canvas></canvas>
+
+<script>
+    var require = {
+        baseUrl: "../../lib/examples/textureswap",
+        paths: {
+            "three": "../../../node_modules/three/build/three"
+        }
+    }
+</script>
+<script data-main="main" src="../../node_modules/requirejs/require.js"></script>
+
+</body>
+</html>

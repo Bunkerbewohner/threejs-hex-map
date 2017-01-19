@@ -5,7 +5,6 @@ import {generateRandomMap} from "../../src/map-generator"
 import { varying } from './util';
 import { TextureLoader } from 'three'
 import { MapMeshOptions } from '../../src/MapMesh';
-import DefaultMapViewController from "../../src/DefaultMapViewController"
 
 function asset(relativePath: string): string {
     return "../../assets/" + relativePath
@@ -41,9 +40,6 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     const mapView = new MapView()
     mapView.zoom = initialZoom
     mapView.load(map, options)
-
-    const controller = mapView.controller as DefaultMapViewController
-    controller.debugOutput = document.getElementById("debug") as HTMLElement
 
     mapView.onLoaded = () => {
         // uncover tiles around initial selection

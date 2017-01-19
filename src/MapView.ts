@@ -35,6 +35,10 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _onLoaded: () => void
     private _onAnimate: (dtS: number) => void = (dtS) => {}
 
+    get controller() {
+        return this._controller
+    }
+
     get zoom() {
         return this._zoom
     }
@@ -53,6 +57,10 @@ export default class MapView implements MapViewControls, TileDataSource {
 
     getTileGrid(): Grid<TileData> {
         return this._tileGrid
+    }
+
+    get mapMesh(): MapMesh {
+        return this._mapMesh as MapMesh
     }
 
     /**

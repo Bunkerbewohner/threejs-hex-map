@@ -10,6 +10,7 @@ export default class Controller implements MapViewController {
     private debugText;
     private selectedQR;
     private animations;
+    debugOutput: HTMLElement | null;
     init(controls: MapViewControls, canvas: HTMLCanvasElement): void;
     onAnimate: (dtS: number) => void;
     private addAnimation(animation);

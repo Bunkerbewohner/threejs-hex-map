@@ -44,9 +44,10 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, MapMesh_1, Grid_1) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(13), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, MapMesh_1, DefaultMapViewController_1, Grid_1) {
 	    "use strict";
 	    exports.MapMesh = MapMesh_1.default;
+	    exports.DefaultMapViewController = DefaultMapViewController_1.default;
 	    exports.Grid = Grid_1.default;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	//# sourceMappingURL=index.js.map
@@ -144,6 +145,23 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	            });
 	            return _this;
 	        }
+	        /**
+	         * "Hot-swaps" the given textures.
+	         * @param textures
+	         */
+	        MapMesh.prototype.replaceTextures = function (textures) {
+	            for (var name_1 in textures) {
+	                var replacement = textures[name_1];
+	                if (replacement) {
+	                    var old = this.options[name_1];
+	                    var wrapT = old.wrapT, wrapS = old.wrapS;
+	                    old.copy(replacement);
+	                    old.wrapT = wrapT;
+	                    old.wrapS = wrapS;
+	                    old.needsUpdate = true;
+	                }
+	            }
+	        };
 	        MapMesh.prototype.updateTiles = function (tiles) {
 	            this.updateFogAndClouds(tiles);
 	            this.trees.updateTiles(tiles);
@@ -1134,6 +1152,180 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	    exports.MOUNTAINS_VERTEX_SHADER = "\n//\n// Vertex Shader for Land\n//\n\n\nprecision highp float;\n\nuniform float sineTime; // oscillating time [-1.0, 1.0]\nuniform float zoom; // camera zoom factor\nuniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform vec3 camera; // camera position in world space\n\n// (width, height, cellSize, cellSpacing)\nuniform vec4 textureAtlasMeta;\n\nattribute vec3 position; // position of one of the hexagon's vertices\nattribute vec2 offset; // world position offset for the entire hexagon (tile)\nattribute vec2 uv; // texture coordinates\nattribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)\n\n// style.x = texture atlas cell index\n// style.y = \"decimal bitmask\" (fog=1xx, hills=x1x, clouds=xx1)\n// style.z = coast texture index (0 - 64)\n// style.w = river texture index (0 - 64)\nattribute vec2 style;\n\nvarying vec3 vPosition;\nvarying vec2 vTexCoord;\nvarying float vExtra;\nvarying float vFogOfWar; // 1.0 = shadow, 0.0 = no shadow\nvarying float vHill;\nvarying float vHidden; // 1.0 = hidden, 0.0 = visible\nvarying vec2 vOffset;\n\nvec2 cellIndexToUV(float idx) {\n    float atlasWidth = textureAtlasMeta.x;\n    float atlasHeight = textureAtlasMeta.y;\n    float cellSize = textureAtlasMeta.z;\n    float cols = atlasWidth / cellSize;\n    float rows = atlasHeight / cellSize;\n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));\n}\n\nvoid main() {\n    vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);\n\n    if (border < 0.95 && style.y < 100.0) {\n        pos.z = 0.2 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.5;\n    }\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    vPosition = pos;\n    vOffset = offset;\n\n    vTexCoord = cellIndexToUV(style.x);\n\n    vExtra = border;\n    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);\n    vHidden = style.y >= 100.0 ? 1.0 : 0.0;\n}\n";
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	//# sourceMappingURL=mountains.vertex.js.map
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(2), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, coords_1, three_1) {
+	    "use strict";
+	    var Animation = (function () {
+	        /**
+	         * Simple animation helper
+	         * @param durationMs duration of the animation in milliseconds
+	         * @param update animation function which will receive values between 0.0 and 1.0 over the duration of the animation
+	         * @param easingFunction function that determines the progression of the animation over time
+	         */
+	        function Animation(durationMs, update, easingFunction) {
+	            if (easingFunction === void 0) { easingFunction = Animation.easeInOutQuad; }
+	            this.durationMs = durationMs;
+	            this.update = update;
+	            this.easingFunction = easingFunction;
+	            /**
+	             * Progress of the animation between 0.0 (start) and 1.0 (end).
+	             */
+	            this.progress = 0.0;
+	        }
+	        /**
+	         * Advances the animation by the given amount of time in seconds.
+	         * Returns true if the animation is finished.
+	         */
+	        Animation.prototype.animate = function (dtS) {
+	            this.progress = this.progress + dtS * 1000 / this.durationMs;
+	            this.update(this.easingFunction(this.progress));
+	            return this.progress >= 1.0;
+	        };
+	        return Animation;
+	    }());
+	    Animation.easeInOutQuad = function (t) {
+	        if ((t /= 0.5) < 1)
+	            return 0.5 * t * t;
+	        return -0.5 * ((--t) * (t - 2) - 1);
+	    };
+	    Animation.easeLinear = function (t) { return t; };
+	    var Controller = (function () {
+	        function Controller() {
+	            var _this = this;
+	            this.lastDrag = new three_1.Vector3(0, 0, 0);
+	            this.debugText = null;
+	            this.selectedQR = { q: 0, r: 0 };
+	            this.animations = [];
+	            this.onAnimate = function (dtS) {
+	                var animations = _this.animations;
+	                for (var i = 0; i < animations.length; i++) {
+	                    // advance the animation
+	                    var animation = animations[i];
+	                    var finished = animation.animate(dtS);
+	                    // if the animation is finished (returned true) remove it
+	                    if (finished) {
+	                        // remove the animation
+	                        animations[i] = animations[animations.length - 1];
+	                        animations[animations.length - 1] = animation;
+	                        animations.pop();
+	                    }
+	                }
+	            };
+	            this.onKeyDown = function (e) {
+	                if (e.keyCode == 32) {
+	                    console.log("center view on QR(" + _this.selectedQR.q + "," + _this.selectedQR.r + ")");
+	                    //this.controls.focus(this.selectedQR.q, this.selectedQR.r)
+	                    _this.panCameraTo(_this.selectedQR, 600 /*ms*/);
+	                }
+	            };
+	            this.onMouseDown = function (e) {
+	                _this.pickingCamera = _this.controls.getCamera().clone();
+	                _this.mouseDownPos = coords_1.screenToWorld(e.clientX, e.clientY, _this.pickingCamera);
+	                _this.dragStartCameraPos = _this.controls.getCamera().position.clone();
+	            };
+	            this.onMouseEnter = function (e) {
+	                if (e.buttons === 1) {
+	                    _this.onMouseDown(e);
+	                }
+	            };
+	            this.onMouseMove = function (e) {
+	                // scrolling via mouse drag
+	                if (_this.mouseDownPos) {
+	                    var mousePos = coords_1.screenToWorld(e.clientX, e.clientY, _this.pickingCamera);
+	                    var dv = _this.lastDrag = mousePos.sub(_this.mouseDownPos).multiplyScalar(-1);
+	                    var newCameraPos = dv.clone().add(_this.dragStartCameraPos);
+	                    _this.controls.getCamera().position.copy(newCameraPos);
+	                }
+	                // scrolling via screen edge only in fullscreen mode
+	                if (window.innerHeight == screen.height && !_this.mouseDownPos) {
+	                    var scrollZoneSize = 20;
+	                    var mousePos2D = new three_1.Vector2(e.clientX, e.clientY);
+	                    var screenCenter2D = new three_1.Vector2(window.innerWidth / 2, window.innerHeight / 2);
+	                    var diff = mousePos2D.clone().sub(screenCenter2D);
+	                    if (Math.abs(diff.x) > screenCenter2D.x - scrollZoneSize || Math.abs(diff.y) > screenCenter2D.y - scrollZoneSize) {
+	                        _this.controls.setScrollDir(diff.x, -diff.y);
+	                    }
+	                    else {
+	                        _this.controls.setScrollDir(0, 0);
+	                    }
+	                }
+	            };
+	            this.onMouseUp = function (e) {
+	                if (!_this.lastDrag) {
+	                    var mousePos = coords_1.screenToWorld(e.clientX, e.clientY, _this.controls.getCamera());
+	                    var tile = _this.controls.pickTile(mousePos);
+	                    if (tile) {
+	                        _this.controls.selectTile(tile);
+	                        _this.selectedQR = tile;
+	                        _this.showDebugInfo();
+	                    }
+	                }
+	                _this.mouseDownPos = null; // end drag
+	                _this.lastDrag = null;
+	            };
+	            this.onMouseOut = function (e) {
+	                _this.mouseDownPos = null; // end drag
+	                _this.controls.setScrollDir(0, 0);
+	            };
+	        }
+	        Object.defineProperty(Controller.prototype, "debugOutput", {
+	            set: function (elem) {
+	                this.debugText = elem;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Controller.prototype.init = function (controls, canvas) {
+	            var _this = this;
+	            this.controls = controls;
+	            document.addEventListener("keydown", this.onKeyDown, false);
+	            canvas.addEventListener("mousedown", this.onMouseDown, false);
+	            canvas.addEventListener("mousemove", this.onMouseMove, false);
+	            canvas.addEventListener("mouseup", this.onMouseUp, false);
+	            canvas.addEventListener("mouseout", this.onMouseOut, false);
+	            canvas.addEventListener("mouseenter", this.onMouseEnter, false);
+	            canvas.addEventListener("touchstart", function (e) {
+	                _this.onMouseDown(e.touches[0]);
+	                e.preventDefault();
+	            }, false);
+	            canvas.addEventListener("touchmove", function (e) {
+	                _this.onMouseMove(e.touches[0]);
+	                e.preventDefault();
+	            }, false);
+	            canvas.addEventListener("touchend", function (e) { return _this.onMouseUp(e.touches[0] || e.changedTouches[0]); }, false);
+	            setInterval(function () { return _this.showDebugInfo(); }, 100);
+	            this.controls.setOnAnimateCallback(this.onAnimate);
+	        };
+	        Controller.prototype.addAnimation = function (animation) {
+	            this.animations.push(animation);
+	        };
+	        Controller.prototype.showDebugInfo = function () {
+	            if (this.debugText == null) {
+	                return;
+	            }
+	            var tileQR = this.selectedQR;
+	            var tileXYZ = coords_1.qrToWorld(tileQR.q, tileQR.r); // world space
+	            var camPos = this.controls.getViewCenter(); //  this.controls.getCamera().position        
+	            this.debugText.innerHTML = "Selected Tile: QR(" + tileQR.q + ", " + tileQR.r + "), XY(" + tileXYZ.x.toFixed(2) + ", " + tileXYZ.y.toFixed(2) + ")\n            &nbsp; &bull; &nbsp; Camera Looks At (Center): XYZ(" + camPos.x.toFixed(2) + ", " + camPos.y.toFixed(2) + ", " + camPos.z.toFixed(2) + ")";
+	        };
+	        Controller.prototype.panCameraTo = function (qr, durationMs) {
+	            var _this = this;
+	            var from = this.controls.getCamera().position.clone();
+	            var to = this.controls.getCameraFocusPosition(qr);
+	            this.addAnimation(new Animation(durationMs, function (a) {
+	                _this.controls.getCamera().position.copy(from.clone().lerp(to, a));
+	            }));
+	        };
+	        return Controller;
+	    }());
+	    Object.defineProperty(exports, "__esModule", { value: true });
+	    exports.default = Controller;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=DefaultMapViewController.js.map
 
 /***/ }
 /******/ ])});;
