@@ -84,6 +84,8 @@ export default class MapMesh extends Group implements TileDataSource {
     private trees;
     boundingSphere: Sphere;
     readonly loaded: Promise<void>;
+    private _showGrid;
+    showGrid: boolean;
     /**
      * @param _tiles the tiles to actually render in this mesh
      * @param grid the grid with all tiles, including the ones that are not rendered in this mesh

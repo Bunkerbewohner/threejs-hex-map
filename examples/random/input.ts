@@ -24,6 +24,9 @@ export function initInput(mapView: MapView) {
         },
         [KEY_CODES.Q]: {
             down: () => mapView.setZoom(mapView.getZoom() * 1.1)
+        },
+        [KEY_CODES.G]: {
+            down: () => mapView.mapMesh.showGrid = !mapView.mapMesh.showGrid
         }
     }
 

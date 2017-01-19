@@ -138,6 +138,23 @@ export default class MapMesh extends Group implements TileDataSource {
 
     readonly loaded: Promise<void>
 
+    private _showGrid = true
+
+    get showGrid() {
+        return this._showGrid
+    }
+
+    set showGrid(value: boolean) {
+        this._showGrid = value
+
+        const landMaterial: any = this.land.material
+        landMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0
+        console.log(landMaterial)
+
+        const mountainMaterial: any = this.land.material
+        mountainMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0
+    }
+
     /**
      * @param _tiles the tiles to actually render in this mesh
      * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
@@ -259,6 +276,7 @@ export default class MapMesh extends Group implements TileDataSource {
         const material = new THREE.RawShaderMaterial({
             uniforms: {
                 sineTime: {value: 0.0},
+                showGrid: {value: this._showGrid ? 1.0 : 0.0},
                 camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
                 texture: {type: "t", value: this.options.terrainAtlasTexture},
                 textureAtlasMeta: {
@@ -301,6 +319,7 @@ export default class MapMesh extends Group implements TileDataSource {
         const material = new THREE.RawShaderMaterial({
             uniforms: {
                 sineTime: {value: 0.0},
+                showGrid: {value: this._showGrid ? 1.0 : 0.0},
                 camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
                 texture: {type: "t", value: this.options.terrainAtlasTexture},
                 textureAtlasMeta: {
