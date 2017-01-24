@@ -29,15 +29,17 @@ const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
 const vec3 lightAmbient = vec3(0.3, 0.3, 0.3);
 const vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);
 
+const float hillsNormalMapScale = 0.1;
+
 void main() {
     // LAND
     vec4 texColor = texture2D(texture, vTexCoord);
     vec3 normal = vec3(0.0, 1.0, 0.0);
+    vec2 normalMapUV = vPosition.xy * hillsNormalMapScale;
 
     if (vHill > 0.0) {
-        normal = normalize((texture2D(hillsNormal, vTexCoord * 0.75 + vOffset * 0.5).xyz * 2.0) - 1.0);
-
-        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra);
+        normal = normalize((texture2D(hillsNormal, normalMapUV).xyz * 2.0) - 1.0);
+        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra); // fade out towards tile edges
     }
 
     vec3 lightDir = normalize(lightPos - vPosition);
@@ -46,6 +48,12 @@ void main() {
 
     vec3 color = lightAmbient * texColor.xyz + lambertian * texColor.xyz * lightDiffuse;
     gl_FragColor = vec4(color, 1.0);    
+    
+    // comment out following line to show normal vector visualization
+    //gl_FragColor = vec4((normal.x + 1.0 / 2.0, 0.0, 1.0), (normal.y + 1.0 / 2.0, 0.0, 1.0), (normal.z + 1.0 / 2.0, 0.0, 1.0), 1.0);
+    
+    // comment out following line to show normal map texture (UV) coordinates
+    //gl_FragColor = vec4(mod(normalMapUV.x, 1.0), mod(normalMapUV.y, 1.0), 0.0, 1.0);
 
     // Coast
     vec2 coastUv = vec2(vCoastTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vCoastTextureCell.y / 8.0 + vUV.y / 8.0));
