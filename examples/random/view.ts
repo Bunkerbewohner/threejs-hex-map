@@ -15,10 +15,26 @@ async function loadTextureAtlas() {
     return loadJSON<TextureAtlas>(asset("land-atlas.json"))
 }
 
-async function generateMap(mapSize: number) {        
+async function generateMap(mapSize: number) {
+    function coldZone(q: number, r: number, height: number): string {
+        if (Math.abs(r) > mapSize * (0.44 + Math.random() * 0.03)) return "snow"
+        else return "tundra"
+    }
+
+    function warmZone(q: number, r: number, height: number): string {
+        return varying("grass", "grass", "grass", "plains", "plains", "desert")
+    }
+
+    function terrainAt(q: number, r: number, height: number): string {
+        if (height < 0) return "water"
+        else if (height > 0.75) return "mountain"
+        else if (Math.abs(r) > mapSize * 0.4) return coldZone(q, r, height)
+        else return warmZone(q, r, height)
+    }
+
     return generateRandomMap(mapSize, (q, r, height) => {            
-        const terrain = (height < 0 && "water") || (height > 0.75 && "mountain") || varying("grass", "plains")
-        const trees = !isMountain(height) && !isWater(height) && varying(true, false)
+        const terrain = terrainAt(q, r, height)
+        const trees = !isMountain(height) && !isWater(height) && terrain != "desert" && varying(true, false)
         return {q, r, height, terrain, trees, river: null, fog: true, clouds: true }
     })
 }
@@ -47,8 +63,8 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
 
     mapView.onLoaded = () => {
         // uncover tiles around initial selection
-        setFogAround(mapView, mapView.selectedTile, 6, true, false)
-        setFogAround(mapView, mapView.selectedTile, 2, false, false)
+        setFogAround(mapView, mapView.selectedTile, 10, true, false)
+        setFogAround(mapView, mapView.selectedTile, 5, false, false)
     }
 
     mapView.onTileSelected = (tile: TileData) => {
