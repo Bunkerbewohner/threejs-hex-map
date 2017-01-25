@@ -11,10 +11,14 @@ uniform float zoom; // camera zoom factor
 uniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
+uniform mat3 normalMatrix;
+uniform mat4 modelMatrix;
 uniform vec3 camera; // camera position in world space
 
 // (width, height, cellSize, cellSpacing)
 uniform vec4 textureAtlasMeta;
+
+uniform vec3 lightDir;
 
 attribute vec3 position; // position of one of the hexagon's vertices
 attribute vec2 offset; // world position offset for the entire hexagon (tile)
@@ -37,6 +41,7 @@ varying float vHill;
 varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
 varying vec2 vRiverTextureCell;
+varying vec3 vLightDirT;
 
 vec2 cellIndexToUV(float idx) {
     float atlasWidth = textureAtlasMeta.x;
@@ -49,6 +54,16 @@ vec2 cellIndexToUV(float idx) {
 
     //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));
     return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));
+}
+
+mat3 tangentSpace(vec3 normal_ws, vec3 tangent, mat4 worldMatrix) {
+    vec3 binormal = cross(tangent, normal_ws);
+    mat3 M;
+    M[0] = normalize(binormal);
+    M[1] = normalize(tangent);
+    M[2] = normalize(normal_ws);
+    
+    return mat3(modelMatrix) * M;
 }
 
 void main() {
@@ -76,5 +91,8 @@ void main() {
     vExtra = border;
     vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
     vHidden = style.y >= 100.0 ? 1.0 : 0.0;
+    
+    mat3 T = tangentSpace(vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);
+    vLightDirT = T * lightDir;
 }
 `

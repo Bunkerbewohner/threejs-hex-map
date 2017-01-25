@@ -12,6 +12,7 @@ uniform sampler2D hillsNormal;
 uniform sampler2D coastAtlas;
 uniform sampler2D riverAtlas;
 uniform sampler2D mapTexture;
+uniform mat3 normalMatrix;
 
 varying vec2 vUV;
 varying vec2 vTexCoord;
@@ -23,26 +24,27 @@ varying float vHidden;
 varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
 varying vec2 vRiverTextureCell;
+varying vec3 vLightDirT;
 
 const vec3 cameraPos = vec3(0, -25.0, 25.0);
-const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
+const vec3 lightDir = vec3(0.0, -1.0, -1.0);
 const vec3 lightAmbient = vec3(0.3, 0.3, 0.3);
 const vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);
 
-const float hillsNormalMapScale = 0.1;
+const float hillsNormalMapScale = 0.3; //0.1;
 
 void main() {
     // LAND
     vec4 texColor = texture2D(texture, vTexCoord);
-    vec3 normal = vec3(0.0, 1.0, 0.0);
+    vec3 normal = vec3(0.0, -1.0, 0.0);
     vec2 normalMapUV = vPosition.xy * hillsNormalMapScale;
 
     if (vHill > 0.0) {
         normal = normalize((texture2D(hillsNormal, normalMapUV).xyz * 2.0) - 1.0);
-        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra); // fade out towards tile edges
+        normal = mix(normal, vec3(0.0, -1.0, 0.0), vExtra * vExtra * vExtra); // fade out towards tile edges
     }
 
-    vec3 lightDir = normalize(lightPos - vPosition);
+    vec3 lightDir = vLightDirT;
     float lambertian = max(dot(lightDir, normal), 0.0);
     //lambertian = sqrt(lambertian);
 

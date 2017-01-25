@@ -45,7 +45,7 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     const options: MapMeshOptions = {
         terrainAtlas: null,
         terrainAtlasTexture: loadTexture("terrain-diffuse.png"),
-        hillsNormalTexture: loadTexture("hills-normal.png"),
+        hillsNormalTexture: loadTexture("hills-normal-2.png"),
         coastAtlasTexture: loadTexture("coast-diffuse.png"),
         riverAtlasTexture: loadTexture("river-diffuse.png"),
         undiscoveredTexture: loadTexture("paper.jpg"),
