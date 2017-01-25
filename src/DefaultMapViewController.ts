@@ -72,7 +72,7 @@ export default class Controller implements MapViewController {
         }, false)
         canvas.addEventListener("touchend", (e) => this.onMouseUp(e.touches[0] || e.changedTouches[0] as any), false)
         
-        setInterval(() => this.showDebugInfo(), 100)
+        setInterval(() => this.showDebugInfo(), 200)
 
         this.controls.setOnAnimateCallback(this.onAnimate)
     }
