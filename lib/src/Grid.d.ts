@@ -22,5 +22,18 @@ export default class Grid<T extends QR> {
     get(q: number, r: number): T | undefined;
     getOrCreate(q: number, r: number, defaultValue: T): T;
     add(q: number, r: number, item: T): void;
+    static NEIGHBOR_QRS: {
+        q: number;
+        r: number;
+    }[];
     neighbors(q: number, r: number, range?: number): T[];
+    /**
+     * Returns a list of exactly 6 items for each of the surrounding tiles at (q,r).
+     * Non-existing neighbors will occur as "undefined". The list is always returned
+     * in the same order of NE [0], E [1], SE [2], SW [3], W [4], NW [5].
+     * @param q
+     * @param r
+     * @returns {{q: number, r: number}[]}
+     */
+    surrounding(q: number, r: number): T[];
 }

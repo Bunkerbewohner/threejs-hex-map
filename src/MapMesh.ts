@@ -364,8 +364,8 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
     geometry.addAttribute("border", (hexagon.attributes as any).border)
 
     // positions for each hexagon tile
-    var tilePositions: Vector3[] = tiles.map((tile) => qrToWorld(tile.q, tile.r, scale))
-    var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1)
+    const tilePositions: Vector3[] = tiles.map((tile) => qrToWorld(tile.q, tile.r, scale))
+    const posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 2), 2, 1)
     posAttr.copyVector2sArray(tilePositions)
     geometry.addAttribute("offset", posAttr)
 
@@ -374,13 +374,18 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
     const cellSpacing = textureAtlas.cellSpacing
     const numColumns = textureAtlas.width / cellSize
 
-    var styles = tiles.map(function (tile, index) {
+    function terrainCellIndex(terrain: string): number {
+        const cell = textureAtlas.textures[terrain]
+        return cell.cellY * numColumns + cell.cellX
+    }
+
+    const styles = tiles.map(function (tile, index) {
         const cell = textureAtlas.textures[tile.terrain]
         if (!cell) {
             throw new Error(`Terrain '${tile.terrain}' not in texture atlas\r\n` + JSON.stringify(textureAtlas))
         }
 
-        const cellIndex = cell.cellY * numColumns + cell.cellX
+        const cellIndex = terrainCellIndex(tile.terrain)
         const shadow = tile.fog             ? 1 : 0
         const clouds = tile.clouds          ? 1 : 0
         const hills = isHill(tile.height)   ? 1 : 0
@@ -395,9 +400,31 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
         return new Vector4(cellIndex, style, coastIdx, riverIdx)
     })
 
-    var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
+    const styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
     styleAttr.copyVector4sArray(styles)
     geometry.addAttribute("style", styleAttr)
+
+    // surrounding tile terrain represented as two consecutive Vector3s
+    // 1. [tileIndex + 0] = NE, [tileIndex + 1] = E, [tileIndex + 2] = SE
+    // 2. [tileIndex + 0] = SW, [tileIndex + 1] = W, [tileIndex + 2] = NW
+    const neighborsEast = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1)
+    const neighborsWest = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1)
+
+    for (let i = 0; i < tiles.length; i++) {
+        const neighbors = grid.surrounding(tiles[i].q, tiles[i].r)
+
+        for (let j = 0; j < neighbors.length; j++) {
+            const neighbor = neighbors[j]
+            const attr = j > 2 ? neighborsWest : neighborsEast
+            const array = attr.array as number[]
+
+            // terrain cell index indicates the type of terrain for lookup in the shader
+            array[3 * i + j % 3] = neighbor ? terrainCellIndex(neighbor.terrain) : -1
+        }
+    }
+
+    geometry.addAttribute("neighborsEast", neighborsEast)
+    geometry.addAttribute("neighborsWest", neighborsWest)
 
     return geometry
 }

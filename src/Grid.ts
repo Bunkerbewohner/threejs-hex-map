@@ -125,9 +125,32 @@ export default class Grid<T extends QR> {
         }
     }
 
+    static NEIGHBOR_QRS = [
+        { q: 1, r: -1 }, // NE
+        { q: 1, r: 0 }, // E
+        { q: 0, r: 1 }, // SE
+        { q: -1, r: 1 }, // SW
+        { q: -1, r: 0 }, // W
+        { q: 0, r: -1 } // NW
+    ]
+
     neighbors(q: number, r: number, range: number = 1): T[] {
-        return qrRange(range).map(qr => {            
+        return (range == 1 ? Grid.NEIGHBOR_QRS : qrRange(range)).map(qr => {
             return this.get(q + qr.q, r + qr.r)
         }).filter(x => x !== undefined)
+    }
+
+    /**
+     * Returns a list of exactly 6 items for each of the surrounding tiles at (q,r).
+     * Non-existing neighbors will occur as "undefined". The list is always returned
+     * in the same order of NE [0], E [1], SE [2], SW [3], W [4], NW [5].
+     * @param q
+     * @param r
+     * @returns {{q: number, r: number}[]}
+     */
+    surrounding(q: number, r: number): T[] {
+        return Grid.NEIGHBOR_QRS.map(qr => {
+            return this.get(q + qr.q, r + qr.r)
+        })
     }
 }
