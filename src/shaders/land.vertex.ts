@@ -99,7 +99,7 @@ void main() {
     vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);
     vHidden = style.y >= 100.0 ? 1.0 : 0.0;
     
-    mat3 T = tangentSpace(vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);
+    mat3 T = tangentSpace(vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);
     vLightDirT = T * lightDir;
     
     vNeighborsEast = neighborsEast;

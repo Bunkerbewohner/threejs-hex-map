@@ -18,6 +18,9 @@ varying float vFogOfWar;
 varying float vHill;
 varying float vHidden;
 varying vec2 vOffset;
+varying vec3 vLightDirT;
+varying vec3 vNeighborsEast;
+varying vec3 vNeighborsWest;
 
 const vec3 cameraPos = vec3(0, -25.0, 25.0);
 const vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
@@ -31,7 +34,8 @@ void main() {
 
     normal = normalize((texture2D(hillsNormal, vTexCoord * 1.5 + vOffset * 0.5).xyz * 2.0) - 1.0);
 
-    vec3 lightDir = normalize(lightPos - vPosition);
+    //vec3 lightDir = normalize(lightPos - vPosition);
+    vec3 lightDir = vLightDirT;
     float lambertian = max(dot(lightDir, normal), 0.0);
 
     vec3 color = lightAmbient + lambertian * texColor.xyz * lightDiffuse;

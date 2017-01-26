@@ -73,7 +73,7 @@ vec4 terrainTransition(vec4 inputColor, float terrain, float sector) {
 void main() {
     // LAND
     vec4 texColor = texture2D(texture, vTexCoord);
-    vec3 normal = vec3(0.0, -1.0, 0.0);
+    vec3 normal = vec3(0.0, 1.0, 0.0);
     vec2 normalMapUV = vPosition.xy * hillsNormalMapScale;
 
     /// Transitions to neighboring tiles
@@ -87,7 +87,7 @@ void main() {
     // HILL
     if (vHill > 0.0) {
         normal = normalize((texture2D(hillsNormal, normalMapUV).xyz * 2.0) - 1.0);
-        normal = mix(normal, vec3(0.0, -1.0, 0.0), vExtra * vExtra * vExtra); // fade out towards tile edges
+        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra * vExtra); // fade out towards tile edges
     }
 
     vec3 lightDir = vLightDirT;
