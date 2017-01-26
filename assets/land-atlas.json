@@ -1,41 +1,37 @@
 {
-  "image": "terrain-diffuse.png",
+  "image": "terrain.png",
   "width": 1024,
   "height": 1024,
   "cellSize": 256,
   "cellSpacing": 2,
   "textures": {
     "desert": {
-      "cellX": 0,
-      "cellY": 0
+      "cellX": 2,
+      "cellY": 1
     },
     "grass": {
-      "cellX": 0,
+      "cellX": 1,
       "cellY": 1
     },
     "mountain": {
-      "cellX": 0,
+      "cellX": 1,
       "cellY": 2
     },
     "plains": {
-      "cellX": 1,
-      "cellY": 0
+      "cellX": 0,
+      "cellY": 1
     },
     "snow": {
       "cellX": 2,
       "cellY": 0
     },
-    "todo": {
-      "cellX": 1,
-      "cellY": 1
-    },
     "tundra": {
-      "cellX": 1,
+      "cellX": 0,
       "cellY": 2
     },
     "water": {
-      "cellX": 2,
-      "cellY": 1
+      "cellX": 0,
+      "cellY": 0
     }
   }
 }

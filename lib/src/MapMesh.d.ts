@@ -12,6 +12,10 @@ export interface MapMeshOptions {
      */
     terrainAtlas: TextureAtlas;
     /**
+     * Texture with blend masks for transitions between terrains
+     */
+    transitionTexture: Texture;
+    /**
      * River tile atlas texture containing parts for each possible river variation.
      * Use /tools/river-atlas.py to generate.
      */

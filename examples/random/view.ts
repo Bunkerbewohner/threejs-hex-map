@@ -44,12 +44,13 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     const loadTexture = (name: string) => textureLoader.load(asset(name))    
     const options: MapMeshOptions = {
         terrainAtlas: null,
-        terrainAtlasTexture: loadTexture("terrain-diffuse.png"),
+        terrainAtlasTexture: loadTexture("terrain.png"),
         hillsNormalTexture: loadTexture("hills-normal-2.png"),
         coastAtlasTexture: loadTexture("coast-diffuse.png"),
         riverAtlasTexture: loadTexture("river-diffuse.png"),
         undiscoveredTexture: loadTexture("paper.jpg"),
-        treeTexture: loadTexture("tree.png")
+        treeTexture: loadTexture("tree.png"),
+        transitionTexture: loadTexture("transitions.png")
     }
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
     options.terrainAtlas = atlas

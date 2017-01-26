@@ -39,6 +39,11 @@ export interface MapMeshOptions {
     terrainAtlas: TextureAtlas;
 
     /**
+     * Texture with blend masks for transitions between terrains
+     */
+    transitionTexture: Texture;
+
+    /**
      * River tile atlas texture containing parts for each possible river variation.
      * Use /tools/river-atlas.py to generate.
      */
@@ -150,7 +155,7 @@ export default class MapMesh extends Group implements TileDataSource {
         const landMaterial: any = this.land.material
         landMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0
 
-        const mountainMaterial: any = this.land.material
+        const mountainMaterial: any = this.mountains.material
         mountainMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0
     }
 
@@ -192,6 +197,7 @@ export default class MapMesh extends Group implements TileDataSource {
         options.hillsNormalTexture.wrapS = options.hillsNormalTexture.wrapT = RepeatWrapping
         options.terrainAtlasTexture.wrapS = options.terrainAtlasTexture.wrapT = RepeatWrapping
         options.undiscoveredTexture.wrapS = options.undiscoveredTexture.wrapT = RepeatWrapping
+        //options.transitionTexture.flipY = true
 
         this.loaded = Promise.all([
             this.createLandMesh(this.tiles.filter(t => !t.isMountain)),            
@@ -297,6 +303,10 @@ export default class MapMesh extends Group implements TileDataSource {
                 mapTexture: {
                     type: "t",
                     value: this.options.undiscoveredTexture
+                },
+                transitionTexture: {
+                    type: "t",
+                    value: this.options.transitionTexture
                 },
                 lightDir: {
                     type: "v3",

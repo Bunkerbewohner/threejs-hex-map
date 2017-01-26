@@ -2,9 +2,7 @@ export const LAND_VERTEX_SHADER = `
 //
 // Vertex Shader for Land
 //
-
-
-precision highp float;
+precision mediump float;
 
 uniform float sineTime; // oscillating time [-1.0, 1.0]
 uniform float zoom; // camera zoom factor
@@ -31,10 +29,16 @@ attribute float border; // border = distance from hexagon center (0.0 = center, 
 // style.w = river texture index (0 - 64)
 attribute vec4 style;
 
+// type of terrain on surrounding tiles as texture atlas cell index (like style.x)
+// is -1 if there is no neighbor (e.g. at the border of the map)
+attribute vec3 neighborsEast; // x = NE, y = E, z = SE
+attribute vec3 neighborsWest; // x = SW, y = W, z = NW 
+
 varying vec3 vPosition;
 varying vec2 vTexCoord;
 varying vec2 vUV;
 varying float vExtra;
+varying float vTerrain; // texture cell
 varying float vFogOfWar; // 1.0 = shadow, 0.0 = visible
 varying float vHidden; // 1.0 = hidden, 0.0 = visible
 varying float vHill;
@@ -42,6 +46,9 @@ varying vec2 vOffset;
 varying vec2 vCoastTextureCell;
 varying vec2 vRiverTextureCell;
 varying vec3 vLightDirT;
+
+varying vec3 vNeighborsEast;
+varying vec3 vNeighborsWest;
 
 vec2 cellIndexToUV(float idx) {
     float atlasWidth = textureAtlasMeta.x;
@@ -94,5 +101,10 @@ void main() {
     
     mat3 T = tangentSpace(vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);
     vLightDirT = T * lightDir;
+    
+    vNeighborsEast = neighborsEast;
+    vNeighborsWest = neighborsWest;
+    
+    vTerrain = style.x;
 }
 `
