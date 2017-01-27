@@ -62,6 +62,13 @@ export interface MapMeshOptions {
      */
     mountainsVertexShader?: string;
 }
+export interface MapMeshTile extends TileData {
+    /**
+     * Index of this tile in its vertex buffer
+     */
+    bufferIndex: number;
+    isMountain: boolean;
+}
 export interface TextureReplacements {
     terrainAtlasTexture?: Texture;
     riverAtlasTexture?: Texture;
@@ -91,8 +98,8 @@ export default class MapMesh extends Group implements TileDataSource {
     private _showGrid;
     showGrid: boolean;
     /**
-     * @param _tiles the tiles to actually render in this mesh
-     * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
+     * @param tiles the tiles to actually render in this mesh
+     * @param globalGrid the grid with all tiles, including the ones that are not rendered in this mesh
      * @param options map mesh configuration options
      */
     constructor(tiles: TileData[], options: MapMeshOptions, globalGrid?: Grid<TileData>);

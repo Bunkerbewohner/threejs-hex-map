@@ -4,7 +4,7 @@ import {randomPointInHexagon, randomPointInHexagonEx, NE, E, SE, SW, W, NW} from
 import {qrToWorld, qrToWorldX, qrToWorldY} from './coords';
 import MapMesh from './MapMesh';
 import Grid from "./Grid";
-import { MapMeshOptions } from './MapMesh';
+import { MapMeshOptions, MapMeshTile } from './MapMesh';
 import Texture = THREE.Texture;
 import TextureLoader = THREE.TextureLoader;
 
@@ -32,12 +32,12 @@ export default class Trees extends THREE.Object3D {
      * @param tiles tiles with trees to be rendered
      * @param _grid grid of all tiles
      */
-    constructor(tiles: TileData[], private _grid: Grid<TileData>, private options: MapMeshOptions) {
+    constructor(tiles: MapMeshTile[], private _grid: Grid<TileData>, private options: MapMeshOptions) {
         super()
 
         this._scale = options.scale || 1.0
         this.textures = options.treeTextures
-        this.allTiles = tiles.filter(t => t.treeIndex != undefined).map(t => ({bufferIndex: -1, ...t}))
+        this.allTiles = tiles.filter(t => t.treeIndex != undefined).map(t => ({...t}))
 
         for (let i = 0; i < this.textures.length; i++) {
             this.tiles[i] = this.allTiles.filter(t => t.treeIndex === i)
@@ -50,11 +50,13 @@ export default class Trees extends THREE.Object3D {
     }
 
     updateTiles(tiles: TileData[]) {
+        const allTreeTiles = tiles.filter(t => t.treeIndex != undefined)
+
         for (let treeIndex = 0; treeIndex < this.textures.length; treeIndex++) {
             const geometry = this.geometry[treeIndex] as InstancedBufferGeometry
             const positions = geometry.getAttribute("position") as InstancedBufferAttribute
             const numTrees = this.numTreesPerForest
-            const treeTiles = tiles.filter(t => t.treeIndex === treeIndex)
+            const treeTiles = allTreeTiles.filter(t => t.treeIndex === treeIndex)
 
             treeTiles.forEach(tile => {
                 const old = this.localGrid[treeIndex].get(tile.q, tile.r)
@@ -62,8 +64,9 @@ export default class Trees extends THREE.Object3D {
 
                 if (old.clouds != tile.clouds) {
                     old.clouds = tile.clouds
-                    const value = tile.clouds ? 9999 : 0.2
+                    const value = tile.clouds ? 99999 : 0.1
                     for (let i = 0; i < numTrees; i++) {
+                        //const value = positions.getZ(old.bufferIndex + i) > 1 ? 0.1 : 99999
                         positions.setZ(old.bufferIndex + i, value)
                     }
                 }
@@ -96,17 +99,16 @@ export default class Trees extends THREE.Object3D {
         const geometry = new THREE.BufferGeometry()
         const treePositions = new Float32Array(treesPerWood * numWoods * 3)
         const treeColors = new Float32Array(treesPerWood * numWoods * 3)
-        const numTreesLeft = () => treePositions.length - vertexIndex
         let vertexIndex = 0
         let actualNumTrees = 0
         let bufferIndex = 0
 
         // iterate from back to front to get automatic sorting by z-depth
-        for (var i = tiles.length - 1; i >= 0; i--) {
+        for (let i = tiles.length - 1; i >= 0; i--) {
             const tile = tiles[i]
             const x = qrToWorldX(tile.q, tile.r, this._scale)
             const y = qrToWorldY(tile.q, tile.r, this._scale)
-            const z = tile.clouds ? 9999 : 0.1
+            const z = tile.clouds ? 99999 : 0.1
             const numTrees = treesPerWood
             const baseColor = this.getTreeColor(tile)
             const positions: Vector3[] = new Array(numTrees)
@@ -115,26 +117,23 @@ export default class Trees extends THREE.Object3D {
             tile.bufferIndex = bufferIndex
 
             // generate random tree points on this tile
-            for (var t = 0; t < numTrees; t++) {
-                var point = this.randomPointOnTile(waterAdjacency)
-                point.setZ(0.1)
-
-                positions[t] = point
+            for (let t = 0; t < numTrees; t++) {
+                positions[t] = this.randomPointOnTile(waterAdjacency)
                 colors[t] = this.varyColor(baseColor)
             }
 
             // sort by Y,Z
             positions.sort((a, b) => {
-                var diff = b.y - a.y
+                const diff = b.y - a.y
                 if (Math.abs(diff) < 0.1) return b.z - a.z
                 else return diff
             })
 
             // add the vertices for this tile
-            for (var t = 0; t < positions.length; t++) {
+            for (let t = 0; t < positions.length; t++) {
                 treePositions[vertexIndex + 0] = x + positions[t].x
                 treePositions[vertexIndex + 1] = y + positions[t].y
-                treePositions[vertexIndex + 2] = z + positions[t].z
+                treePositions[vertexIndex + 2] = z
                 treeColors[vertexIndex + 0] = colors[t][0]
                 treeColors[vertexIndex + 1] = colors[t][1]
                 treeColors[vertexIndex + 2] = colors[t][2]
@@ -145,8 +144,12 @@ export default class Trees extends THREE.Object3D {
             actualNumTrees += positions.length
         }
 
-        geometry.addAttribute("position", new THREE.BufferAttribute(treePositions, 3))
+        const posAttr = new THREE.BufferAttribute(treePositions, 3)
+
+        geometry.addAttribute("position", posAttr)
         geometry.addAttribute("color", new THREE.BufferAttribute(treeColors, 3))
+
+        geometry.name = "Trees[" + textureIndex + "]"
         return geometry;
     }
 
