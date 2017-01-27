@@ -15,15 +15,16 @@ interface TreeTile extends TileData {
 }
 
 export default class Trees extends THREE.Object3D {
-    private geometry: THREE.BufferGeometry;
-    private material: THREE.PointsMaterial;
-    private pointCloud: THREE.Points;
+    private geometry: THREE.BufferGeometry[] = [];
+    private material: THREE.PointsMaterial[] = [];
+    private pointCloud: THREE.Points[] = [];
     private treeSize = 1.2
     private numTreesPerForest = 50
-    private tiles: TreeTile[]
-    private localGrid: Grid<TreeTile>
+    private allTiles: TreeTile[]
+    private tiles: TreeTile[][] = []
+    private localGrid: Grid<TreeTile>[] = []
 
-    private texture: Texture
+    private textures: Texture[]
     private _scale: number
 
     /**
@@ -35,42 +36,48 @@ export default class Trees extends THREE.Object3D {
         super()
 
         this._scale = options.scale || 1.0
-        this.texture = options.treeTexture
-        this.tiles = tiles.filter(t => t.trees).map(t => ({bufferIndex: -1, ...t}))
-        this.localGrid = new Grid<TreeTile>(0, 0).init(this.tiles)
+        this.textures = options.treeTextures
+        this.allTiles = tiles.filter(t => t.treeIndex != undefined).map(t => ({bufferIndex: -1, ...t}))
 
-        this.material = this.buildMaterial()
-        this.geometry = this.buildGeometry()
-        this.pointCloud = new THREE.Points(this.geometry, this.material)
-        this.add(this.pointCloud)
+        for (let i = 0; i < this.textures.length; i++) {
+            this.tiles[i] = this.allTiles.filter(t => t.treeIndex === i)
+            this.localGrid[i] = new Grid<TreeTile>(0, 0).init(this.tiles[i])
+            this.material[i] = this.buildMaterial(i)
+            this.geometry[i] = this.buildGeometry(i)
+            this.pointCloud[i] = new THREE.Points(this.geometry[i], this.material[i])
+            this.add(this.pointCloud[i])
+        }
     }
 
     updateTiles(tiles: TileData[]) {
-        const geometry = this.geometry as InstancedBufferGeometry
-        const positions = geometry.getAttribute("position") as InstancedBufferAttribute
-        const numTrees = this.numTreesPerForest
-        
-        tiles.forEach(tile => {
-            const old = this.localGrid.get(tile.q, tile.r)
-            if (!old) return
+        for (let treeIndex = 0; treeIndex < this.textures.length; treeIndex++) {
+            const geometry = this.geometry[treeIndex] as InstancedBufferGeometry
+            const positions = geometry.getAttribute("position") as InstancedBufferAttribute
+            const numTrees = this.numTreesPerForest
+            const treeTiles = tiles.filter(t => t.treeIndex === treeIndex)
 
-            if (old.clouds != tile.clouds) {
-                old.clouds = tile.clouds
-                const value = tile.clouds ? 9999 : 0.2
-                for (let i = 0; i < numTrees; i++) {
-                    positions.setZ(old.bufferIndex + i, value)
+            treeTiles.forEach(tile => {
+                const old = this.localGrid[treeIndex].get(tile.q, tile.r)
+                if (!old) return
+
+                if (old.clouds != tile.clouds) {
+                    old.clouds = tile.clouds
+                    const value = tile.clouds ? 9999 : 0.2
+                    for (let i = 0; i < numTrees; i++) {
+                        positions.setZ(old.bufferIndex + i, value)
+                    }
                 }
-            }
-        })
+            })
 
-        positions.needsUpdate = true
+            positions.needsUpdate = true
+        }
     }
 
-    buildMaterial(): THREE.PointsMaterial {
-        var texture = this.texture
+    buildMaterial(textureIndex: number): THREE.PointsMaterial {
+        const texture = this.textures[textureIndex]
         texture.minFilter = THREE.LinearFilter
 
-        var material = new THREE.PointsMaterial({
+        return new THREE.PointsMaterial({
             map: texture,
             transparent: true,
             vertexColors: THREE.VertexColors,
@@ -78,23 +85,21 @@ export default class Trees extends THREE.Object3D {
             alphaTest: 0.20,
             size: this.treeSize * this._scale * (this.options.treeSize || 1.0)
         })
-
-        return material;
     }
 
-    buildGeometry(): THREE.BufferGeometry {
-        var tiles: TreeTile[] = this.tiles        
-        var numWoods = tiles.length
-        var treesPerWood = this.numTreesPerForest
-        var spread = 1.5
-        var halfSpread = spread / 2
-        var geometry = new THREE.BufferGeometry()
-        var treePositions = new Float32Array(treesPerWood * numWoods * 3)
-        var treeColors = new Float32Array(treesPerWood * numWoods * 3)
-        var vertexIndex = 0
-        var numTreesLeft = () => treePositions.length - vertexIndex
-        var actualNumTrees = 0
-        var bufferIndex = 0
+    buildGeometry(textureIndex: number): THREE.BufferGeometry {
+        const tiles: TreeTile[] = this.tiles[textureIndex]
+        const numWoods = tiles.length
+        const treesPerWood = this.numTreesPerForest
+        const spread = 1.5
+        const halfSpread = spread / 2
+        const geometry = new THREE.BufferGeometry()
+        const treePositions = new Float32Array(treesPerWood * numWoods * 3)
+        const treeColors = new Float32Array(treesPerWood * numWoods * 3)
+        const numTreesLeft = () => treePositions.length - vertexIndex
+        let vertexIndex = 0
+        let actualNumTrees = 0
+        let bufferIndex = 0
 
         // iterate from back to front to get automatic sorting by z-depth
         for (var i = tiles.length - 1; i >= 0; i--) {

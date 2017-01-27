@@ -32,10 +32,18 @@ async function generateMap(mapSize: number) {
         else return warmZone(q, r, height)
     }
 
-    return generateRandomMap(mapSize, (q, r, height) => {            
+    function treeAt(q: number, r: number, terrain: string): number | undefined {
+        if (terrain == "snow") return 3
+        else if (terrain == "tundra") return 2
+        else if (Math.abs(r) < mapSize * 0.1) return 0 // tropical
+        else return 1
+    }
+
+    return generateRandomMap(mapSize, (q, r, height): TileData => {
         const terrain = terrainAt(q, r, height)
-        const trees = !isMountain(height) && !isWater(height) && terrain != "desert" && varying(true, false)
-        return {q, r, height, terrain, trees, river: null, fog: true, clouds: true }
+        const trees = isMountain(height) || isWater(height) || terrain == "desert" ? undefined :
+            varying(true, false) && treeAt(q, r, terrain)
+        return {q, r, height, terrain, treeIndex: trees, river: null, fog: false, clouds: false }
     })
 }
 
@@ -49,7 +57,7 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
         coastAtlasTexture: loadTexture("coast-diffuse.png"),
         riverAtlasTexture: loadTexture("river-diffuse.png"),
         undiscoveredTexture: loadTexture("paper.jpg"),
-        treeTexture: loadTexture("tree.png"),
+        treeTextures: ["1", "2", "3", "4"].map(nr => loadTexture(`tree${nr}.png`)),
         transitionTexture: loadTexture("transitions.png")
     }
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
@@ -64,8 +72,8 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
 
     mapView.onLoaded = () => {
         // uncover tiles around initial selection
-        setFogAround(mapView, mapView.selectedTile, 10, true, false)
-        setFogAround(mapView, mapView.selectedTile, 5, false, false)
+        //setFogAround(mapView, mapView.selectedTile, 10, true, false)
+        //setFogAround(mapView, mapView.selectedTile, 5, false, false)
     }
 
     mapView.onTileSelected = (tile: TileData) => {

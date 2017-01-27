@@ -18,7 +18,7 @@ export interface TileData {
         riverIndex: number;
         riverTileIndex: number;
     };
-    trees?: boolean;
+    treeIndex?: number;
 }
 export declare function isLand(height: Height): boolean;
 export declare function isWater(height: Height): boolean;

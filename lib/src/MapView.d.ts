@@ -54,6 +54,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     getCameraFocusPosition(pos: QR): Vector3;
     getCameraFocusPositionWorld(pos: Vector3): Vector3;
     focus(q: number, r: number): void;
+    focusWorldPos(v: Vector3): void;
     selectTile(tile: TileData): void;
     pickTile(worldPos: THREE.Vector3): TileData | null;
 }

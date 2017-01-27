@@ -10,9 +10,10 @@ export default class Trees extends THREE.Object3D {
     private pointCloud;
     private treeSize;
     private numTreesPerForest;
+    private allTiles;
     private tiles;
     private localGrid;
-    private texture;
+    private textures;
     private _scale;
     /**
      *
@@ -21,8 +22,8 @@ export default class Trees extends THREE.Object3D {
      */
     constructor(tiles: TileData[], _grid: Grid<TileData>, options: MapMeshOptions);
     updateTiles(tiles: TileData[]): void;
-    buildMaterial(): THREE.PointsMaterial;
-    buildGeometry(): THREE.BufferGeometry;
+    buildMaterial(textureIndex: number): THREE.PointsMaterial;
+    buildGeometry(textureIndex: number): THREE.BufferGeometry;
     private randomPointOnTile(water);
     private varyColor(color);
     private getTreeColor(tile);

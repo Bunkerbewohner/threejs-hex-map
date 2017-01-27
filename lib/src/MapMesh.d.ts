@@ -36,7 +36,7 @@ export interface MapMeshOptions {
     /**
      * Diffuse map for tree sprites
      */
-    treeTexture: Texture;
+    treeTextures: Texture[];
     /**
      * Default 1.0
      */
