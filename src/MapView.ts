@@ -67,14 +67,16 @@ export default class MapView implements MapViewControls, TileDataSource {
      * Sets up the camera with the given Z position (height) and so that the view center (the point the camera is pointed at) doesn't change.
      */
     setZoom(z: number) {
+        this._camera.updateMatrixWorld(false)
+
         // position the camera is currently centered at
         const lookAt = this.getViewCenter()
 
         // move camera along the Z axis to adjust the view distance
         this._zoom = z
         this._camera.position.z = z
-        this._camera.updateMatrixWorld(false)
-        
+        this._camera.updateMatrixWorld(true)
+
         if (lookAt != null) {
             // reposition camera so that the view center stays the same
             this._camera.position.copy(this.getCameraFocusPositionWorld(lookAt))
@@ -228,6 +230,10 @@ export default class MapView implements MapViewControls, TileDataSource {
 
     focus(q: number, r: number) {
         this._camera.position.copy(this.getCameraFocusPosition({q, r}))
+    }
+
+    focusWorldPos(v: Vector3) {
+        this._camera.position.copy(this.getCameraFocusPositionWorld(v))
     }
 
     selectTile(tile: TileData) {        
