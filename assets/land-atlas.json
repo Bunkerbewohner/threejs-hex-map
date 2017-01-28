@@ -29,8 +29,12 @@
       "cellX": 0,
       "cellY": 2
     },
-    "water": {
+    "ocean": {
       "cellX": 0,
+      "cellY": 0
+    },
+    "coast": {
+      "cellX": 1,
       "cellY": 0
     }
   }

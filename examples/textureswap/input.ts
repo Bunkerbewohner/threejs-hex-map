@@ -24,6 +24,9 @@ export function initInput(mapView: MapView) {
         },
         [KEY_CODES.Q]: {
             down: () => mapView.setZoom(mapView.getZoom() * 1.1)
+        },
+        [KEY_CODES.G]: {
+            down: () => mapView.mapMesh.showGrid = !mapView.mapMesh.showGrid
         }
     }
 
@@ -42,4 +45,18 @@ export function initInput(mapView: MapView) {
             actions["up"]()
         }
     }, false)
+
+    window.addEventListener("mousewheel", onMouseWheelHandler(mapView), false)
+    window.addEventListener("DOMMouseScroll", onMouseWheelHandler(mapView), false)
+}
+
+function onMouseWheelHandler(mapView: MapView) {
+    return (e: MouseWheelEvent) => {
+        var delta = Math.max(-1, Math.min(1, (e.wheelDeltaY || e.detail)))
+        if (delta == 0) return;
+
+        const zoom = Math.max(8.0, Math.min(500.0, mapView.getZoom() * (1.0 - delta * 0.025)))
+
+        mapView.setZoom(zoom)
+    }
 }

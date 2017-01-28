@@ -6,6 +6,7 @@ export declare const KEY_CODES: {
     SHIFT: number;
     Q: number;
     E: number;
+    G: number;
 };
 export interface KeyActions {
     [keyCode: number]: KeyAction;

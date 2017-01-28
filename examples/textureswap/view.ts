@@ -17,8 +17,9 @@ async function loadTextureAtlas() {
 async function generateMap(mapSize: number) {        
     return generateRandomMap(mapSize, (q, r, height) => {            
         const terrain = (height < 0 && "water") || (height > 0.75 && "mountain") || varying("grass", "plains")
-        const trees = !isMountain(height) && !isWater(height) && varying(true, false)
-        return {q, r, height, terrain, trees, river: null, fog: true, clouds: true }
+        const trees = !isMountain(height) && !isWater(height) && varying(true, false) ?
+            Math.floor(Math.random()*2) : undefined
+        return {q, r, height, terrain, treeIndex: trees, river: null, fog: false, clouds: false }
     })
 }
 
@@ -27,12 +28,12 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     const loadTexture = (name: string) => textureLoader.load(asset(name))    
     const options: MapMeshOptions = {
         terrainAtlas: null,
-        terrainAtlasTexture: loadTexture("terrain-diffuse.png"),
-        hillsNormalTexture: loadTexture("hills-normal.png"),
+        terrainAtlasTexture: loadTexture("terrain.png"),
+        hillsNormalTexture: loadTexture("hills-normal-2.png"),
         coastAtlasTexture: loadTexture("coast-diffuse.png"),
         riverAtlasTexture: loadTexture("river-diffuse.png"),
         undiscoveredTexture: loadTexture("paper.jpg"),
-        transitionTexture: null,
+        transitionTexture: loadTexture("transitions.png"),
         treeSpritesheet: loadTexture("trees.png"),
         treeSpritesheetSubdivisions: 4
     }
@@ -43,15 +44,8 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
     mapView.zoom = initialZoom
     mapView.load(map, options)
 
-    mapView.onLoaded = () => {
-        // uncover tiles around initial selection
-        setFogAround(mapView, mapView.selectedTile, 6, true, false)
-        setFogAround(mapView, mapView.selectedTile, 2, false, false)
-    }
-
     mapView.onTileSelected = (tile: TileData) => {
-        // uncover tiles around selection
-        setFogAround(mapView, tile, 2, false, false)
+
     }
 
     return mapView

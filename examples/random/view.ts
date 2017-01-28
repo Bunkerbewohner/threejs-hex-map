@@ -26,7 +26,7 @@ async function generateMap(mapSize: number) {
     }
 
     function terrainAt(q: number, r: number, height: number): string {
-        if (height < 0) return "water"
+        if (height < 0.0) return "ocean"
         else if (height > 0.75) return "mountain"
         else if (Math.abs(r) > mapSize * 0.4) return coldZone(q, r, height)
         else return warmZone(q, r, height)

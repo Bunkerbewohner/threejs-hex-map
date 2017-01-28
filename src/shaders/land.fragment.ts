@@ -61,7 +61,7 @@ vec2 cellIndexToUV(float idx) {
  * @param sector 0 - 5 (NE - NW) 
  */
 vec4 terrainTransition(vec4 inputColor, float terrain, float sector) {
-    if (vTerrain <= 1.0) return inputColor;
+    if (vTerrain <= 1.0 && terrain > 1.0) return inputColor;
     vec2 otherUV = cellIndexToUV(terrain);
     vec2 blendMaskUV = vec2(sector/6.0 + vUV.x / 6.0, 1.0 - vUV.y / 6.0);
     vec4 color = texture2D(texture, otherUV);
