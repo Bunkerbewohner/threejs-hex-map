@@ -1,4 +1,4 @@
-define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return /******/ (function(modules) { // webpackBootstrap
+define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -44,7 +44,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(13), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, MapMesh_1, DefaultMapViewController_1, Grid_1) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(17), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, MapMesh_1, DefaultMapViewController_1, Grid_1) {
 	    "use strict";
 	    exports.MapMesh = MapMesh_1.default;
 	    exports.DefaultMapViewController = DefaultMapViewController_1.default;
@@ -74,7 +74,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
 	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
 	var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -104,13 +104,13 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
 	    }
 	};
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4), __webpack_require__(5), __webpack_require__(3), __webpack_require__(6), __webpack_require__(2), __webpack_require__(7), __webpack_require__(9), __webpack_require__(10), __webpack_require__(11), __webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, interfaces_1, hexagon_1, three_1, trees_1, coords_1, Grid_1, land_fragment_1, land_vertex_1, mountains_fragment_1, mountains_vertex_1) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(5), __webpack_require__(6), __webpack_require__(4), __webpack_require__(7), __webpack_require__(2), __webpack_require__(8), __webpack_require__(9), __webpack_require__(10), __webpack_require__(11), __webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, interfaces_1, hexagon_1, three_1, coords_1, Grid_1, land_fragment_1, land_vertex_1, mountains_fragment_1, mountains_vertex_1, Forests_1) {
 	    "use strict";
 	    var MapMesh = (function (_super) {
 	        __extends(MapMesh, _super);
 	        /**
-	         * @param _tiles the tiles to actually render in this mesh
-	         * @param grid the grid with all tiles, including the ones that are not rendered in this mesh
+	         * @param tiles the tiles to actually render in this mesh
+	         * @param globalGrid the grid with all tiles, including the ones that are not rendered in this mesh
 	         * @param options map mesh configuration options
 	         */
 	        function MapMesh(tiles, options, globalGrid) {
@@ -137,6 +137,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	            options.hillsNormalTexture.wrapS = options.hillsNormalTexture.wrapT = three_1.RepeatWrapping;
 	            options.terrainAtlasTexture.wrapS = options.terrainAtlasTexture.wrapT = three_1.RepeatWrapping;
 	            options.undiscoveredTexture.wrapS = options.undiscoveredTexture.wrapT = three_1.RepeatWrapping;
+	            //options.transitionTexture.flipY = true
 	            _this.loaded = Promise.all([
 	                _this.createLandMesh(_this.tiles.filter(function (t) { return !t.isMountain; })),
 	                _this.createMountainMesh(_this.tiles.filter(function (t) { return t.isMountain; })),
@@ -154,7 +155,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	                this._showGrid = value;
 	                var landMaterial = this.land.material;
 	                landMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0;
-	                var mountainMaterial = this.land.material;
+	                var mountainMaterial = this.mountains.material;
 	                mountainMaterial.uniforms.showGrid.value = value ? 1.0 : 0.0;
 	            },
 	            enumerable: true,
@@ -200,6 +201,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	                    return;
 	                if (updated.fog != old.fog || updated.clouds != old.clouds) {
 	                    old.fog = updated.fog;
+	                    old.clouds = updated.clouds;
 	                    var attribute = old.isMountain ? mountainsStyleAttr : landStyleAttr;
 	                    _this.updateFogStyle(attribute, old.bufferIndex, updated.fog, updated.clouds);
 	                }
@@ -218,7 +220,14 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	            return __awaiter(this, void 0, void 0, function () {
 	                var trees;
 	                return __generator(this, function (_a) {
-	                    trees = this.trees = new trees_1.default(this.tiles, this.globalGrid, this.options);
+	                    trees = this.trees = new Forests_1.default(this.tiles, this.globalGrid, {
+	                        treeSize: this.options.treeSize || 1.44,
+	                        spritesheet: this.options.treeSpritesheet,
+	                        spritesheetSubdivisions: this.options.treeSpritesheetSubdivisions,
+	                        treesPerForest: this.options.treesPerForest || 50,
+	                        mapScale: this.options.scale || 1.0,
+	                        alphaTest: this.options.treeAlphaTest || 0.2
+	                    });
 	                    this.add(trees);
 	                    return [2 /*return*/];
 	                });
@@ -255,6 +264,14 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	                            mapTexture: {
 	                                type: "t",
 	                                value: this.options.undiscoveredTexture
+	                            },
+	                            transitionTexture: {
+	                                type: "t",
+	                                value: this.options.transitionTexture
+	                            },
+	                            lightDir: {
+	                                type: "v3",
+	                                value: new THREE.Vector3(0.5, 0.6, -0.5).normalize()
 	                            }
 	                        },
 	                        vertexShader: this.options.landVertexShader,
@@ -293,6 +310,10 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	                            mapTexture: {
 	                                type: "t",
 	                                value: this.options.undiscoveredTexture
+	                            },
+	                            lightDir: {
+	                                type: "v3",
+	                                value: new THREE.Vector3(0.5, 0.6, -0.5).normalize()
 	                            }
 	                        },
 	                        vertexShader: this.options.mountainsVertexShader,
@@ -323,19 +344,23 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        geometry.addAttribute("border", hexagon.attributes.border);
 	        // positions for each hexagon tile
 	        var tilePositions = tiles.map(function (tile) { return coords_1.qrToWorld(tile.q, tile.r, scale); });
-	        var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 3), 2, 1);
+	        var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 2), 2, 1);
 	        posAttr.copyVector2sArray(tilePositions);
 	        geometry.addAttribute("offset", posAttr);
 	        //----------------
 	        var cellSize = textureAtlas.cellSize;
 	        var cellSpacing = textureAtlas.cellSpacing;
 	        var numColumns = textureAtlas.width / cellSize;
+	        function terrainCellIndex(terrain) {
+	            var cell = textureAtlas.textures[terrain];
+	            return cell.cellY * numColumns + cell.cellX;
+	        }
 	        var styles = tiles.map(function (tile, index) {
 	            var cell = textureAtlas.textures[tile.terrain];
 	            if (!cell) {
 	                throw new Error("Terrain '" + tile.terrain + "' not in texture atlas\r\n" + JSON.stringify(textureAtlas));
 	            }
-	            var cellIndex = cell.cellY * numColumns + cell.cellX;
+	            var cellIndex = terrainCellIndex(tile.terrain);
 	            var shadow = tile.fog ? 1 : 0;
 	            var clouds = tile.clouds ? 1 : 0;
 	            var hills = interfaces_1.isHill(tile.height) ? 1 : 0;
@@ -349,6 +374,23 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1);
 	        styleAttr.copyVector4sArray(styles);
 	        geometry.addAttribute("style", styleAttr);
+	        // surrounding tile terrain represented as two consecutive Vector3s
+	        // 1. [tileIndex + 0] = NE, [tileIndex + 1] = E, [tileIndex + 2] = SE
+	        // 2. [tileIndex + 0] = SW, [tileIndex + 1] = W, [tileIndex + 2] = NW
+	        var neighborsEast = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1);
+	        var neighborsWest = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1);
+	        for (var i = 0; i < tiles.length; i++) {
+	            var neighbors = grid.surrounding(tiles[i].q, tiles[i].r);
+	            for (var j = 0; j < neighbors.length; j++) {
+	                var neighbor = neighbors[j];
+	                var attr = j > 2 ? neighborsWest : neighborsEast;
+	                var array = attr.array;
+	                // terrain cell index indicates the type of terrain for lookup in the shader
+	                array[3 * i + j % 3] = neighbor ? terrainCellIndex(neighbor.terrain) : -1;
+	            }
+	        }
+	        geometry.addAttribute("neighborsEast", neighborsEast);
+	        geometry.addAttribute("neighborsWest", neighborsWest);
 	        return geometry;
 	    }
 	    function computeCoastTextureIndex(grid, tile) {
@@ -404,443 +446,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, three_1) {
-	    "use strict";
-	    var Z_PLANE = new three_1.Plane(new three_1.Vector3(0, 0, 1), 0);
-	    function qrToWorld(q, r, scale) {
-	        if (scale === void 0) { scale = 1.0; }
-	        return new three_1.Vector3(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale, 0);
-	    }
-	    exports.qrToWorld = qrToWorld;
-	    function qrToWorldX(q, r, scale) {
-	        if (scale === void 0) { scale = 1.0; }
-	        return Math.sqrt(3) * (q + r / 2) * scale;
-	    }
-	    exports.qrToWorldX = qrToWorldX;
-	    function qrToWorldY(q, r, scale) {
-	        if (scale === void 0) { scale = 1.0; }
-	        return (3 / 2) * r * scale;
-	    }
-	    exports.qrToWorldY = qrToWorldY;
-	    function qrDistance(a, b) {
-	        return (Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2;
-	    }
-	    exports.qrDistance = qrDistance;
-	    function pickingRay(vector, camera) {
-	        // set two vectors with opposing z values
-	        vector.z = -1.0;
-	        var end = new THREE.Vector3(vector.x, vector.y, 1.0);
-	        vector.unproject(camera);
-	        end.unproject(camera);
-	        // find direction from vector to end
-	        end.sub(vector).normalize();
-	        return new THREE.Raycaster(vector, end);
-	    }
-	    exports.pickingRay = pickingRay;
-	    /**
-	     * Transforms mouse coordinates into world space, assuming that the game view spans the entire window.
-	     */
-	    function mouseToWorld(e, camera) {
-	        var mv = new three_1.Vector3((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1, 0.5);
-	        var raycaster = pickingRay(mv, camera);
-	        return raycaster.ray.intersectPlane(Z_PLANE);
-	    }
-	    exports.mouseToWorld = mouseToWorld;
-	    /**
-	     * Transforms screen coordinates into world space, assuming that the game view spans the entire window.
-	     */
-	    function screenToWorld(x, y, camera) {
-	        var mv = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
-	        var raycaster = pickingRay(mv, camera);
-	        return raycaster.ray.intersectPlane(Z_PLANE);
-	    }
-	    exports.screenToWorld = screenToWorld;
-	    /**
-	     * Transforms world coordinates into screen space.
-	     */
-	    function worldToScreen(pos, camera) {
-	        var v = pos.clone();
-	        v.project(camera);
-	        v.x = window.innerWidth / 2 + v.x * (window.innerWidth / 2);
-	        v.y = window.innerHeight / 2 - v.y * (window.innerHeight / 2);
-	        return v;
-	    }
-	    exports.worldToScreen = worldToScreen;
-	    function axialToCube(q, r) {
-	        return { x: q, y: -q - r, z: r };
-	    }
-	    exports.axialToCube = axialToCube;
-	    function cubeToAxial(x, y, z) {
-	        return { q: x, r: z };
-	    }
-	    exports.cubeToAxial = cubeToAxial;
-	    /**
-	     * Rounds fractal cube coordinates to the nearest full cube coordinates.
-	     * @param cubeCoord
-	     * @returns {{x: number, y: number, z: number}}
-	     */
-	    function roundToHex(cubeCoord) {
-	        var x = cubeCoord.x, y = cubeCoord.y, z = cubeCoord.z;
-	        var rx = Math.round(x);
-	        var ry = Math.round(y);
-	        var rz = Math.round(z);
-	        var x_diff = Math.abs(rx - x);
-	        var y_diff = Math.abs(ry - y);
-	        var z_diff = Math.abs(rz - z);
-	        if (x_diff > y_diff && x_diff > z_diff)
-	            rx = -ry - rz;
-	        else if (y_diff > z_diff)
-	            ry = -rx - rz;
-	        else
-	            rz = -rx - ry;
-	        return { x: rx, y: ry, z: rz };
-	    }
-	    exports.roundToHex = roundToHex;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=coords.js.map
-
-/***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
-	    "use strict";
-	    function isLand(height) {
-	        return height >= 0.0 && height < 0.75;
-	    }
-	    exports.isLand = isLand;
-	    function isWater(height) {
-	        return height < 0.0;
-	    }
-	    exports.isWater = isWater;
-	    function isHill(height) {
-	        return height >= 0.375 && height < 0.75;
-	    }
-	    exports.isHill = isHill;
-	    function isMountain(height) {
-	        return height >= 0.75;
-	    }
-	    exports.isMountain = isMountain;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=interfaces.js.map
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
-	    "use strict";
-	    exports.NE = 32;
-	    exports.E = 16;
-	    exports.SE = 8;
-	    exports.SW = 4;
-	    exports.W = 2;
-	    exports.NW = 1;
-	    function subdivideTriangle(a, b, c, numSubdivisions) {
-	        if ((numSubdivisions || 0) <= 0)
-	            return [a, b, c];
-	        var ba = b.clone().sub(a);
-	        var ah = a.clone().add(ba.setLength(ba.length() / 2));
-	        var cb = c.clone().sub(b);
-	        var bh = b.clone().add(cb.setLength(cb.length() / 2));
-	        var ac = a.clone().sub(c);
-	        var ch = c.clone().add(ac.setLength(ac.length() / 2));
-	        return [].concat(subdivideTriangle(ah, bh, ch, numSubdivisions - 1), subdivideTriangle(ch, bh, c, numSubdivisions - 1), subdivideTriangle(ah, ch, a, numSubdivisions - 1), subdivideTriangle(bh, ah, b, numSubdivisions - 1));
-	    }
-	    exports.subdivideTriangle = subdivideTriangle;
-	    function createHexagon(radius, numSubdivisions) {
-	        var numFaces = 6 * Math.pow(4, numSubdivisions);
-	        var positions = new Float32Array(numFaces * 3 * 3), p = 0;
-	        var texcoords = new Float32Array(numFaces * 3 * 2), t = 0;
-	        var border = new Float32Array(numFaces * 3 * 1), e = 0;
-	        var points = [0, 1, 2, 3, 4, 5].map(function (i) {
-	            return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * (i / 6.0)), radius * Math.cos(Math.PI * 2 * (i / 6.0)), 0);
-	        }).concat([new THREE.Vector3(0, 0, 0)]);
-	        var faces = [0, 6, 1, 1, 6, 2, 2, 6, 3, 3, 6, 4, 4, 6, 5, 5, 6, 0];
-	        var vertices = []; // every three vertices constitute one face
-	        for (var i = 0; i < faces.length; i += 3) {
-	            var a = points[faces[i]], b = points[faces[i + 1]], c = points[faces[i + 2]];
-	            vertices = vertices.concat(subdivideTriangle(a, b, c, numSubdivisions));
-	        }
-	        for (i = 0; i < vertices.length; i++) {
-	            positions[p++] = vertices[i].x;
-	            positions[p++] = vertices[i].y;
-	            positions[p++] = vertices[i].z;
-	            texcoords[t++] = 0.02 + 0.96 * ((vertices[i].x + radius) / (radius * 2));
-	            texcoords[t++] = 0.02 + 0.96 * ((vertices[i].y + radius) / (radius * 2));
-	            var inradius = (Math.sqrt(3) / 2) * radius;
-	            border[e++] = vertices[i].length() >= inradius - 0.1 ? 1.0 : 0.0;
-	        }
-	        var geometry = new THREE.BufferGeometry();
-	        geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-	        geometry.addAttribute("uv", new THREE.BufferAttribute(texcoords, 2));
-	        // 1.0 = border vertex, 0.0 otherwise
-	        geometry.addAttribute("border", new THREE.BufferAttribute(border, 1));
-	        return geometry;
-	    }
-	    exports.createHexagon = createHexagon;
-	    /**
-	     * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
-	     */
-	    function randomPointInHexagon(hexRadius) {
-	        // the hexagon consists of 6 triangles, construct one of them randomly
-	        var startCornerIndex = Math.floor(Math.random() * 6);
-	        var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0);
-	        var B = new THREE.Vector3(0, 0, 0);
-	        var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0);
-	        // random point in the triangle based on AB and AC
-	        var r = Math.random(), s = Math.random();
-	        var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s);
-	        return A.clone().multiplyScalar((1 - rSqrt))
-	            .add(B.clone().multiplyScalar(rSqrt * (1 - sSqrt)))
-	            .add(C.clone().multiplyScalar(s * rSqrt));
-	    }
-	    exports.randomPointInHexagon = randomPointInHexagon;
-	    /**
-	     * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
-	     */
-	    function randomPointInHexagonEx(hexRadius, modifier) {
-	        // the hexagon consists of 6 triangles, construct one of them randomly
-	        var startCornerIndex = Math.floor(Math.random() * 6);
-	        var A = hexagonCorners1[startCornerIndex].clone();
-	        var B = new THREE.Vector3(0, 0, 0);
-	        var C = hexagonCorners1[(startCornerIndex + 1) % 6].clone();
-	        // random point in the triangle based on AB and AC
-	        var r = Math.random(), s = Math.random();
-	        var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s);
-	        var point = A.multiplyScalar((1 - rSqrt))
-	            .add(B.multiplyScalar(rSqrt * (1 - sSqrt)))
-	            .add(C.multiplyScalar(s * rSqrt));
-	        return point.multiplyScalar(modifier(startCornerIndex) * hexRadius);
-	    }
-	    exports.randomPointInHexagonEx = randomPointInHexagonEx;
-	    function computeHexagonCorner(radius, angle) {
-	        return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
-	    }
-	    function computeHexagonCorner1(angle) {
-	        var radius = 1.0;
-	        return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
-	    }
-	    var hexagonCorners1 = [
-	        computeHexagonCorner1(0),
-	        computeHexagonCorner1(1 / 6.0),
-	        computeHexagonCorner1(2 / 6.0),
-	        computeHexagonCorner1(3 / 6.0),
-	        computeHexagonCorner1(4 / 6.0),
-	        computeHexagonCorner1(5 / 6.0)
-	    ];
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=hexagon.js.map
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var __assign = (this && this.__assign) || Object.assign || function(t) {
-	    for (var s, i = 1, n = arguments.length; i < n; i++) {
-	        s = arguments[i];
-	        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-	            t[p] = s[p];
-	    }
-	    return t;
-	};
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4), __webpack_require__(5), __webpack_require__(2), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, interfaces_1, hexagon_1, coords_1, Grid_1) {
-	    "use strict";
-	    var TextureLoader = THREE.TextureLoader;
-	    var textureLoader = new TextureLoader();
-	    var Trees = (function (_super) {
-	        __extends(Trees, _super);
-	        /**
-	         *
-	         * @param tiles tiles with trees to be rendered
-	         * @param _grid grid of all tiles
-	         */
-	        function Trees(tiles, _grid, options) {
-	            var _this = _super.call(this) || this;
-	            _this._grid = _grid;
-	            _this.options = options;
-	            _this.treeSize = 1.2;
-	            _this.numTreesPerForest = 50;
-	            _this._scale = options.scale || 1.0;
-	            _this.texture = options.treeTexture;
-	            _this.tiles = tiles.filter(function (t) { return t.trees; }).map(function (t) { return (__assign({ bufferIndex: -1 }, t)); });
-	            _this.localGrid = new Grid_1.default(0, 0).init(_this.tiles);
-	            _this.material = _this.buildMaterial();
-	            _this.geometry = _this.buildGeometry();
-	            _this.pointCloud = new THREE.Points(_this.geometry, _this.material);
-	            _this.add(_this.pointCloud);
-	            return _this;
-	        }
-	        Trees.prototype.updateTiles = function (tiles) {
-	            var _this = this;
-	            var geometry = this.geometry;
-	            var positions = geometry.getAttribute("position");
-	            var numTrees = this.numTreesPerForest;
-	            tiles.forEach(function (tile) {
-	                var old = _this.localGrid.get(tile.q, tile.r);
-	                if (!old)
-	                    return;
-	                if (old.clouds != tile.clouds) {
-	                    old.clouds = tile.clouds;
-	                    var value = tile.clouds ? 9999 : 0.2;
-	                    for (var i = 0; i < numTrees; i++) {
-	                        positions.setZ(old.bufferIndex + i, value);
-	                    }
-	                }
-	            });
-	            positions.needsUpdate = true;
-	        };
-	        Trees.prototype.buildMaterial = function () {
-	            var texture = this.texture;
-	            texture.minFilter = THREE.LinearFilter;
-	            var material = new THREE.PointsMaterial({
-	                map: texture,
-	                transparent: true,
-	                vertexColors: THREE.VertexColors,
-	                opacity: 1,
-	                alphaTest: 0.20,
-	                size: this.treeSize * this._scale * (this.options.treeSize || 1.0)
-	            });
-	            return material;
-	        };
-	        Trees.prototype.buildGeometry = function () {
-	            var tiles = this.tiles;
-	            var numWoods = tiles.length;
-	            var treesPerWood = this.numTreesPerForest;
-	            var spread = 1.5;
-	            var halfSpread = spread / 2;
-	            var geometry = new THREE.BufferGeometry();
-	            var treePositions = new Float32Array(treesPerWood * numWoods * 3);
-	            var treeColors = new Float32Array(treesPerWood * numWoods * 3);
-	            var vertexIndex = 0;
-	            var numTreesLeft = function () { return treePositions.length - vertexIndex; };
-	            var actualNumTrees = 0;
-	            var bufferIndex = 0;
-	            // iterate from back to front to get automatic sorting by z-depth
-	            for (var i = tiles.length - 1; i >= 0; i--) {
-	                var tile = tiles[i];
-	                var x = coords_1.qrToWorldX(tile.q, tile.r, this._scale);
-	                var y = coords_1.qrToWorldY(tile.q, tile.r, this._scale);
-	                var z = tile.clouds ? 9999 : 0.1;
-	                var numTrees = treesPerWood;
-	                var baseColor = this.getTreeColor(tile);
-	                var positions = new Array(numTrees);
-	                var colors = new Array(numTrees);
-	                var waterAdjacency = this.waterAdjacency(this._grid, tile);
-	                tile.bufferIndex = bufferIndex;
-	                // generate random tree points on this tile
-	                for (var t = 0; t < numTrees; t++) {
-	                    var point = this.randomPointOnTile(waterAdjacency);
-	                    point.setZ(0.1);
-	                    positions[t] = point;
-	                    colors[t] = this.varyColor(baseColor);
-	                }
-	                // sort by Y,Z
-	                positions.sort(function (a, b) {
-	                    var diff = b.y - a.y;
-	                    if (Math.abs(diff) < 0.1)
-	                        return b.z - a.z;
-	                    else
-	                        return diff;
-	                });
-	                // add the vertices for this tile
-	                for (var t = 0; t < positions.length; t++) {
-	                    treePositions[vertexIndex + 0] = x + positions[t].x;
-	                    treePositions[vertexIndex + 1] = y + positions[t].y;
-	                    treePositions[vertexIndex + 2] = z + positions[t].z;
-	                    treeColors[vertexIndex + 0] = colors[t][0];
-	                    treeColors[vertexIndex + 1] = colors[t][1];
-	                    treeColors[vertexIndex + 2] = colors[t][2];
-	                    vertexIndex += 3;
-	                }
-	                bufferIndex += positions.length;
-	                actualNumTrees += positions.length;
-	            }
-	            geometry.addAttribute("position", new THREE.BufferAttribute(treePositions, 3));
-	            geometry.addAttribute("color", new THREE.BufferAttribute(treeColors, 3));
-	            return geometry;
-	        };
-	        Trees.prototype.randomPointOnTile = function (water) {
-	            return hexagon_1.randomPointInHexagonEx(this._scale, function (corner) {
-	                corner = (2 + (6 - corner)) % 6;
-	                if (corner == 0 && water.NE)
-	                    return 0.5;
-	                if (corner == 1 && water.E)
-	                    return 0.5;
-	                if (corner == 2 && water.SE)
-	                    return 0.5;
-	                if (corner == 3 && water.SW)
-	                    return 0.5;
-	                if (corner == 4 && water.W)
-	                    return 0.5;
-	                if (corner == 5 && water.NW)
-	                    return 0.5;
-	                return 1;
-	            });
-	        };
-	        // add slight variation to color
-	        Trees.prototype.varyColor = function (color) {
-	            var vary = Math.random() > 0.5;
-	            var variance = 0.5;
-	            return [
-	                vary ? (1 - variance / 2 + Math.random() * variance) * color[0] : color[0],
-	                vary ? (1 - variance / 2 + Math.random() * variance) * color[1] : color[1],
-	                vary ? (1 - variance / 2 + Math.random() * variance) * color[2] : color[2]
-	            ];
-	        };
-	        Trees.prototype.getTreeColor = function (tile) {
-	            // base color
-	            var color = [1, 1, 1]; // default forest color
-	            if (tile.terrain == "plains") {
-	                color = [1, 1, 0.2]; // yellowish for plains
-	            }
-	            else if (tile.terrain == "jungle") {
-	                color = [0.4, 0.7, 0.4]; // dark green for jungle
-	            }
-	            return color;
-	        };
-	        Trees.prototype.getNumTrees = function (tile) {
-	            return this.numTreesPerForest;
-	        };
-	        Trees.prototype.waterAdjacency = function (grid, tile) {
-	            function isWaterTile(q, r) {
-	                var t = grid.get(q, r);
-	                if (!t)
-	                    return false;
-	                return interfaces_1.isWater(t.height);
-	            }
-	            return {
-	                NE: isWaterTile(tile.q + 1, tile.r - 1),
-	                E: isWaterTile(tile.q + 1, tile.r),
-	                SE: isWaterTile(tile.q, tile.r + 1),
-	                SW: isWaterTile(tile.q - 1, tile.r + 1),
-	                W: isWaterTile(tile.q - 1, tile.r),
-	                NW: isWaterTile(tile.q, tile.r - 1)
-	            };
-	        };
-	        return Trees;
-	    }(THREE.Object3D));
-	    Object.defineProperty(exports, "__esModule", { value: true });
-	    exports.default = Trees;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=trees.js.map
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, util_1) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, util_1) {
 	    "use strict";
 	    var Grid = (function () {
 	        function Grid(_width, _height) {
@@ -962,19 +568,41 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        Grid.prototype.neighbors = function (q, r, range) {
 	            var _this = this;
 	            if (range === void 0) { range = 1; }
-	            return util_1.qrRange(range).map(function (qr) {
+	            return (range == 1 ? Grid.NEIGHBOR_QRS : util_1.qrRange(range)).map(function (qr) {
 	                return _this.get(q + qr.q, r + qr.r);
 	            }).filter(function (x) { return x !== undefined; });
 	        };
+	        /**
+	         * Returns a list of exactly 6 items for each of the surrounding tiles at (q,r).
+	         * Non-existing neighbors will occur as "undefined". The list is always returned
+	         * in the same order of NE [0], E [1], SE [2], SW [3], W [4], NW [5].
+	         * @param q
+	         * @param r
+	         * @returns {{q: number, r: number}[]}
+	         */
+	        Grid.prototype.surrounding = function (q, r) {
+	            var _this = this;
+	            return Grid.NEIGHBOR_QRS.map(function (qr) {
+	                return _this.get(q + qr.q, r + qr.r);
+	            });
+	        };
 	        return Grid;
 	    }());
+	    Grid.NEIGHBOR_QRS = [
+	        { q: 1, r: -1 },
+	        { q: 1, r: 0 },
+	        { q: 0, r: 1 },
+	        { q: -1, r: 1 },
+	        { q: -1, r: 0 },
+	        { q: 0, r: -1 } // NW
+	    ];
 	    Object.defineProperty(exports, "__esModule", { value: true });
 	    exports.default = Grid;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	//# sourceMappingURL=Grid.js.map
 
 /***/ },
-/* 8 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -982,7 +610,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
 	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
 	var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -1012,7 +640,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
 	    }
 	};
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, three_1) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, three_1) {
 	    "use strict";
 	    var fileLoader = new three_1.XHRLoader();
 	    var textureLoader = new three_1.TextureLoader();
@@ -1100,7 +728,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	    }
 	    exports.range = range;
 	    function flatMap(items, map) {
-	        return [].concat(items.map(map));
+	        return [].concat.apply([], items.map(map));
 	    }
 	    exports.flatMap = flatMap;
 	    function sum(numbers) {
@@ -1127,8 +755,260 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	        return Math.floor(value) == value;
 	    }
 	    exports.isInteger = isInteger;
+	    function flatten(items) {
+	        return [].concat.apply([], items);
+	    }
+	    exports.flatten = flatten;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	//# sourceMappingURL=util.js.map
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	    "use strict";
+	    function isLand(height) {
+	        return height >= 0.0 && height < 0.75;
+	    }
+	    exports.isLand = isLand;
+	    function isWater(height) {
+	        return height < 0.0;
+	    }
+	    exports.isWater = isWater;
+	    function isHill(height) {
+	        return height >= 0.375 && height < 0.75;
+	    }
+	    exports.isHill = isHill;
+	    function isMountain(height) {
+	        return height >= 0.75;
+	    }
+	    exports.isMountain = isMountain;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=interfaces.js.map
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	    "use strict";
+	    exports.NE = 32;
+	    exports.E = 16;
+	    exports.SE = 8;
+	    exports.SW = 4;
+	    exports.W = 2;
+	    exports.NW = 1;
+	    function subdivideTriangle(a, b, c, numSubdivisions) {
+	        if ((numSubdivisions || 0) <= 0)
+	            return [a, b, c];
+	        var ba = b.clone().sub(a);
+	        var ah = a.clone().add(ba.setLength(ba.length() / 2));
+	        var cb = c.clone().sub(b);
+	        var bh = b.clone().add(cb.setLength(cb.length() / 2));
+	        var ac = a.clone().sub(c);
+	        var ch = c.clone().add(ac.setLength(ac.length() / 2));
+	        return [].concat(subdivideTriangle(ah, bh, ch, numSubdivisions - 1), subdivideTriangle(ch, bh, c, numSubdivisions - 1), subdivideTriangle(ah, ch, a, numSubdivisions - 1), subdivideTriangle(bh, ah, b, numSubdivisions - 1));
+	    }
+	    exports.subdivideTriangle = subdivideTriangle;
+	    function createHexagon(radius, numSubdivisions) {
+	        var numFaces = 6 * Math.pow(4, numSubdivisions);
+	        var positions = new Float32Array(numFaces * 3 * 3), p = 0;
+	        var texcoords = new Float32Array(numFaces * 3 * 2), t = 0;
+	        var border = new Float32Array(numFaces * 3 * 1), e = 0;
+	        var points = [0, 1, 2, 3, 4, 5].map(function (i) {
+	            return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * (i / 6.0)), radius * Math.cos(Math.PI * 2 * (i / 6.0)), 0);
+	        }).concat([new THREE.Vector3(0, 0, 0)]);
+	        var faces = [0, 6, 1, 1, 6, 2, 2, 6, 3, 3, 6, 4, 4, 6, 5, 5, 6, 0];
+	        var vertices = []; // every three vertices constitute one face
+	        for (var i = 0; i < faces.length; i += 3) {
+	            var a = points[faces[i]], b = points[faces[i + 1]], c = points[faces[i + 2]];
+	            vertices = vertices.concat(subdivideTriangle(a, b, c, numSubdivisions));
+	        }
+	        for (i = 0; i < vertices.length; i++) {
+	            positions[p++] = vertices[i].x;
+	            positions[p++] = vertices[i].y;
+	            positions[p++] = vertices[i].z;
+	            texcoords[t++] = 0.02 + 0.96 * ((vertices[i].x + radius) / (radius * 2));
+	            texcoords[t++] = 0.02 + 0.96 * ((vertices[i].y + radius) / (radius * 2));
+	            var inradius = (Math.sqrt(3) / 2) * radius;
+	            border[e++] = vertices[i].length() >= inradius - 0.1 ? 1.0 : 0.0;
+	        }
+	        var geometry = new THREE.BufferGeometry();
+	        geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+	        geometry.addAttribute("uv", new THREE.BufferAttribute(texcoords, 2));
+	        // 1.0 = border vertex, 0.0 otherwise
+	        geometry.addAttribute("border", new THREE.BufferAttribute(border, 1));
+	        return geometry;
+	    }
+	    exports.createHexagon = createHexagon;
+	    /**
+	     * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
+	     */
+	    function randomPointInHexagon(hexRadius) {
+	        // the hexagon consists of 6 triangles, construct one of them randomly
+	        var startCornerIndex = Math.floor(Math.random() * 6);
+	        var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0);
+	        var B = new THREE.Vector3(0, 0, 0);
+	        var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0);
+	        // random point in the triangle based on AB and AC
+	        var r = Math.random(), s = Math.random();
+	        var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s);
+	        return A.clone().multiplyScalar((1 - rSqrt))
+	            .add(B.clone().multiplyScalar(rSqrt * (1 - sSqrt)))
+	            .add(C.clone().multiplyScalar(s * rSqrt));
+	    }
+	    exports.randomPointInHexagon = randomPointInHexagon;
+	    /**
+	     * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
+	     */
+	    function randomPointInHexagonEx(hexRadius, modifier) {
+	        // the hexagon consists of 6 triangles, construct one of them randomly
+	        var startCornerIndex = Math.floor(Math.random() * 6);
+	        var A = hexagonCorners1[startCornerIndex].clone();
+	        var B = new THREE.Vector3(0, 0, 0);
+	        var C = hexagonCorners1[(startCornerIndex + 1) % 6].clone();
+	        // random point in the triangle based on AB and AC
+	        var r = Math.random(), s = Math.random();
+	        var rSqrt = Math.sqrt(r), sSqrt = Math.sqrt(s);
+	        var point = A.multiplyScalar((1 - rSqrt))
+	            .add(B.multiplyScalar(rSqrt * (1 - sSqrt)))
+	            .add(C.multiplyScalar(s * rSqrt));
+	        return point.multiplyScalar(modifier(startCornerIndex) * hexRadius);
+	    }
+	    exports.randomPointInHexagonEx = randomPointInHexagonEx;
+	    function computeHexagonCorner(radius, angle) {
+	        return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
+	    }
+	    function computeHexagonCorner1(angle) {
+	        var radius = 1.0;
+	        return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
+	    }
+	    var hexagonCorners1 = [
+	        computeHexagonCorner1(0),
+	        computeHexagonCorner1(1 / 6.0),
+	        computeHexagonCorner1(2 / 6.0),
+	        computeHexagonCorner1(3 / 6.0),
+	        computeHexagonCorner1(4 / 6.0),
+	        computeHexagonCorner1(5 / 6.0)
+	    ];
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=hexagon.js.map
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, three_1) {
+	    "use strict";
+	    var Z_PLANE = new three_1.Plane(new three_1.Vector3(0, 0, 1), 0);
+	    function qrToWorld(q, r, scale) {
+	        if (scale === void 0) { scale = 1.0; }
+	        return new three_1.Vector3(Math.sqrt(3) * (q + r / 2) * scale, (3 / 2) * r * scale, 0);
+	    }
+	    exports.qrToWorld = qrToWorld;
+	    function qrToWorldX(q, r, scale) {
+	        if (scale === void 0) { scale = 1.0; }
+	        return Math.sqrt(3) * (q + r / 2) * scale;
+	    }
+	    exports.qrToWorldX = qrToWorldX;
+	    function qrToWorldY(q, r, scale) {
+	        if (scale === void 0) { scale = 1.0; }
+	        return (3 / 2) * r * scale;
+	    }
+	    exports.qrToWorldY = qrToWorldY;
+	    function qrDistance(a, b) {
+	        return (Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2;
+	    }
+	    exports.qrDistance = qrDistance;
+	    function pickingRay(vector, camera) {
+	        // set two vectors with opposing z values
+	        vector.z = -1.0;
+	        var end = new THREE.Vector3(vector.x, vector.y, 1.0);
+	        vector.unproject(camera);
+	        end.unproject(camera);
+	        // find direction from vector to end
+	        end.sub(vector).normalize();
+	        return new THREE.Raycaster(vector, end);
+	    }
+	    exports.pickingRay = pickingRay;
+	    /**
+	     * Transforms mouse coordinates into world space, assuming that the game view spans the entire window.
+	     */
+	    function mouseToWorld(e, camera) {
+	        var mv = new three_1.Vector3((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1, 0.5);
+	        var raycaster = pickingRay(mv, camera);
+	        return raycaster.ray.intersectPlane(Z_PLANE);
+	    }
+	    exports.mouseToWorld = mouseToWorld;
+	    /**
+	     * Transforms screen coordinates into world space, assuming that the game view spans the entire window.
+	     */
+	    function screenToWorld(x, y, camera) {
+	        var mv = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
+	        var raycaster = pickingRay(mv, camera);
+	        return raycaster.ray.intersectPlane(Z_PLANE);
+	    }
+	    exports.screenToWorld = screenToWorld;
+	    /**
+	     * Transforms world coordinates into screen space.
+	     */
+	    function worldToScreen(pos, camera) {
+	        var v = pos.clone();
+	        v.project(camera);
+	        v.x = window.innerWidth / 2 + v.x * (window.innerWidth / 2);
+	        v.y = window.innerHeight / 2 - v.y * (window.innerHeight / 2);
+	        return v;
+	    }
+	    exports.worldToScreen = worldToScreen;
+	    function axialToCube(q, r) {
+	        return { x: q, y: -q - r, z: r };
+	    }
+	    exports.axialToCube = axialToCube;
+	    function cubeToAxial(x, y, z) {
+	        return { q: x, r: z };
+	    }
+	    exports.cubeToAxial = cubeToAxial;
+	    /**
+	     * Rounds fractal cube coordinates to the nearest full cube coordinates.
+	     * @param cubeCoord
+	     * @returns {{x: number, y: number, z: number}}
+	     */
+	    function roundToHex(cubeCoord) {
+	        var x = cubeCoord.x, y = cubeCoord.y, z = cubeCoord.z;
+	        var rx = Math.round(x);
+	        var ry = Math.round(y);
+	        var rz = Math.round(z);
+	        var x_diff = Math.abs(rx - x);
+	        var y_diff = Math.abs(ry - y);
+	        var z_diff = Math.abs(rz - z);
+	        if (x_diff > y_diff && x_diff > z_diff)
+	            rx = -ry - rz;
+	        else if (y_diff > z_diff)
+	            ry = -rx - rz;
+	        else
+	            rz = -rx - ry;
+	        return { x: rx, y: ry, z: rz };
+	    }
+	    exports.roundToHex = roundToHex;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=coords.js.map
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	    "use strict";
+	    exports.LAND_FRAGMENT_SHADER = "\n//\n// Fragment Shader for Land\n//\n\nprecision mediump float;\n\nuniform float sineTime;\nuniform float showGrid;\nuniform float zoom;\nuniform sampler2D texture;\nuniform sampler2D hillsNormal;\nuniform sampler2D coastAtlas;\nuniform sampler2D riverAtlas;\nuniform sampler2D mapTexture;\nuniform sampler2D transitionTexture;\nuniform mat3 normalMatrix;\n\n// (width, height, cellSize, cellSpacing)\nuniform vec4 textureAtlasMeta;\n\nvarying vec2 vUV;\nvarying vec2 vTexCoord;\nvarying vec3 vPosition;\nvarying float vExtra;\nvarying float vTerrain;\nvarying float vFogOfWar;\nvarying float vHill;\nvarying float vHidden;\nvarying vec2 vOffset;\nvarying vec2 vCoastTextureCell;\nvarying vec2 vRiverTextureCell;\nvarying vec3 vLightDirT;\nvarying vec3 vNeighborsEast;\nvarying vec3 vNeighborsWest;\n\nconst vec3 cameraPos = vec3(0, -25.0, 25.0);\nconst vec3 lightDir = vec3(0.0, -1.0, -1.0);\nconst vec3 lightAmbient = vec3(0.3, 0.3, 0.3);\nconst vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);\n\nconst float hillsNormalMapScale = 0.3; //0.1;\n\nvec2 cellIndexToUV(float idx) {\n    float atlasWidth = textureAtlasMeta.x;\n    float atlasHeight = textureAtlasMeta.y;\n    float cellSize = textureAtlasMeta.z;\n    float cols = atlasWidth / cellSize;\n    float rows = atlasHeight / cellSize;\n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));\n    return vec2(x / cols + vUV.x / cols, 1.0 - (y / rows + (1.0 - vUV.y) / rows));\n}\n\n/**\n * Uses the texture of a neighboring terrain to blend the given color.\n * @parma color to blend with\n * @param terrain texture atlas index\n * @param sector 0 - 5 (NE - NW) \n */\nvec4 terrainTransition(vec4 inputColor, float terrain, float sector) {\n    if (vTerrain <= 1.0 && terrain > 1.0) return inputColor;\n    vec2 otherUV = cellIndexToUV(terrain);\n    vec2 blendMaskUV = vec2(sector/6.0 + vUV.x / 6.0, 1.0 - vUV.y / 6.0);\n    vec4 color = texture2D(texture, otherUV);\n    vec4 blend = texture2D(transitionTexture, blendMaskUV);\n    float a = min(blend.r, clamp(terrain - vTerrain, 0.0, 1.0));\n    return mix(inputColor, color, a);\n}\n\nvoid main() {\n    // LAND\n    vec4 texColor = texture2D(texture, vTexCoord);\n    vec3 normal = vec3(0.0, 1.0, 0.0);\n    vec2 normalMapUV = vPosition.xy * hillsNormalMapScale;\n\n    /// Transitions to neighboring tiles\n    texColor = terrainTransition(texColor, vNeighborsEast.x, 0.0);\n    texColor = terrainTransition(texColor, vNeighborsEast.y, 1.0);\n    texColor = terrainTransition(texColor, vNeighborsEast.z, 2.0);\n    texColor = terrainTransition(texColor, vNeighborsWest.x, 3.0);\n    texColor = terrainTransition(texColor, vNeighborsWest.y, 4.0);\n    texColor = terrainTransition(texColor, vNeighborsWest.z, 5.0);\n\n    // HILL\n    if (vHill > 0.0) {\n        normal = normalize((texture2D(hillsNormal, normalMapUV).xyz * 2.0) - 1.0);\n        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra * vExtra); // fade out towards tile edges\n    }\n\n    vec3 lightDir = vLightDirT;\n    float lambertian = max(dot(lightDir, normal), 0.0);\n    //lambertian = sqrt(lambertian);\n\n    vec3 color = lightAmbient * texColor.xyz + lambertian * texColor.xyz * lightDiffuse;\n    gl_FragColor = vec4(color, 1.0);    \n    \n    // comment out following line to show normal vector visualization\n    //gl_FragColor = vec4((normal.x + 1.0 / 2.0, 0.0, 1.0), (normal.y + 1.0 / 2.0, 0.0, 1.0), (normal.z + 1.0 / 2.0, 0.0, 1.0), 1.0);\n    \n    // comment out following line to show normal map texture (UV) coordinates\n    //gl_FragColor = vec4(mod(normalMapUV.x, 1.0), mod(normalMapUV.y, 1.0), 0.0, 1.0);\n\n    // Coast\n    vec2 coastUv = vec2(vCoastTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vCoastTextureCell.y / 8.0 + vUV.y / 8.0));\n    vec4 coastColor = texture2D(coastAtlas, coastUv);\n\n    if (coastColor.w > 0.0) {\n        vec3 coast = lightAmbient * coastColor.xyz + lambertian * coastColor.xyz * lightDiffuse;\n        gl_FragColor = mix(gl_FragColor, vec4(coast, 1.0), coastColor.w);\n    }\n    \n    // River\n    vec2 riverUv = vec2(vRiverTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vRiverTextureCell.y / 8.0 + vUV.y / 8.0));\n    vec4 riverColor = texture2D(riverAtlas, riverUv);\n\n    if (riverColor.w > 0.0) {\n        vec3 river = lightAmbient * riverColor.xyz + lambertian * riverColor.xyz * lightDiffuse;\n        //gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);\n        gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);\n    }\n\n    if (showGrid > 0.0 && vExtra > 0.97) { // hex border\n        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;\n        f = 0.34;\n        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);\n    }\n\n    // FOW\n    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 && vHidden == 0.0 ? 0.66 : 1.0);\n\n    // Map Texture for hidden tiles\n    if (vHidden > 0.0) {\n        gl_FragColor = texture2D(mapTexture, vec2(vPosition.x * 0.05, vPosition.y * 0.05));\n    }    \n}\n";
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=land.fragment.js.map
 
 /***/ },
 /* 9 */
@@ -1136,9 +1016,9 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
 	    "use strict";
-	    exports.LAND_FRAGMENT_SHADER = "\n//\n// Fragment Shader for Land\n//\n\nprecision highp float;\nuniform float sineTime;\nuniform float showGrid;\nuniform float zoom;\nuniform sampler2D texture;\nuniform sampler2D hillsNormal;\nuniform sampler2D coastAtlas;\nuniform sampler2D riverAtlas;\nuniform sampler2D mapTexture;\n\nvarying vec2 vUV;\nvarying vec2 vTexCoord;\nvarying vec3 vPosition;\nvarying float vExtra;\nvarying float vFogOfWar;\nvarying float vHill;\nvarying float vHidden;\nvarying vec2 vOffset;\nvarying vec2 vCoastTextureCell;\nvarying vec2 vRiverTextureCell;\n\nconst vec3 cameraPos = vec3(0, -25.0, 25.0);\nconst vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);\nconst vec3 lightAmbient = vec3(0.3, 0.3, 0.3);\nconst vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);\n\nvoid main() {\n    // LAND\n    vec4 texColor = texture2D(texture, vTexCoord);\n    vec3 normal = vec3(0.0, 1.0, 0.0);\n\n    if (vHill > 0.0) {\n        normal = normalize((texture2D(hillsNormal, vTexCoord * 0.75 + vOffset * 0.5).xyz * 2.0) - 1.0);\n\n        normal = mix(normal, vec3(0.0, 1.0, 0.0), vExtra * vExtra);\n    }\n\n    vec3 lightDir = normalize(lightPos - vPosition);\n    float lambertian = max(dot(lightDir, normal), 0.0);\n    //lambertian = sqrt(lambertian);\n\n    vec3 color = lightAmbient * texColor.xyz + lambertian * texColor.xyz * lightDiffuse;\n    gl_FragColor = vec4(color, 1.0);    \n\n    // Coast\n    vec2 coastUv = vec2(vCoastTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vCoastTextureCell.y / 8.0 + vUV.y / 8.0));\n    vec4 coastColor = texture2D(coastAtlas, coastUv);\n\n    if (coastColor.w > 0.0) {\n        vec3 coast = lightAmbient * coastColor.xyz + lambertian * coastColor.xyz * lightDiffuse;\n        gl_FragColor = mix(gl_FragColor, vec4(coast, 1.0), coastColor.w);\n    }\n\n    // River\n    vec2 riverUv = vec2(vRiverTextureCell.x / 8.0 + vUV.x / 8.0, 1.0 - (vRiverTextureCell.y / 8.0 + vUV.y / 8.0));\n    vec4 riverColor = texture2D(riverAtlas, riverUv);\n\n    if (riverColor.w > 0.0) {\n        vec3 river = lightAmbient * riverColor.xyz + lambertian * riverColor.xyz * lightDiffuse;\n        //gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);\n        gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);\n    }\n\n    if (showGrid > 0.0 && vExtra > 0.97) { // hex border\n        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;\n        f = 0.34;\n        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);\n    }\n\n    // FOW\n    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 && vHidden == 0.0 ? 0.66 : 1.0);\n\n    // Map Texture for hidden tiles\n    if (vHidden > 0.0) {\n        gl_FragColor = texture2D(mapTexture, vec2(vPosition.x * 0.05, vPosition.y * 0.05));\n    }    \n}\n";
+	    exports.LAND_VERTEX_SHADER = "\n//\n// Vertex Shader for Land\n//\nprecision mediump float;\n\nuniform float sineTime; // oscillating time [-1.0, 1.0]\nuniform float zoom; // camera zoom factor\nuniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform mat3 normalMatrix;\nuniform mat4 modelMatrix;\nuniform vec3 camera; // camera position in world space\n\n// (width, height, cellSize, cellSpacing)\nuniform vec4 textureAtlasMeta;\n\nuniform vec3 lightDir;\n\nattribute vec3 position; // position of one of the hexagon's vertices\nattribute vec2 offset; // world position offset for the entire hexagon (tile)\nattribute vec2 uv; // texture coordinates\nattribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)\n\n// style.x = texture atlas cell index\n// style.y = \"decimal bitmask\" (fog=1xx, hills=x1x, clouds=xx1)\n// style.z = coast texture index (0 - 64)\n// style.w = river texture index (0 - 64)\nattribute vec4 style;\n\n// type of terrain on surrounding tiles as texture atlas cell index (like style.x)\n// is -1 if there is no neighbor (e.g. at the border of the map)\nattribute vec3 neighborsEast; // x = NE, y = E, z = SE\nattribute vec3 neighborsWest; // x = SW, y = W, z = NW \n\nvarying vec3 vPosition;\nvarying vec2 vTexCoord;\nvarying vec2 vUV;\nvarying float vExtra;\nvarying float vTerrain; // texture cell\nvarying float vFogOfWar; // 1.0 = shadow, 0.0 = visible\nvarying float vHidden; // 1.0 = hidden, 0.0 = visible\nvarying float vHill;\nvarying vec2 vOffset;\nvarying vec2 vCoastTextureCell;\nvarying vec2 vRiverTextureCell;\nvarying vec3 vLightDirT;\n\nvarying vec3 vNeighborsEast;\nvarying vec3 vNeighborsWest;\n\nvec2 cellIndexToUV(float idx) {\n    float atlasWidth = textureAtlasMeta.x;\n    float atlasHeight = textureAtlasMeta.y;\n    float cellSize = textureAtlasMeta.z;\n    float cols = atlasWidth / cellSize;\n    float rows = atlasHeight / cellSize;\n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));\n    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));\n}\n\nmat3 tangentSpace(vec3 normal_ws, vec3 tangent, mat4 worldMatrix) {\n    vec3 binormal = cross(tangent, normal_ws);\n    mat3 M;\n    M[0] = normalize(binormal);\n    M[1] = normalize(tangent);\n    M[2] = normalize(normal_ws);\n    \n    return mat3(modelMatrix) * M;\n}\n\nvoid main() {\n    vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);\n\n    // its a hill if style's 2nd decimal is 1, i.e. any number matching x1x, e.g. 10, 11, 110\n    float hill = floor(mod(style.y / 10.0, 10.0)); // 0 = no, 1 = yes\n\n    if (hill > 0.0 && border < 0.75) { // hill\n        //pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;\n        vHill = 1.0;\n    } else {\n        vHill = 0.0;\n    }\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    vPosition = pos;\n    vOffset = offset;\n\n    vUV = uv;\n    vTexCoord = cellIndexToUV(style.x);\n    vCoastTextureCell = vec2(mod(style.z, 8.0), floor(style.z / 8.0));\n    vRiverTextureCell = vec2(mod(style.w, 8.0), floor(style.w / 8.0));\n\n    vExtra = border;\n    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);\n    vHidden = style.y >= 100.0 ? 1.0 : 0.0;\n    \n    mat3 T = tangentSpace(vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);\n    vLightDirT = T * lightDir;\n    \n    vNeighborsEast = neighborsEast;\n    vNeighborsWest = neighborsWest;\n    \n    vTerrain = style.x;\n}\n";
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=land.fragment.js.map
+	//# sourceMappingURL=land.vertex.js.map
 
 /***/ },
 /* 10 */
@@ -1146,9 +1026,9 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
 	    "use strict";
-	    exports.LAND_VERTEX_SHADER = "\n//\n// Vertex Shader for Land\n//\n\n\nprecision highp float;\n\nuniform float sineTime; // oscillating time [-1.0, 1.0]\nuniform float zoom; // camera zoom factor\nuniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform vec3 camera; // camera position in world space\n\n// (width, height, cellSize, cellSpacing)\nuniform vec4 textureAtlasMeta;\n\nattribute vec3 position; // position of one of the hexagon's vertices\nattribute vec2 offset; // world position offset for the entire hexagon (tile)\nattribute vec2 uv; // texture coordinates\nattribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)\n\n// style.x = texture atlas cell index\n// style.y = \"decimal bitmask\" (fog=1xx, hills=x1x, clouds=xx1)\n// style.z = coast texture index (0 - 64)\n// style.w = river texture index (0 - 64)\nattribute vec4 style;\n\nvarying vec3 vPosition;\nvarying vec2 vTexCoord;\nvarying vec2 vUV;\nvarying float vExtra;\nvarying float vFogOfWar; // 1.0 = shadow, 0.0 = visible\nvarying float vHidden; // 1.0 = hidden, 0.0 = visible\nvarying float vHill;\nvarying vec2 vOffset;\nvarying vec2 vCoastTextureCell;\nvarying vec2 vRiverTextureCell;\n\nvec2 cellIndexToUV(float idx) {\n    float atlasWidth = textureAtlasMeta.x;\n    float atlasHeight = textureAtlasMeta.y;\n    float cellSize = textureAtlasMeta.z;\n    float cols = atlasWidth / cellSize;\n    float rows = atlasHeight / cellSize;\n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    //return vec2(uv.x * w + u, 1.0 - (uv.y * h + v));\n    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (1.0 - uv.y) / rows));\n}\n\nvoid main() {\n    vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);\n\n    // its a hill if style's 2nd decimal is 1, i.e. any number matching x1x, e.g. 10, 11, 110\n    float hill = floor(mod(style.y / 10.0, 10.0)); // 0 = no, 1 = yes\n\n    if (hill > 0.0 && border < 0.75) { // hill\n        //pos.z = 0.1 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.25;\n        vHill = 1.0;\n    } else {\n        vHill = 0.0;\n    }\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    vPosition = pos;\n    vOffset = offset;\n\n    vUV = uv;\n    vTexCoord = cellIndexToUV(style.x);\n    vCoastTextureCell = vec2(mod(style.z, 8.0), floor(style.z / 8.0));\n    vRiverTextureCell = vec2(mod(style.w, 8.0), floor(style.w / 8.0));\n\n    vExtra = border;\n    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);\n    vHidden = style.y >= 100.0 ? 1.0 : 0.0;\n}\n";
+	    exports.MOUNTAINS_FRAGMENT_SHADER = "\n//\n// Fragment Shader for Land\n//\n\nprecision highp float;\nuniform float sineTime;\nuniform float showGrid;\nuniform float zoom;\nuniform sampler2D texture;\nuniform sampler2D hillsNormal;\nuniform sampler2D mapTexture;\n\nvarying vec2 vTexCoord;\nvarying vec3 vPosition;\nvarying float vExtra;\nvarying float vFogOfWar;\nvarying float vHill;\nvarying float vHidden;\nvarying vec2 vOffset;\nvarying vec3 vLightDirT;\nvarying vec3 vNeighborsEast;\nvarying vec3 vNeighborsWest;\n\nconst vec3 cameraPos = vec3(0, -25.0, 25.0);\nconst vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);\nconst vec3 lightAmbient = vec3(0.08, 0.08, 0.08);\nconst vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);\n\nvoid main() {\n    // LAND\n    vec4 texColor = texture2D(texture, vTexCoord);\n    vec3 normal = vec3(0.0, 1.0, 0.0);\n\n    normal = normalize((texture2D(hillsNormal, vTexCoord * 1.5 + vOffset * 0.5).xyz * 2.0) - 1.0);\n\n    //vec3 lightDir = normalize(lightPos - vPosition);\n    vec3 lightDir = vLightDirT;\n    float lambertian = max(dot(lightDir, normal), 0.0);\n\n    vec3 color = lightAmbient + lambertian * texColor.xyz * lightDiffuse;\n    gl_FragColor = vec4(color, 1.0);\n\n    if (showGrid > 0.0 && vExtra > 0.97) { // hex border\n        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;\n        f = 0.34;\n        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);\n    }\n\n    // FOW\n    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);\n\n    // Map Texture for hidden tiles\n    if (vHidden > 0.0) {\n        gl_FragColor = texture2D(mapTexture, vec2(vPosition.x * 0.05, vPosition.y * 0.05));\n    } \n}\n";
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=land.vertex.js.map
+	//# sourceMappingURL=mountains.fragment.js.map
 
 /***/ },
 /* 11 */
@@ -1156,25 +1036,678 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
 	    "use strict";
-	    exports.MOUNTAINS_FRAGMENT_SHADER = "\n//\n// Fragment Shader for Land\n//\n\nprecision highp float;\nuniform float sineTime;\nuniform float showGrid;\nuniform float zoom;\nuniform sampler2D texture;\nuniform sampler2D hillsNormal;\nuniform sampler2D mapTexture;\n\nvarying vec2 vTexCoord;\nvarying vec3 vPosition;\nvarying float vExtra;\nvarying float vFogOfWar;\nvarying float vHill;\nvarying float vHidden;\nvarying vec2 vOffset;\n\nconst vec3 cameraPos = vec3(0, -25.0, 25.0);\nconst vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);\nconst vec3 lightAmbient = vec3(0.08, 0.08, 0.08);\nconst vec3 lightDiffuse = vec3(1.3, 1.3, 1.3);\n\nvoid main() {\n    // LAND\n    vec4 texColor = texture2D(texture, vTexCoord);\n    vec3 normal = vec3(0.0, 1.0, 0.0);\n\n    normal = normalize((texture2D(hillsNormal, vTexCoord * 1.5 + vOffset * 0.5).xyz * 2.0) - 1.0);\n\n    vec3 lightDir = normalize(lightPos - vPosition);\n    float lambertian = max(dot(lightDir, normal), 0.0);\n\n    vec3 color = lightAmbient + lambertian * texColor.xyz * lightDiffuse;\n    gl_FragColor = vec4(color, 1.0);\n\n    if (showGrid > 0.0 && vExtra > 0.97) { // hex border\n        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;\n        f = 0.34;\n        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);\n    }\n\n    // FOW\n    gl_FragColor = gl_FragColor * (vFogOfWar > 0.0 ? 0.66 : 1.0);\n\n    // Map Texture for hidden tiles\n    if (vHidden > 0.0) {\n        gl_FragColor = texture2D(mapTexture, vec2(vPosition.x * 0.05, vPosition.y * 0.05));\n    } \n}\n";
+	    exports.MOUNTAINS_VERTEX_SHADER = "\n//\n// Vertex Shader for Land\n//\n\n\nprecision highp float;\n\nuniform float sineTime; // oscillating time [-1.0, 1.0]\nuniform float zoom; // camera zoom factor\nuniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform mat3 normalMatrix;\nuniform mat4 modelMatrix;\nuniform vec3 camera; // camera position in world space\n\nuniform vec3 lightDir;\n\n// (width, height, cellSize, cellSpacing)\nuniform vec4 textureAtlasMeta;\n\nattribute vec3 position; // position of one of the hexagon's vertices\nattribute vec2 offset; // world position offset for the entire hexagon (tile)\nattribute vec2 uv; // texture coordinates\nattribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)\n\n// style.x = texture atlas cell index\n// style.y = \"decimal bitmask\" (fog=1xx, hills=x1x, clouds=xx1)\n// style.z = coast texture index (0 - 64)\n// style.w = river texture index (0 - 64)\nattribute vec2 style;\n\n// type of terrain on surrounding tiles as texture atlas cell index (like style.x)\n// is -1 if there is no neighbor (e.g. at the border of the map)\nattribute vec3 neighborsEast; // x = NE, y = E, z = SE\nattribute vec3 neighborsWest; // x = SW, y = W, z = NW \n\nvarying vec3 vPosition;\nvarying vec2 vTexCoord;\nvarying float vExtra;\nvarying float vFogOfWar; // 1.0 = shadow, 0.0 = no shadow\nvarying float vHill;\nvarying float vHidden; // 1.0 = hidden, 0.0 = visible\nvarying vec2 vOffset;\nvarying vec3 vLightDirT;\nvarying vec3 vNeighborsEast;\nvarying vec3 vNeighborsWest;\n\nvec2 cellIndexToUV(float idx) {\n    float atlasWidth = textureAtlasMeta.x;\n    float atlasHeight = textureAtlasMeta.y;\n    float cellSize = textureAtlasMeta.z;\n    float cols = atlasWidth / cellSize;\n    float rows = atlasHeight / cellSize;\n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));\n}\n\nmat3 tangentSpace(vec3 normal_ws, vec3 tangent, mat4 worldMatrix) {\n    vec3 binormal = cross(tangent, normal_ws);\n    mat3 M;\n    M[0] = normalize(binormal);\n    M[1] = normalize(tangent);\n    M[2] = normalize(normal_ws);\n    \n    return mat3(modelMatrix) * M;\n}\n\nvoid main() {\n    vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);\n\n    if (border < 0.95 && style.y < 100.0) {\n        pos.z = 0.2 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.5;\n    }\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    vPosition = pos;\n    vOffset = offset;\n\n    vTexCoord = cellIndexToUV(style.x);\n\n    vExtra = border;\n    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);\n    vHidden = style.y >= 100.0 ? 1.0 : 0.0;\n    \n    vNeighborsEast = neighborsEast;\n    vNeighborsWest = neighborsWest;\n    \n    mat3 T = tangentSpace(vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);\n    vLightDirT = T * lightDir;\n}\n";
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=mountains.fragment.js.map
+	//# sourceMappingURL=mountains.vertex.js.map
 
 /***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var __assign = (this && this.__assign) || Object.assign || function(t) {
+	    for (var s, i = 1, n = arguments.length; i < n; i++) {
+	        s = arguments[i];
+	        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+	            t[p] = s[p];
+	    }
+	    return t;
+	};
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4), __webpack_require__(2), __webpack_require__(3), __webpack_require__(7), __webpack_require__(13), __webpack_require__(14), __webpack_require__(15)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, three_1, Grid_1, util_1, coords_1, trees_vertex_1, trees_fragment_1, map_generator_1) {
 	    "use strict";
-	    exports.MOUNTAINS_VERTEX_SHADER = "\n//\n// Vertex Shader for Land\n//\n\n\nprecision highp float;\n\nuniform float sineTime; // oscillating time [-1.0, 1.0]\nuniform float zoom; // camera zoom factor\nuniform float size; // quadratic map size (i.e. size=10 means 10x10 hexagons)\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform vec3 camera; // camera position in world space\n\n// (width, height, cellSize, cellSpacing)\nuniform vec4 textureAtlasMeta;\n\nattribute vec3 position; // position of one of the hexagon's vertices\nattribute vec2 offset; // world position offset for the entire hexagon (tile)\nattribute vec2 uv; // texture coordinates\nattribute float border; // border = distance from hexagon center (0.0 = center, 1.0 = border)\n\n// style.x = texture atlas cell index\n// style.y = \"decimal bitmask\" (fog=1xx, hills=x1x, clouds=xx1)\n// style.z = coast texture index (0 - 64)\n// style.w = river texture index (0 - 64)\nattribute vec2 style;\n\nvarying vec3 vPosition;\nvarying vec2 vTexCoord;\nvarying float vExtra;\nvarying float vFogOfWar; // 1.0 = shadow, 0.0 = no shadow\nvarying float vHill;\nvarying float vHidden; // 1.0 = hidden, 0.0 = visible\nvarying vec2 vOffset;\n\nvec2 cellIndexToUV(float idx) {\n    float atlasWidth = textureAtlasMeta.x;\n    float atlasHeight = textureAtlasMeta.y;\n    float cellSize = textureAtlasMeta.z;\n    float cols = atlasWidth / cellSize;\n    float rows = atlasHeight / cellSize;\n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + uv.y / rows));\n}\n\nvoid main() {\n    vec3 pos = vec3(offset.x + position.x, offset.y + position.y, 0);\n\n    if (border < 0.95 && style.y < 100.0) {\n        pos.z = 0.2 + (0.5 + sin(uv.s + pos.s * 2.0) * 0.5) * 0.5;\n    }\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    vPosition = pos;\n    vOffset = offset;\n\n    vTexCoord = cellIndexToUV(style.x);\n\n    vExtra = border;\n    vFogOfWar = mod(style.y, 10.0) == 1.0 ? 1.0 : 0.0;   // style.y < 100.0 ? 10.0 : (style.y == 1.0 || style.y == 11.0 ? 1.0 : 0.0);\n    vHidden = style.y >= 100.0 ? 1.0 : 0.0;\n}\n";
+	    var Forests = (function (_super) {
+	        __extends(Forests, _super);
+	        function Forests(tiles, globalGrid, options) {
+	            var _this = _super.call(this) || this;
+	            _this._forestTiles = tiles.filter(function (t) { return typeof t.treeIndex != "undefined"; })
+	                .map(function (t) { return (__assign({ bufferIndex: -1 }, t)); });
+	            _this._globalGrid = globalGrid;
+	            _this._options = __assign({}, options);
+	            _this._trees = new Trees(globalGrid, _this._forestTiles, options);
+	            _this.add(_this._trees);
+	            return _this;
+	        }
+	        Forests.prototype.updateTiles = function (tiles) {
+	            this._trees.updateTiles(tiles.filter(function (t) { return typeof t.treeIndex != "undefined"; }));
+	        };
+	        return Forests;
+	    }(three_1.Object3D));
+	    Object.defineProperty(exports, "__esModule", { value: true });
+	    exports.default = Forests;
+	    var Trees = (function (_super) {
+	        __extends(Trees, _super);
+	        function Trees(globalGrid, tiles, options) {
+	            var _this = _super.call(this) || this;
+	            _this._globalGrid = globalGrid;
+	            _this._grid = new Grid_1.default(0, 0).init(tiles);
+	            _this._texture = options.spritesheet;
+	            _this._tiles = tiles;
+	            _this._options = options;
+	            _this.create();
+	            return _this;
+	        }
+	        Trees.prototype.updateTiles = function (tiles) {
+	            var attr = this._alphaAttr;
+	            for (var _i = 0, tiles_1 = tiles; _i < tiles_1.length; _i++) {
+	                var updated = tiles_1[_i];
+	                var old = this._grid.get(updated.q, updated.r);
+	                var val = updated.clouds ? 0 : 1;
+	                if (updated.clouds == old.clouds)
+	                    continue;
+	                for (var i = 0; i < this._options.treesPerForest; i++) {
+	                    attr.setZ(old.bufferIndex + i, val);
+	                }
+	                old.clouds = updated.clouds;
+	            }
+	            attr.needsUpdate = true;
+	        };
+	        Trees.prototype.create = function () {
+	            this._points = new three_1.Points(this.createGeometry(), this.createMaterial());
+	            this.add(this._points);
+	        };
+	        Trees.prototype.createGeometry = function () {
+	            var _this = this;
+	            var geometry = new three_1.BufferGeometry();
+	            var _a = this._options, treeSize = _a.treeSize, treesPerForest = _a.treesPerForest, mapScale = _a.mapScale;
+	            var numTreesRange = util_1.range(0, treesPerForest);
+	            // tree positions
+	            var positions = util_1.flatMap(this._tiles, function (tile, j) {
+	                tile.bufferIndex = j * treesPerForest;
+	                return numTreesRange.map(function (j) {
+	                    var tilePos = coords_1.qrToWorld(tile.q, tile.r, mapScale);
+	                    var localPos = map_generator_1.randomPointOnCoastTile(map_generator_1.waterAdjacency(_this._globalGrid, tile), mapScale);
+	                    return tilePos.add(localPos).setZ(0.12);
+	                });
+	            });
+	            var posAttr = new three_1.BufferAttribute(new Float32Array(positions.length * 3), 3).copyVector3sArray(positions);
+	            geometry.addAttribute("position", posAttr);
+	            // tree parameters
+	            var cols = this._options.spritesheetSubdivisions;
+	            var params = util_1.flatMap(this._tiles, function (tile) {
+	                var spriteIndex = function () { return tile.treeIndex * cols + Math.floor(Math.random() * cols); };
+	                return numTreesRange.map(function (i) { return new three_1.Vector3(spriteIndex(), 0.0, tile.clouds ? 0.0 : 1.0); });
+	            });
+	            this._alphaAttr = new three_1.BufferAttribute(new Float32Array(positions.length * 3), 3).copyVector3sArray(params);
+	            geometry.addAttribute("params", this._alphaAttr);
+	            return geometry;
+	        };
+	        Trees.prototype.createMaterial = function () {
+	            var _a = this._options, treeSize = _a.treeSize, mapScale = _a.mapScale;
+	            var parameters = {
+	                uniforms: {
+	                    texture: {
+	                        type: "t",
+	                        value: this._texture
+	                    },
+	                    spritesheetSubdivisions: { type: "f", value: 4 },
+	                    size: {
+	                        type: "f",
+	                        value: (this._options.mapScale || 1.0) * this._options.treeSize
+	                    },
+	                    scale: { type: 'f', value: window.innerHeight / 2 },
+	                    alphaTest: { type: 'f', value: this._options.alphaTest }
+	                },
+	                transparent: true,
+	                vertexShader: trees_vertex_1.TREES_VERTEX_SHADER,
+	                fragmentShader: trees_fragment_1.TREES_FRAGMENT_SHADER
+	            };
+	            return new three_1.RawShaderMaterial(parameters);
+	        };
+	        return Trees;
+	    }(three_1.Object3D));
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	//# sourceMappingURL=mountains.vertex.js.map
+	//# sourceMappingURL=Forests.js.map
 
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(2), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, coords_1, three_1) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	    "use strict";
+	    exports.TREES_VERTEX_SHADER = "\nprecision mediump float;\n\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform float size;\nuniform float scale;\n\nattribute vec3 position;\nattribute vec3 params; // x = spritesheet x, y = spritesheet y, z = alpha\nattribute vec3 color;\n\nvarying vec3 vParams;\nvarying vec3 vColor;\n\nvoid main() {\n    vParams = params;\n\n    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n    gl_Position = projectionMatrix * mvPosition;\n    gl_PointSize = size * ( scale / - mvPosition.z );\n    \n    vColor = color;\n}\n";
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=trees.vertex.js.map
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	    "use strict";
+	    exports.TREES_FRAGMENT_SHADER = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform float alphaTest;\nuniform float spritesheetSubdivisions;\n\nvarying vec3 vParams;\nvarying vec3 vColor;\n\nvec2 spriteIndexToUV(float idx, vec2 uv) {\n    float cols = spritesheetSubdivisions;\n    float rows = spritesheetSubdivisions;\n    \n    float x = mod(idx, cols);\n    float y = floor(idx / cols);\n\n    return vec2(x / cols + uv.x / cols, 1.0 - (y / rows + (uv.y) / rows));\n}\n\nvoid main() {\n    vec2 uv = spriteIndexToUV(vParams.x, gl_PointCoord);\n    vec4 diffuse = texture2D(texture, uv);\n    \n    float alpha = diffuse.w * vParams.z;\n    \n    if (alpha < alphaTest) discard;\n    \n    gl_FragColor = vec4(diffuse.xyz, alpha);\n}\n";
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=trees.fragment.js.map
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
+	var __generator = (this && this.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
+	    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [0, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(16), __webpack_require__(5), __webpack_require__(3), __webpack_require__(2), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, perlin_1, interfaces_1, util_1, Grid_1, hexagon_1) {
+	    "use strict";
+	    function randomHeight(q, r) {
+	        var noise1 = perlin_1.simplex2(q / 10, r / 10);
+	        var noise2 = perlin_1.perlin2(q / 5, r / 5);
+	        var noise3 = perlin_1.perlin2(q / 30, r / 30);
+	        var noise = noise1 + noise2 + noise3;
+	        return noise / 3.0 * 2.0;
+	    }
+	    /**
+	     * Generates are square map of the given size centered at (0,0).
+	     * @param size
+	     * @param heightAt
+	     * @param terrainAt
+	     */
+	    function generateMap(size, tile) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var grid, withRivers;
+	            return __generator(this, function (_a) {
+	                grid = new Grid_1.default(size, size).mapQR(function (q, r) { return tile(q, r); });
+	                withRivers = generateRivers(grid);
+	                return [2 /*return*/, withRivers];
+	            });
+	        });
+	    }
+	    exports.generateMap = generateMap;
+	    function generateRandomMap(size, tile) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                perlin_1.seed(Date.now() + Math.random());
+	                return [2 /*return*/, generateMap(size, function (q, r) { return tile(q, r, randomHeight(q, r)); })];
+	            });
+	        });
+	    }
+	    exports.generateRandomMap = generateRandomMap;
+	    function generateRivers(grid) {
+	        // find a few river spawn points, preferably in mountains
+	        var tiles = grid.toArray();
+	        var numRivers = Math.max(1, Math.round(Math.sqrt(grid.length) / 4));
+	        var spawns = util_1.shuffle(tiles.filter(function (t) { return isAccessibleMountain(t, grid); })).slice(0, numRivers);
+	        // grow the river towards the water by following the height gradient
+	        var rivers = spawns.map(growRiver);
+	        // assign sequential indices to rivers and their tiles
+	        var riverIndex = 0;
+	        for (var _i = 0, rivers_1 = rivers; _i < rivers_1.length; _i++) {
+	            var river = rivers_1[_i];
+	            var riverTileIndex = 0;
+	            for (var _a = 0, river_1 = river; _a < river_1.length; _a++) {
+	                var tile = river_1[_a];
+	                tile.river = {
+	                    riverIndex: riverIndex,
+	                    riverTileIndex: riverTileIndex++
+	                };
+	            }
+	            riverIndex++;
+	        }
+	        return grid;
+	        function growRiver(spawn) {
+	            var river = [spawn];
+	            var tile = spawn;
+	            while (!interfaces_1.isWater(tile.height) && river.length < 20) {
+	                var neighbors = sortByHeight(grid.neighbors(tile.q, tile.r)).filter(function (t) { return !contains(t, river); });
+	                if (neighbors.length == 0) {
+	                    console.info("Aborted river generation", river, tile);
+	                    return river;
+	                }
+	                var next = neighbors[Math.max(neighbors.length - 1, Math.floor(Math.random() * 1.2))];
+	                river.push(next);
+	                tile = next;
+	            }
+	            return river;
+	        }
+	        function sortByHeight(tiles) {
+	            return tiles.sort(function (a, b) { return b.height - a.height; });
+	        }
+	        function contains(t, ts) {
+	            for (var _i = 0, ts_1 = ts; _i < ts_1.length; _i++) {
+	                var other = ts_1[_i];
+	                if (other.q == t.q && other.r == t.r) {
+	                    return true;
+	                }
+	            }
+	            return false;
+	        }
+	    }
+	    function isAccessibleMountain(tile, grid) {
+	        var ns = grid.neighbors(tile.q, tile.r);
+	        var spring = interfaces_1.isMountain(tile.height);
+	        return spring && ns.filter(function (t) { return interfaces_1.isLand(t.height); }).length > 3;
+	    }
+	    /**
+	     * Computes the water adjecency for the given tile.
+	     * @param grid grid with all tiles to be searched
+	     * @param tile tile to look at
+	     */
+	    function waterAdjacency(grid, tile) {
+	        function isWaterTile(q, r) {
+	            var t = grid.get(q, r);
+	            if (!t)
+	                return false;
+	            return interfaces_1.isWater(t.height);
+	        }
+	        return {
+	            NE: isWaterTile(tile.q + 1, tile.r - 1),
+	            E: isWaterTile(tile.q + 1, tile.r),
+	            SE: isWaterTile(tile.q, tile.r + 1),
+	            SW: isWaterTile(tile.q - 1, tile.r + 1),
+	            W: isWaterTile(tile.q - 1, tile.r),
+	            NW: isWaterTile(tile.q, tile.r - 1)
+	        };
+	    }
+	    exports.waterAdjacency = waterAdjacency;
+	    /**
+	     * Returns a random point on a hex tile considering adjacent water, i.e. avoiding points on the beach.
+	     * @param water water adjacency of the tile
+	     * @param scale coordinate scale
+	     * @returns {THREE.Vector3} local position
+	     */
+	    function randomPointOnCoastTile(water, scale) {
+	        if (scale === void 0) { scale = 1.0; }
+	        return hexagon_1.randomPointInHexagonEx(scale, function (corner) {
+	            corner = (2 + (6 - corner)) % 6;
+	            if (corner == 0 && water.NE)
+	                return 0.5;
+	            if (corner == 1 && water.E)
+	                return 0.5;
+	            if (corner == 2 && water.SE)
+	                return 0.5;
+	            if (corner == 3 && water.SW)
+	                return 0.5;
+	            if (corner == 4 && water.W)
+	                return 0.5;
+	            if (corner == 5 && water.NW)
+	                return 0.5;
+	            return 1;
+	        });
+	    }
+	    exports.randomPointOnCoastTile = randomPointOnCoastTile;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=map-generator.js.map
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
+	 * A speed-improved perlin and simplex noise algorithms for 2D.
+	 *
+	 * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
+	 * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
+	 * Better rank ordering method by Stefan Gustavson in 2012.
+	 * Converted to Javascript by Joseph Gentle.
+	 * Conveted to TypeScript by Mathias Kahl (mathias.kahl@gmail.com)
+	 *
+	 * Version 2016-08-18
+	 *
+	 * This code was placed in the public domain by its original author,
+	 * Stefan Gustavson. You may use it as you see fit, but
+	 * attribution is appreciated.
+	 *
+	 */
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	    "use strict";
+	    var Grad = (function () {
+	        function Grad(x, y, z) {
+	            this.x = x;
+	            this.y = y;
+	            this.z = z;
+	        }
+	        Grad.prototype.dot2 = function (x, y) {
+	            return this.x * x + this.y * y;
+	        };
+	        Grad.prototype.dot3 = function (x, y, z) {
+	            return this.x * x + this.y * y + this.z * z;
+	        };
+	        return Grad;
+	    }());
+	    var grad3 = [new Grad(1, 1, 0), new Grad(-1, 1, 0), new Grad(1, -1, 0), new Grad(-1, -1, 0),
+	        new Grad(1, 0, 1), new Grad(-1, 0, 1), new Grad(1, 0, -1), new Grad(-1, 0, -1),
+	        new Grad(0, 1, 1), new Grad(0, -1, 1), new Grad(0, 1, -1), new Grad(0, -1, -1)];
+	    var p = [151, 160, 137, 91, 90, 15,
+	        131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+	        190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+	        88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+	        77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+	        102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+	        135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+	        5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+	        223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+	        129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+	        251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+	        49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+	        138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+	    // To remove the need for index wrapping, double the permutation table length
+	    var perm = new Array(512);
+	    var gradP = new Array(512);
+	    // This isn't a very good seeding function, but it works ok. It supports 2^16
+	    // different seed values. Write something better if you need more seeds.
+	    function seed(seed) {
+	        if (seed > 0 && seed < 1) {
+	            // Scale the seed out
+	            seed *= 65536;
+	        }
+	        seed = Math.floor(seed);
+	        if (seed < 256) {
+	            seed |= seed << 8;
+	        }
+	        for (var i = 0; i < 256; i++) {
+	            var v;
+	            if (i & 1) {
+	                v = p[i] ^ (seed & 255);
+	            }
+	            else {
+	                v = p[i] ^ ((seed >> 8) & 255);
+	            }
+	            perm[i] = perm[i + 256] = v;
+	            gradP[i] = gradP[i + 256] = grad3[v % 12];
+	        }
+	    }
+	    exports.seed = seed;
+	    seed(0);
+	    /*
+	     for(var i=0; i<256; i++) {
+	     perm[i] = perm[i + 256] = p[i];
+	     gradP[i] = gradP[i + 256] = grad3[perm[i] % 12];
+	     }*/
+	    // Skewing and unskewing factors for 2, 3, and 4 dimensions
+	    var F2 = 0.5 * (Math.sqrt(3) - 1);
+	    var G2 = (3 - Math.sqrt(3)) / 6;
+	    var F3 = 1 / 3;
+	    var G3 = 1 / 6;
+	    // 2D simplex noise
+	    function simplex2(xin, yin) {
+	        var n0, n1, n2; // Noise contributions from the three corners
+	        // Skew the input space to determine which simplex cell we're in
+	        var s = (xin + yin) * F2; // Hairy factor for 2D
+	        var i = Math.floor(xin + s);
+	        var j = Math.floor(yin + s);
+	        var t = (i + j) * G2;
+	        var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
+	        var y0 = yin - j + t;
+	        // For the 2D case, the simplex shape is an equilateral triangle.
+	        // Determine which simplex we are in.
+	        var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+	        if (x0 > y0) {
+	            i1 = 1;
+	            j1 = 0;
+	        }
+	        else {
+	            i1 = 0;
+	            j1 = 1;
+	        }
+	        // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+	        // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+	        // c = (3-sqrt(3))/6
+	        var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+	        var y1 = y0 - j1 + G2;
+	        var x2 = x0 - 1 + 2 * G2; // Offsets for last corner in (x,y) unskewed coords
+	        var y2 = y0 - 1 + 2 * G2;
+	        // Work out the hashed gradient indices of the three simplex corners
+	        i &= 255;
+	        j &= 255;
+	        var gi0 = gradP[i + perm[j]];
+	        var gi1 = gradP[i + i1 + perm[j + j1]];
+	        var gi2 = gradP[i + 1 + perm[j + 1]];
+	        // Calculate the contribution from the three corners
+	        var t0 = 0.5 - x0 * x0 - y0 * y0;
+	        if (t0 < 0) {
+	            n0 = 0;
+	        }
+	        else {
+	            t0 *= t0;
+	            n0 = t0 * t0 * gi0.dot2(x0, y0); // (x,y) of grad3 used for 2D gradient
+	        }
+	        var t1 = 0.5 - x1 * x1 - y1 * y1;
+	        if (t1 < 0) {
+	            n1 = 0;
+	        }
+	        else {
+	            t1 *= t1;
+	            n1 = t1 * t1 * gi1.dot2(x1, y1);
+	        }
+	        var t2 = 0.5 - x2 * x2 - y2 * y2;
+	        if (t2 < 0) {
+	            n2 = 0;
+	        }
+	        else {
+	            t2 *= t2;
+	            n2 = t2 * t2 * gi2.dot2(x2, y2);
+	        }
+	        // Add contributions from each corner to get the final noise value.
+	        // The result is scaled to return values in the interval [-1,1].
+	        return 70 * (n0 + n1 + n2);
+	    }
+	    exports.simplex2 = simplex2;
+	    // 3D simplex noise
+	    function simplex3(xin, yin, zin) {
+	        var n0, n1, n2, n3; // Noise contributions from the four corners
+	        // Skew the input space to determine which simplex cell we're in
+	        var s = (xin + yin + zin) * F3; // Hairy factor for 2D
+	        var i = Math.floor(xin + s);
+	        var j = Math.floor(yin + s);
+	        var k = Math.floor(zin + s);
+	        var t = (i + j + k) * G3;
+	        var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
+	        var y0 = yin - j + t;
+	        var z0 = zin - k + t;
+	        // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
+	        // Determine which simplex we are in.
+	        var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
+	        var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
+	        if (x0 >= y0) {
+	            if (y0 >= z0) {
+	                i1 = 1;
+	                j1 = 0;
+	                k1 = 0;
+	                i2 = 1;
+	                j2 = 1;
+	                k2 = 0;
+	            }
+	            else if (x0 >= z0) {
+	                i1 = 1;
+	                j1 = 0;
+	                k1 = 0;
+	                i2 = 1;
+	                j2 = 0;
+	                k2 = 1;
+	            }
+	            else {
+	                i1 = 0;
+	                j1 = 0;
+	                k1 = 1;
+	                i2 = 1;
+	                j2 = 0;
+	                k2 = 1;
+	            }
+	        }
+	        else {
+	            if (y0 < z0) {
+	                i1 = 0;
+	                j1 = 0;
+	                k1 = 1;
+	                i2 = 0;
+	                j2 = 1;
+	                k2 = 1;
+	            }
+	            else if (x0 < z0) {
+	                i1 = 0;
+	                j1 = 1;
+	                k1 = 0;
+	                i2 = 0;
+	                j2 = 1;
+	                k2 = 1;
+	            }
+	            else {
+	                i1 = 0;
+	                j1 = 1;
+	                k1 = 0;
+	                i2 = 1;
+	                j2 = 1;
+	                k2 = 0;
+	            }
+	        }
+	        // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+	        // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+	        // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+	        // c = 1/6.
+	        var x1 = x0 - i1 + G3; // Offsets for second corner
+	        var y1 = y0 - j1 + G3;
+	        var z1 = z0 - k1 + G3;
+	        var x2 = x0 - i2 + 2 * G3; // Offsets for third corner
+	        var y2 = y0 - j2 + 2 * G3;
+	        var z2 = z0 - k2 + 2 * G3;
+	        var x3 = x0 - 1 + 3 * G3; // Offsets for fourth corner
+	        var y3 = y0 - 1 + 3 * G3;
+	        var z3 = z0 - 1 + 3 * G3;
+	        // Work out the hashed gradient indices of the four simplex corners
+	        i &= 255;
+	        j &= 255;
+	        k &= 255;
+	        var gi0 = gradP[i + perm[j + perm[k]]];
+	        var gi1 = gradP[i + i1 + perm[j + j1 + perm[k + k1]]];
+	        var gi2 = gradP[i + i2 + perm[j + j2 + perm[k + k2]]];
+	        var gi3 = gradP[i + 1 + perm[j + 1 + perm[k + 1]]];
+	        // Calculate the contribution from the four corners
+	        var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+	        if (t0 < 0) {
+	            n0 = 0;
+	        }
+	        else {
+	            t0 *= t0;
+	            n0 = t0 * t0 * gi0.dot3(x0, y0, z0); // (x,y) of grad3 used for 2D gradient
+	        }
+	        var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+	        if (t1 < 0) {
+	            n1 = 0;
+	        }
+	        else {
+	            t1 *= t1;
+	            n1 = t1 * t1 * gi1.dot3(x1, y1, z1);
+	        }
+	        var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+	        if (t2 < 0) {
+	            n2 = 0;
+	        }
+	        else {
+	            t2 *= t2;
+	            n2 = t2 * t2 * gi2.dot3(x2, y2, z2);
+	        }
+	        var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+	        if (t3 < 0) {
+	            n3 = 0;
+	        }
+	        else {
+	            t3 *= t3;
+	            n3 = t3 * t3 * gi3.dot3(x3, y3, z3);
+	        }
+	        // Add contributions from each corner to get the final noise value.
+	        // The result is scaled to return values in the interval [-1,1].
+	        return 32 * (n0 + n1 + n2 + n3);
+	    }
+	    exports.simplex3 = simplex3;
+	    // ##### Perlin noise stuff
+	    function fade(t) {
+	        return t * t * t * (t * (t * 6 - 15) + 10);
+	    }
+	    function lerp(a, b, t) {
+	        return (1 - t) * a + t * b;
+	    }
+	    // 2D Perlin Noise
+	    function perlin2(x, y) {
+	        // Find unit grid cell containing point
+	        var X = Math.floor(x), Y = Math.floor(y);
+	        // Get relative xy coordinates of point within that cell
+	        x = x - X;
+	        y = y - Y;
+	        // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+	        X = X & 255;
+	        Y = Y & 255;
+	        // Calculate noise contributions from each of the four corners
+	        var n00 = gradP[X + perm[Y]].dot2(x, y);
+	        var n01 = gradP[X + perm[Y + 1]].dot2(x, y - 1);
+	        var n10 = gradP[X + 1 + perm[Y]].dot2(x - 1, y);
+	        var n11 = gradP[X + 1 + perm[Y + 1]].dot2(x - 1, y - 1);
+	        // Compute the fade curve value for x
+	        var u = fade(x);
+	        // Interpolate the four results
+	        return lerp(lerp(n00, n10, u), lerp(n01, n11, u), fade(y));
+	    }
+	    exports.perlin2 = perlin2;
+	    // 3D Perlin Noise
+	    function perlin3(x, y, z) {
+	        // Find unit grid cell containing point
+	        var X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z);
+	        // Get relative xyz coordinates of point within that cell
+	        x = x - X;
+	        y = y - Y;
+	        z = z - Z;
+	        // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+	        X = X & 255;
+	        Y = Y & 255;
+	        Z = Z & 255;
+	        // Calculate noise contributions from each of the eight corners
+	        var n000 = gradP[X + perm[Y + perm[Z]]].dot3(x, y, z);
+	        var n001 = gradP[X + perm[Y + perm[Z + 1]]].dot3(x, y, z - 1);
+	        var n010 = gradP[X + perm[Y + 1 + perm[Z]]].dot3(x, y - 1, z);
+	        var n011 = gradP[X + perm[Y + 1 + perm[Z + 1]]].dot3(x, y - 1, z - 1);
+	        var n100 = gradP[X + 1 + perm[Y + perm[Z]]].dot3(x - 1, y, z);
+	        var n101 = gradP[X + 1 + perm[Y + perm[Z + 1]]].dot3(x - 1, y, z - 1);
+	        var n110 = gradP[X + 1 + perm[Y + 1 + perm[Z]]].dot3(x - 1, y - 1, z);
+	        var n111 = gradP[X + 1 + perm[Y + 1 + perm[Z + 1]]].dot3(x - 1, y - 1, z - 1);
+	        // Compute the fade curve value for x, y, z
+	        var u = fade(x);
+	        var v = fade(y);
+	        var w = fade(z);
+	        // Interpolate
+	        return lerp(lerp(lerp(n000, n100, u), lerp(n001, n101, u), w), lerp(lerp(n010, n110, u), lerp(n011, n111, u), w), v);
+	    }
+	    exports.perlin3 = perlin3;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	//# sourceMappingURL=perlin.js.map
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(7), __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, coords_1, three_1) {
 	    "use strict";
 	    var Animation = (function () {
 	        /**
@@ -1314,7 +1847,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	                e.preventDefault();
 	            }, false);
 	            canvas.addEventListener("touchend", function (e) { return _this.onMouseUp(e.touches[0] || e.changedTouches[0]); }, false);
-	            setInterval(function () { return _this.showDebugInfo(); }, 100);
+	            setInterval(function () { return _this.showDebugInfo(); }, 200);
 	            this.controls.setOnAnimateCallback(this.onAnimate);
 	        };
 	        Controller.prototype.addAnimation = function (animation) {
@@ -1327,7 +1860,8 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_3__) { r
 	            var tileQR = this.selectedQR;
 	            var tileXYZ = coords_1.qrToWorld(tileQR.q, tileQR.r); // world space
 	            var camPos = this.controls.getViewCenter(); //  this.controls.getCamera().position        
-	            this.debugText.innerHTML = "Selected Tile: QR(" + tileQR.q + ", " + tileQR.r + "), XY(" + tileXYZ.x.toFixed(2) + ", " + tileXYZ.y.toFixed(2) + ")\n            &nbsp; &bull; &nbsp; Camera Looks At (Center): XYZ(" + camPos.x.toFixed(2) + ", " + camPos.y.toFixed(2) + ", " + camPos.z.toFixed(2) + ")";
+	            var tile = this.controls.pickTile(tileXYZ);
+	            this.debugText.innerHTML = "Selected Tile: QR(" + tileQR.q + ", " + tileQR.r + "), \n            XY(" + tileXYZ.x.toFixed(2) + ", " + tileXYZ.y.toFixed(2) + ")\n            &nbsp; &bull; &nbsp; Camera Looks At (Center): XYZ(" + camPos.x.toFixed(2) + ", " + camPos.y.toFixed(2) + ", " + camPos.z.toFixed(2) + ")";
 	        };
 	        Controller.prototype.panCameraTo = function (qr, durationMs) {
 	            var _this = this;
