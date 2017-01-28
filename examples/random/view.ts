@@ -35,7 +35,6 @@ async function generateMap(mapSize: number) {
     function treeAt(q: number, r: number, terrain: string): number | undefined {
         if (terrain == "snow") return 2
         else if (terrain == "tundra") return 1
-        else if (Math.abs(r) < mapSize * 0.1) return 3 // tropical
         else return 0
     }
 

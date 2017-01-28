@@ -46,6 +46,11 @@ export interface MapMeshOptions {
      */
     treeSize?: number;
     /**
+     * Parts of the tree sprite whose opacity is lower than this value will not be rendered,
+     * i.e. the transparent background. Valid values are between 0.0 and 1.0. Default is 0.2.
+     */
+    treeAlphaTest?: number;
+    /**
      * Default 50
      */
     treesPerForest?: number;

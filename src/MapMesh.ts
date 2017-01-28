@@ -18,7 +18,6 @@ import {
     RepeatWrapping
 } from "three"
 import { loadFile, qrRange, loadTexture } from './util';
-import Trees from './trees';
 import { qrToWorld } from './coords';
 import Grid from "./Grid";
 import { LAND_FRAGMENT_SHADER } from './shaders/land.fragment';
@@ -80,6 +79,12 @@ export interface MapMeshOptions {
      * Default 1.0
      */
     treeSize?: number;
+
+    /**
+     * Parts of the tree sprite whose opacity is lower than this value will not be rendered,
+     * i.e. the transparent background. Valid values are between 0.0 and 1.0. Default is 0.2.
+     */
+    treeAlphaTest?: number;
 
     /**
      * Default 50
@@ -283,13 +288,13 @@ export default class MapMesh extends Group implements TileDataSource {
     }
 
     private async createTrees() {
-        //const trees = this.trees = new Trees(this.tiles, this.globalGrid, this.options)
         const trees = this.trees = new Forests(this.tiles, this.globalGrid, {
             treeSize: this.options.treeSize || 1.44,
             spritesheet: this.options.treeSpritesheet,
             spritesheetSubdivisions: this.options.treeSpritesheetSubdivisions,
             treesPerForest: this.options.treesPerForest || 50,
-            mapScale: this.options.scale || 1.0
+            mapScale: this.options.scale || 1.0,
+            alphaTest: this.options.treeAlphaTest || 0.2
         })
         this.add(trees)
     }
