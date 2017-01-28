@@ -2,6 +2,8 @@ import {simplex2, perlin2, seed} from "./perlin"
 import {Height, TileData, isLand, isWater, isMountain, isHill} from "./interfaces"
 import {shuffle, qrRange} from "./util";
 import Grid from './Grid';
+import {Vector3} from "three";
+import {randomPointInHexagonEx} from "./hexagon";
 
 function randomHeight(q: number, r: number) {
     var noise1 = simplex2(q / 10, r / 10)
@@ -92,4 +94,58 @@ function isAccessibleMountain(tile: TileData, grid: Grid<TileData>) {
     let ns = grid.neighbors(tile.q, tile.r)
     let spring = isMountain(tile.height)
     return spring && ns.filter(t => isLand(t.height)).length > 3
+}
+
+/**
+ * Indicates in which directions there is water from NE (North East) to NW (North West).
+ */
+export interface WaterAdjacency {
+    NE: boolean;
+    E: boolean;
+    SE: boolean;
+    SW: boolean;
+    W: boolean;
+    NW: boolean;
+}
+
+/**
+ * Computes the water adjecency for the given tile.
+ * @param grid grid with all tiles to be searched
+ * @param tile tile to look at
+ */
+export function waterAdjacency(grid: Grid<TileData>, tile: TileData): WaterAdjacency {
+    function isWaterTile(q: number, r: number) {
+        const t = grid.get(q, r)
+        if (!t) return false
+        return isWater(t.height)
+    }
+
+    return {
+        NE: isWaterTile(tile.q + 1, tile.r - 1),
+        E: isWaterTile(tile.q + 1, tile.r),
+        SE: isWaterTile(tile.q, tile.r + 1),
+        SW: isWaterTile(tile.q - 1, tile.r + 1),
+        W: isWaterTile(tile.q - 1, tile.r),
+        NW: isWaterTile(tile.q, tile.r - 1)
+    }
+}
+
+/**
+ * Returns a random point on a hex tile considering adjacent water, i.e. avoiding points on the beach.
+ * @param water water adjacency of the tile
+ * @param scale coordinate scale
+ * @returns {THREE.Vector3} local position
+ */
+export function randomPointOnCoastTile(water: WaterAdjacency, scale: number = 1.0): Vector3 {
+    return randomPointInHexagonEx(scale, corner => {
+        corner = (2 + (6 - corner)) % 6
+        if (corner == 0 && water.NE) return 0.5
+        if (corner == 1 && water.E) return 0.5
+        if (corner == 2 && water.SE) return 0.5
+        if (corner == 3 && water.SW) return 0.5
+        if (corner == 4 && water.W) return 0.5
+        if (corner == 5 && water.NW) return 0.5
+
+        return 1
+    })
 }

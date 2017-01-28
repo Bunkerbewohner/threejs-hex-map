@@ -172,8 +172,10 @@ export default class Controller implements MapViewController {
         const tileQR = this.selectedQR
         const tileXYZ = qrToWorld(tileQR.q, tileQR.r) // world space
         const camPos = this.controls.getViewCenter() //  this.controls.getCamera().position        
+        const tile = this.controls.pickTile(tileXYZ)
 
-        this.debugText.innerHTML = `Selected Tile: QR(${tileQR.q}, ${tileQR.r}), XY(${tileXYZ.x.toFixed(2)}, ${tileXYZ.y.toFixed(2)})
+        this.debugText.innerHTML = `Selected Tile: QR(${tileQR.q}, ${tileQR.r}), 
+            XY(${tileXYZ.x.toFixed(2)}, ${tileXYZ.y.toFixed(2)})
             &nbsp; &bull; &nbsp; Camera Looks At (Center): XYZ(${camPos.x.toFixed(2)}, ${camPos.y.toFixed(2)}, ${camPos.z.toFixed(2)})`
     }
 

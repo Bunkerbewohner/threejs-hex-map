@@ -25,6 +25,7 @@ import { LAND_FRAGMENT_SHADER } from './shaders/land.fragment';
 import { LAND_VERTEX_SHADER } from './shaders/land.vertex';
 import { MOUNTAINS_FRAGMENT_SHADER } from './shaders/mountains.fragment';
 import { MOUNTAINS_VERTEX_SHADER } from './shaders/mountains.vertex';
+import Forests from "./Forests";
 
 export interface MapMeshOptions {
 
@@ -68,12 +69,22 @@ export interface MapMeshOptions {
     /**
      * Diffuse map for tree sprites
      */
-    treeTextures: Texture[];
+    treeSpritesheet: Texture;
+
+    /**
+     * Number of horizontal and vertical spritesheet subdivisions
+     */
+    treeSpritesheetSubdivisions: number;
 
     /**
      * Default 1.0
      */
     treeSize?: number;
+
+    /**
+     * Default 50
+     */
+    treesPerForest?: number;
 
     /**
      * Overall scale of the geometry. Default 1.0
@@ -137,7 +148,7 @@ export default class MapMesh extends Group implements TileDataSource {
 
     private land: Mesh
     private mountains: Mesh
-    private trees: Trees
+    private trees: Forests
 
     boundingSphere: Sphere
 
@@ -272,7 +283,14 @@ export default class MapMesh extends Group implements TileDataSource {
     }
 
     private async createTrees() {
-        const trees = this.trees = new Trees(this.tiles, this.globalGrid, this.options)
+        //const trees = this.trees = new Trees(this.tiles, this.globalGrid, this.options)
+        const trees = this.trees = new Forests(this.tiles, this.globalGrid, {
+            treeSize: this.options.treeSize || 1.44,
+            spritesheet: this.options.treeSpritesheet,
+            spritesheetSubdivisions: this.options.treeSpritesheetSubdivisions,
+            treesPerForest: this.options.treesPerForest || 50,
+            mapScale: this.options.scale || 1.0
+        })
         this.add(trees)
     }
 

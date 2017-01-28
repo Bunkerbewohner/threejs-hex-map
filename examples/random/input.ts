@@ -55,7 +55,7 @@ function onMouseWheelHandler(mapView: MapView) {
         var delta = Math.max(-1, Math.min(1, (e.wheelDeltaY || e.detail)))
         if (delta == 0) return;
 
-        const zoom = Math.max(4.0, Math.min(500.0, mapView.getZoom() * (1.0 - delta * 0.025)))
+        const zoom = Math.max(8.0, Math.min(500.0, mapView.getZoom() * (1.0 - delta * 0.025)))
 
         mapView.setZoom(zoom)
     }

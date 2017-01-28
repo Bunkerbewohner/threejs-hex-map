@@ -32,7 +32,9 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
         coastAtlasTexture: loadTexture("coast-diffuse.png"),
         riverAtlasTexture: loadTexture("river-diffuse.png"),
         undiscoveredTexture: loadTexture("paper.jpg"),
-        treeTexture: loadTexture("tree.png")
+        transitionTexture: null,
+        treeSpritesheet: loadTexture("trees.png"),
+        treeSpritesheetSubdivisions: 4
     }
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
     options.terrainAtlas = atlas

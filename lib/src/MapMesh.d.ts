@@ -36,11 +36,19 @@ export interface MapMeshOptions {
     /**
      * Diffuse map for tree sprites
      */
-    treeTextures: Texture[];
+    treeSpritesheet: Texture;
+    /**
+     * Number of horizontal and vertical spritesheet subdivisions
+     */
+    treeSpritesheetSubdivisions: number;
     /**
      * Default 1.0
      */
     treeSize?: number;
+    /**
+     * Default 50
+     */
+    treesPerForest?: number;
     /**
      * Overall scale of the geometry. Default 1.0
      */

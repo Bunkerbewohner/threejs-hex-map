@@ -86,8 +86,8 @@ export function range(minOrMax: number, max?: number): number[] {
     }
 }
 
-export function flatMap<T, R>(items: T[], map: (item: T) => R[]): R[] {
-    return [].concat(items.map(map))
+export function flatMap<T, R>(items: T[], map: (item: T, index?: number) => R[]): R[] {
+    return [].concat.apply([], items.map(map))
 }
 
 export function sum(numbers: number[]): number {
@@ -110,4 +110,8 @@ export function minBy<T>(items: T[], by: (item: T)=>number): T | null {
 
 export function isInteger(value: number): boolean {
     return Math.floor(value) == value
+}
+
+export function flatten<T>(items: T[][]): T[] {
+    return [].concat.apply([], items)
 }

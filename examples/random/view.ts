@@ -33,23 +33,27 @@ async function generateMap(mapSize: number) {
     }
 
     function treeAt(q: number, r: number, terrain: string): number | undefined {
-        if (terrain == "snow") return 3
-        else if (terrain == "tundra") return 2
-        else if (Math.abs(r) < mapSize * 0.1) return 0 // tropical
-        else return 1
+        if (terrain == "snow") return 2
+        else if (terrain == "tundra") return 1
+        else if (Math.abs(r) < mapSize * 0.1) return 3 // tropical
+        else return 0
     }
 
     return generateRandomMap(mapSize, (q, r, height): TileData => {
         const terrain = terrainAt(q, r, height)
         const trees = isMountain(height) || isWater(height) || terrain == "desert" ? undefined :
-            varying(true, false) && treeAt(q, r, terrain)
+            (varying(true, false, false) ? treeAt(q, r, terrain) : undefined)
         return {q, r, height, terrain, treeIndex: trees, river: null, fog: true, clouds: true }
     })
 }
 
 export async function initView(mapSize: number, initialZoom: number): Promise<MapView> {
     const textureLoader = new TextureLoader()
-    const loadTexture = (name: string) => textureLoader.load(asset(name))    
+    const loadTexture = (name: string) => {
+        const texture = textureLoader.load(asset(name))
+        texture.name = name
+        return texture
+    }
     const options: MapMeshOptions = {
         terrainAtlas: null,
         terrainAtlasTexture: loadTexture("terrain.png"),
@@ -57,8 +61,10 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
         coastAtlasTexture: loadTexture("coast-diffuse.png"),
         riverAtlasTexture: loadTexture("river-diffuse.png"),
         undiscoveredTexture: loadTexture("paper.jpg"),
-        treeTextures: ["1", "2", "3", "4"].map(nr => loadTexture(`tree${nr}.png`)),
-        transitionTexture: loadTexture("transitions.png")
+        treeSpritesheet: loadTexture("trees.png"),
+        treeSpritesheetSubdivisions: 4,
+        transitionTexture: loadTexture("transitions.png"),
+        treesPerForest: 50
     }
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
     options.terrainAtlas = atlas
@@ -95,7 +101,7 @@ function setFogAround(mapView: MapView, tile: TileData, range: number, fog: bool
 
     const updated = tiles.map(t => {
         t.fog = fog
-        t.clouds= clouds
+        t.clouds = clouds
         return t
     })
 
