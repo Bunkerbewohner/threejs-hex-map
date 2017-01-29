@@ -15,6 +15,7 @@ import {
     XHRLoader,
     BufferAttribute,
     Sphere,
+    Color,
     FrontSide,
     RepeatWrapping
 } from "three"
@@ -116,6 +117,24 @@ export interface MapMeshOptions {
      * GLSL code of the mountain vertex shader. For default see /src/shaders/mountains.vertex.ts.
      */
     mountainsVertexShader?: string;
+
+    /**
+     * Color of the hex grid
+     * Default: 0xffffff (white)
+     */
+    gridColor?: Color;
+
+    /**
+     * Width of the grid lines as a normalized scaling factor relative to the area of the tile.
+     * Default: 0.02 (2%)
+     */
+    gridWidth?: number;
+
+    /**
+     * Opacity between 0.0 (invisible) and 1.0 (opaque).
+     * Default value: 0.33 (33%)
+     */
+    gridOpacity?: number;
 }
 
 export interface MapMeshTile extends TileData {
@@ -336,6 +355,18 @@ export default class MapMesh extends Group implements TileDataSource {
                 lightDir: {
                     type: "v3",
                     value: new Vector3(0.5, 0.6, -0.5).normalize()
+                },
+                gridColor: {
+                    type: "c",
+                    value: typeof this.options.gridColor != "undefined" ? this.options.gridColor : new Color(0xffffff)
+                },
+                gridWidth: {
+                    type: "f",
+                    value: typeof this.options.gridWidth != "undefined" ? this.options.gridWidth : 0.02
+                },
+                gridOpacity: {
+                    type: "f",
+                    value: typeof this.options.gridOpacity != "undefined" ? this.options.gridOpacity : 0.33
                 }
             },
             vertexShader: this.options.landVertexShader,
@@ -375,6 +406,18 @@ export default class MapMesh extends Group implements TileDataSource {
                 lightDir: {
                     type: "v3",
                     value: new Vector3(0.5, 0.6, -0.5).normalize()
+                },
+                gridColor: {
+                    type: "c",
+                    value: typeof this.options.gridColor != "undefined" ? this.options.gridColor : new Color(0xffffff)
+                },
+                gridWidth: {
+                    type: "f",
+                    value: typeof this.options.gridWidth != "undefined" ? this.options.gridWidth : 0.02
+                },
+                gridOpacity: {
+                    type: "f",
+                    value: typeof this.options.gridOpacity != "undefined" ? this.options.gridOpacity : 0.33
                 }
             },
             vertexShader: this.options.mountainsVertexShader,

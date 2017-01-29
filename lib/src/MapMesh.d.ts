@@ -1,6 +1,6 @@
 /// <reference types="three" />
 import { TileData, TextureAtlas, TileDataSource } from './interfaces';
-import { Texture, Group, Sphere } from "three";
+import { Texture, Group, Sphere, Color } from "three";
 import Grid from "./Grid";
 export interface MapMeshOptions {
     /**
@@ -74,6 +74,21 @@ export interface MapMeshOptions {
      * GLSL code of the mountain vertex shader. For default see /src/shaders/mountains.vertex.ts.
      */
     mountainsVertexShader?: string;
+    /**
+     * Color of the hex grid
+     * Default: 0xffffff (white)
+     */
+    gridColor?: Color;
+    /**
+     * Width of the grid lines as a normalized scaling factor relative to the area of the tile.
+     * Default: 0.02 (2%)
+     */
+    gridWidth?: number;
+    /**
+     * Opacity between 0.0 (invisible) and 1.0 (opaque).
+     * Default value: 0.33 (33%)
+     */
+    gridOpacity?: number;
 }
 export interface MapMeshTile extends TileData {
     /**

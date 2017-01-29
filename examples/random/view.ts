@@ -3,7 +3,7 @@ import { loadFile, loadJSON, loadTexture } from '../../src/util';
 import { TextureAtlas, isMountain, isWater, TileData } from '../../src/interfaces';
 import {generateRandomMap} from "../../src/map-generator"
 import { varying } from './util';
-import { TextureLoader } from 'three'
+import { TextureLoader, Color } from 'three'
 import { MapMeshOptions } from '../../src/MapMesh';
 import DefaultMapViewController from "../../src/DefaultMapViewController"
 
@@ -63,7 +63,10 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
         treeSpritesheet: loadTexture("trees.png"),
         treeSpritesheetSubdivisions: 4,
         transitionTexture: loadTexture("transitions.png"),
-        treesPerForest: 50
+        treesPerForest: 50,
+        gridWidth: 0.025,
+        gridColor: new Color(0x42322b),
+        gridOpacity: 0.25
     }
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
     options.terrainAtlas = atlas

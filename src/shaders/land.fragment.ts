@@ -16,6 +16,10 @@ uniform sampler2D mapTexture;
 uniform sampler2D transitionTexture;
 uniform mat3 normalMatrix;
 
+uniform vec3 gridColor;
+uniform float gridWidth;
+uniform float gridOpacity;
+
 // (width, height, cellSize, cellSpacing)
 uniform vec4 textureAtlasMeta;
 
@@ -122,10 +126,8 @@ void main() {
         gl_FragColor = mix(gl_FragColor, vec4(river, 1.0), riverColor.w);
     }
 
-    if (showGrid > 0.0 && vExtra > 0.97) { // hex border
-        float f = clamp(0.5 * vExtra - zoom * 0.005, 0.0, 1.0); //0.8;
-        f = 0.34;
-        gl_FragColor = mix(vec4(.9, .9, .7, 1.0), gl_FragColor, 1.0 - f);
+    if (showGrid > 0.0 && vExtra > 1.0 - gridWidth) { // hex border
+        gl_FragColor = mix(vec4(gridColor, 1.0), gl_FragColor, 1.0 - gridOpacity);
     }
 
     // FOW
