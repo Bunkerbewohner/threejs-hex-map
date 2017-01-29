@@ -15,6 +15,7 @@ import {
     XHRLoader,
     BufferAttribute,
     Sphere,
+    FrontSide,
     RepeatWrapping
 } from "three"
 import { loadFile, qrRange, loadTexture } from './util';
@@ -302,11 +303,11 @@ export default class MapMesh extends Group implements TileDataSource {
     private async createLandMesh(tiles: MapMeshTile[]) {
         const atlas = this.options.terrainAtlas
         const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this.options)
-        const material = new THREE.RawShaderMaterial({
+        const material = new RawShaderMaterial({
             uniforms: {
                 sineTime: {value: 0.0},
                 showGrid: {value: this._showGrid ? 1.0 : 0.0},
-                camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
+                camera: {type: "v3", value: new Vector3(0, 0, 0)},
                 texture: {type: "t", value: this.options.terrainAtlasTexture},
                 textureAtlasMeta: {
                     type: "4f",
@@ -334,12 +335,12 @@ export default class MapMesh extends Group implements TileDataSource {
                 },
                 lightDir: {
                     type: "v3",
-                    value: new THREE.Vector3(0.5, 0.6, -0.5).normalize()
+                    value: new Vector3(0.5, 0.6, -0.5).normalize()
                 }
             },
             vertexShader: this.options.landVertexShader,
             fragmentShader: this.options.landFragmentShader,
-            side: THREE.FrontSide,
+            side: FrontSide,
             wireframe: false,
             transparent: false
         })
@@ -353,11 +354,11 @@ export default class MapMesh extends Group implements TileDataSource {
     private async createMountainMesh(tiles: MapMeshTile[]) {
         const atlas = this.options.terrainAtlas
         const geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this.options)
-        const material = new THREE.RawShaderMaterial({
+        const material = new RawShaderMaterial({
             uniforms: {
                 sineTime: {value: 0.0},
                 showGrid: {value: this._showGrid ? 1.0 : 0.0},
-                camera: {type: "v3", value: new THREE.Vector3(0, 0, 0)},
+                camera: {type: "v3", value: new Vector3(0, 0, 0)},
                 texture: {type: "t", value: this.options.terrainAtlasTexture},
                 textureAtlasMeta: {
                     type: "4f",
@@ -373,12 +374,12 @@ export default class MapMesh extends Group implements TileDataSource {
                 },
                 lightDir: {
                     type: "v3",
-                    value: new THREE.Vector3(0.5, 0.6, -0.5).normalize()
+                    value: new Vector3(0.5, 0.6, -0.5).normalize()
                 }
             },
             vertexShader: this.options.mountainsVertexShader,
             fragmentShader: this.options.mountainsFragmentShader,
-            side: THREE.FrontSide,
+            side: FrontSide,
             wireframe: false,
             transparent: false
         })
@@ -403,7 +404,7 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
 
     // positions for each hexagon tile
     const tilePositions: Vector3[] = tiles.map((tile) => qrToWorld(tile.q, tile.r, scale))
-    const posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 2), 2, 1)
+    const posAttr = new InstancedBufferAttribute(new Float32Array(tilePositions.length * 2), 2, 1)
     posAttr.copyVector2sArray(tilePositions)
     geometry.addAttribute("offset", posAttr)
 
@@ -438,15 +439,15 @@ function createHexagonTilesGeometry(tiles: MapMeshTile[], grid: Grid<TileData>, 
         return new Vector4(cellIndex, style, coastIdx, riverIdx)
     })
 
-    const styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
+    const styleAttr = new InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1)
     styleAttr.copyVector4sArray(styles)
     geometry.addAttribute("style", styleAttr)
 
     // surrounding tile terrain represented as two consecutive Vector3s
     // 1. [tileIndex + 0] = NE, [tileIndex + 1] = E, [tileIndex + 2] = SE
     // 2. [tileIndex + 0] = SW, [tileIndex + 1] = W, [tileIndex + 2] = NW
-    const neighborsEast = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1)
-    const neighborsWest = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1)
+    const neighborsEast = new InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1)
+    const neighborsWest = new InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1)
 
     for (let i = 0; i < tiles.length; i++) {
         const neighbors = grid.surrounding(tiles[i].q, tiles[i].r)

@@ -1,6 +1,7 @@
 /// <reference types="three" />
+import { Texture } from "three";
 import { QR } from "./interfaces";
-export declare function loadTexture(url: string, onProgress?: (percent: number, totalBytes: number, loadedBytes: number) => void): Promise<THREE.Texture>;
+export declare function loadTexture(url: string, onProgress?: (percent: number, totalBytes: number, loadedBytes: number) => void): Promise<Texture>;
 export declare function loadFile(path: string): Promise<string>;
 export declare function loadJSON<T>(path: string): Promise<T>;
 export declare function qrRange(qrRadius: number): QR[];

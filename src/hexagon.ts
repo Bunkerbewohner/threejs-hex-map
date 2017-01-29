@@ -1,4 +1,4 @@
-import {Vector3, BufferGeometry} from "three"
+import {Vector3, BufferGeometry, BufferAttribute} from "three"
 
 export const NE = 0b100000
 export const E  = 0b010000
@@ -34,12 +34,12 @@ export function createHexagon(radius: number, numSubdivisions: number): BufferGe
     var border = new Float32Array(numFaces * 3 * 1), e = 0
 
     var points = [0, 1, 2, 3, 4, 5].map((i) => {
-        return new THREE.Vector3(
+        return new Vector3(
             radius * Math.sin(Math.PI * 2 * (i / 6.0)),
             radius * Math.cos(Math.PI * 2 * (i / 6.0)),
             0
         )
-    }).concat([new THREE.Vector3(0, 0, 0)])
+    }).concat([new Vector3(0, 0, 0)])
 
     var faces = [0, 6, 1, 1, 6, 2, 2, 6, 3, 3, 6, 4, 4, 6, 5, 5, 6, 0]
     var vertices: Vector3[] = [] // every three vertices constitute one face
@@ -60,12 +60,12 @@ export function createHexagon(radius: number, numSubdivisions: number): BufferGe
         border[e++] = vertices[i].length() >= inradius - 0.1 ? 1.0 : 0.0
     }
 
-    var geometry = new THREE.BufferGeometry()
-    geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3))
-    geometry.addAttribute("uv", new THREE.BufferAttribute(texcoords, 2))
+    var geometry = new BufferGeometry()
+    geometry.addAttribute("position", new BufferAttribute(positions, 3))
+    geometry.addAttribute("uv", new BufferAttribute(texcoords, 2))
 
     // 1.0 = border vertex, 0.0 otherwise
-    geometry.addAttribute("border", new THREE.BufferAttribute(border, 1))
+    geometry.addAttribute("border", new BufferAttribute(border, 1))
 
     return geometry
 }
@@ -73,11 +73,11 @@ export function createHexagon(radius: number, numSubdivisions: number): BufferGe
 /**
  * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
  */
-export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
+export function randomPointInHexagon(hexRadius: number): Vector3 {
   // the hexagon consists of 6 triangles, construct one of them randomly
   var startCornerIndex = Math.floor(Math.random() * 6)
   var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0)
-  var B = new THREE.Vector3(0, 0, 0)
+  var B = new Vector3(0, 0, 0)
   var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0)
 
   // random point in the triangle based on AB and AC
@@ -92,11 +92,11 @@ export function randomPointInHexagon(hexRadius: number): THREE.Vector3 {
 /**
  * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
  */
-export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number)=>number): THREE.Vector3 {    
+export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number)=>number): Vector3 {
     // the hexagon consists of 6 triangles, construct one of them randomly
     var startCornerIndex = Math.floor(Math.random() * 6)
     const A = hexagonCorners1[startCornerIndex].clone()
-    const B = new THREE.Vector3(0, 0, 0)
+    const B = new Vector3(0, 0, 0)
     const C = hexagonCorners1[(startCornerIndex + 1) % 6].clone()
 
     // random point in the triangle based on AB and AC
@@ -110,13 +110,13 @@ export function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex
     return point.multiplyScalar(modifier(startCornerIndex) * hexRadius)
 }
 
-function computeHexagonCorner(radius: number, angle: number): THREE.Vector3 {
-  return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
+function computeHexagonCorner(radius: number, angle: number): Vector3 {
+  return new Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
 }
 
-function computeHexagonCorner1(angle: number): THREE.Vector3 {
+function computeHexagonCorner1(angle: number): Vector3 {
     const radius = 1.0
-    return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
+    return new Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0)
 }
 
 const hexagonCorners1 = [

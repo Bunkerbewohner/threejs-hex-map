@@ -1,5 +1,5 @@
 /// <reference types="three" />
-import Vector2 = THREE.Vector2;
+import { Vector2 } from "three";
 import { BoundingBox } from "./BoundingBox";
 export default class QuadTree<T> {
     private northWest;

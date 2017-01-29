@@ -1,11 +1,11 @@
 /// <reference types="three" />
-import { Vector3, Camera } from "three";
+import { Vector3, Camera, Raycaster } from "three";
 import { QR } from './interfaces';
 export declare function qrToWorld(q: number, r: number, scale?: number): Vector3;
 export declare function qrToWorldX(q: number, r: number, scale?: number): number;
 export declare function qrToWorldY(q: number, r: number, scale?: number): number;
 export declare function qrDistance(a: QR, b: QR): number;
-export declare function pickingRay(vector: THREE.Vector3, camera: THREE.Camera): THREE.Raycaster;
+export declare function pickingRay(vector: Vector3, camera: Camera): Raycaster;
 /**
  * Transforms mouse coordinates into world space, assuming that the game view spans the entire window.
  */
@@ -20,7 +20,7 @@ export declare function screenToWorld(x: number, y: number, camera: Camera): Vec
 /**
  * Transforms world coordinates into screen space.
  */
-export declare function worldToScreen(pos: THREE.Vector3, camera: Camera): Vector3;
+export declare function worldToScreen(pos: Vector3, camera: Camera): Vector3;
 export declare function axialToCube(q: number, r: number): {
     x: number;
     y: number;

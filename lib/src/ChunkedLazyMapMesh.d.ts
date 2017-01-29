@@ -1,8 +1,7 @@
 /// <reference types="three" />
-import { Object3D } from "three";
+import { Object3D, Camera } from "three";
 import { TileData, TileDataSource } from './interfaces';
 import Grid from "./Grid";
-import Camera = THREE.Camera;
 import { MapMeshOptions } from './MapMesh';
 export default class ChunkedLazyMapMesh extends Object3D implements TileDataSource {
     private tileGrid;

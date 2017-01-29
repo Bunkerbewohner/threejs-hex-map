@@ -1,3 +1,4 @@
 /// <reference types="three" />
-declare const selector: THREE.Mesh;
+import { Mesh } from "three";
+declare const selector: Mesh;
 export default selector;

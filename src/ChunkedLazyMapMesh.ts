@@ -1,7 +1,6 @@
-import { Object3D, Vector2, Vector3, Sphere } from "three"
+import { Object3D, Vector2, Vector3, Sphere, Camera } from "three"
 import { TileData, TextureAtlas, TileDataSource } from './interfaces';
 import Grid from "./Grid";
-import Camera = THREE.Camera;
 import QuadTree from "./QuadTree";
 import { qrToWorld, screenToWorld, qrToWorldX, qrToWorldY } from './coords';
 import MapMesh from "./MapMesh";

@@ -27,7 +27,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _chunkedMesh: ChunkedLazyMapMesh
     private _tileGrid: Grid<TileData> = new Grid<TileData>(0, 0)
 
-    private _tileSelector: THREE.Object3D = DefaultTileSelector
+    private _tileSelector: Object3D = DefaultTileSelector
     private _controller: MapViewController = new DefaultMapViewController()
     private _selectedTile: TileData
 
@@ -114,7 +114,7 @@ export default class MapView implements MapViewControls, TileDataSource {
         const canvas = document.querySelector(canvasElementQuery) as HTMLCanvasElement
         const camera = this._camera = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000)
         const scene = this._scene = new Scene()
-        const renderer = this._renderer = new THREE.WebGLRenderer({
+        const renderer = this._renderer = new WebGLRenderer({
             canvas: canvas,
             devicePixelRatio: window.devicePixelRatio
         })        
@@ -244,7 +244,7 @@ export default class MapView implements MapViewControls, TileDataSource {
         }
     }
 
-    pickTile(worldPos: THREE.Vector3): TileData | null {
+    pickTile(worldPos: Vector3): TileData | null {
         var x = worldPos.x
         var y = worldPos.y
 

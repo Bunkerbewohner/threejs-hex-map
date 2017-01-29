@@ -4,7 +4,7 @@ import {QR} from "./interfaces"
 const fileLoader = new XHRLoader()
 const textureLoader = new TextureLoader()
 
-export function loadTexture(url: string, onProgress?: (percent: number, totalBytes: number, loadedBytes: number) => void): Promise<THREE.Texture> {
+export function loadTexture(url: string, onProgress?: (percent: number, totalBytes: number, loadedBytes: number) => void): Promise<Texture> {
     return new Promise((resolve, reject) => {
         const onLoad = (texture: Texture) => {
             resolve(texture)

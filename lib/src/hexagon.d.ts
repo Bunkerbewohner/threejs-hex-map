@@ -11,8 +11,8 @@ export declare function createHexagon(radius: number, numSubdivisions: number): 
 /**
  * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
  */
-export declare function randomPointInHexagon(hexRadius: number): THREE.Vector3;
+export declare function randomPointInHexagon(hexRadius: number): Vector3;
 /**
  * Returns a random point in the regular hexagon at (0,0) with given hex radius on the Z=0 plane.
  */
-export declare function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number) => number): THREE.Vector3;
+export declare function randomPointInHexagonEx(hexRadius: number, modifier: (cornerIndex: number) => number): Vector3;
