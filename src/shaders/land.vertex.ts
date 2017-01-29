@@ -100,7 +100,7 @@ void main() {
     vHidden = style.y >= 100.0 ? 1.0 : 0.0;
     
     mat3 T = tangentSpace(vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0), modelMatrix);
-    vLightDirT = T * lightDir;
+    vLightDirT = normalize(T * lightDir);
     
     vNeighborsEast = neighborsEast;
     vNeighborsWest = neighborsWest;
