@@ -74,7 +74,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
 	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
 	var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -239,11 +239,11 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	                return __generator(this, function (_a) {
 	                    atlas = this.options.terrainAtlas;
 	                    geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 0, this.options);
-	                    material = new THREE.RawShaderMaterial({
+	                    material = new three_1.RawShaderMaterial({
 	                        uniforms: {
 	                            sineTime: { value: 0.0 },
 	                            showGrid: { value: this._showGrid ? 1.0 : 0.0 },
-	                            camera: { type: "v3", value: new THREE.Vector3(0, 0, 0) },
+	                            camera: { type: "v3", value: new three_1.Vector3(0, 0, 0) },
 	                            texture: { type: "t", value: this.options.terrainAtlasTexture },
 	                            textureAtlasMeta: {
 	                                type: "4f",
@@ -271,12 +271,12 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	                            },
 	                            lightDir: {
 	                                type: "v3",
-	                                value: new THREE.Vector3(0.5, 0.6, -0.5).normalize()
+	                                value: new three_1.Vector3(0.5, 0.6, -0.5).normalize()
 	                            }
 	                        },
 	                        vertexShader: this.options.landVertexShader,
 	                        fragmentShader: this.options.landFragmentShader,
-	                        side: THREE.FrontSide,
+	                        side: three_1.FrontSide,
 	                        wireframe: false,
 	                        transparent: false
 	                    });
@@ -293,11 +293,11 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	                return __generator(this, function (_a) {
 	                    atlas = this.options.terrainAtlas;
 	                    geometry = createHexagonTilesGeometry(tiles, this.globalGrid, 1, this.options);
-	                    material = new THREE.RawShaderMaterial({
+	                    material = new three_1.RawShaderMaterial({
 	                        uniforms: {
 	                            sineTime: { value: 0.0 },
 	                            showGrid: { value: this._showGrid ? 1.0 : 0.0 },
-	                            camera: { type: "v3", value: new THREE.Vector3(0, 0, 0) },
+	                            camera: { type: "v3", value: new three_1.Vector3(0, 0, 0) },
 	                            texture: { type: "t", value: this.options.terrainAtlasTexture },
 	                            textureAtlasMeta: {
 	                                type: "4f",
@@ -313,12 +313,12 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	                            },
 	                            lightDir: {
 	                                type: "v3",
-	                                value: new THREE.Vector3(0.5, 0.6, -0.5).normalize()
+	                                value: new three_1.Vector3(0.5, 0.6, -0.5).normalize()
 	                            }
 	                        },
 	                        vertexShader: this.options.mountainsVertexShader,
 	                        fragmentShader: this.options.mountainsFragmentShader,
-	                        side: THREE.FrontSide,
+	                        side: three_1.FrontSide,
 	                        wireframe: false,
 	                        transparent: false
 	                    });
@@ -344,7 +344,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        geometry.addAttribute("border", hexagon.attributes.border);
 	        // positions for each hexagon tile
 	        var tilePositions = tiles.map(function (tile) { return coords_1.qrToWorld(tile.q, tile.r, scale); });
-	        var posAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 2), 2, 1);
+	        var posAttr = new three_1.InstancedBufferAttribute(new Float32Array(tilePositions.length * 2), 2, 1);
 	        posAttr.copyVector2sArray(tilePositions);
 	        geometry.addAttribute("offset", posAttr);
 	        //----------------
@@ -371,14 +371,14 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	            tile.bufferIndex = index;
 	            return new three_1.Vector4(cellIndex, style, coastIdx, riverIdx);
 	        });
-	        var styleAttr = new THREE.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1);
+	        var styleAttr = new three_1.InstancedBufferAttribute(new Float32Array(tilePositions.length * 4), 4, 1);
 	        styleAttr.copyVector4sArray(styles);
 	        geometry.addAttribute("style", styleAttr);
 	        // surrounding tile terrain represented as two consecutive Vector3s
 	        // 1. [tileIndex + 0] = NE, [tileIndex + 1] = E, [tileIndex + 2] = SE
 	        // 2. [tileIndex + 0] = SW, [tileIndex + 1] = W, [tileIndex + 2] = NW
-	        var neighborsEast = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1);
-	        var neighborsWest = new THREE.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1);
+	        var neighborsEast = new three_1.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1);
+	        var neighborsWest = new three_1.InstancedBufferAttribute(new Float32Array(tiles.length * 3), 3, 1);
 	        for (var i = 0; i < tiles.length; i++) {
 	            var neighbors = grid.surrounding(tiles[i].q, tiles[i].r);
 	            for (var j = 0; j < neighbors.length; j++) {
@@ -797,7 +797,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, three_1) {
 	    "use strict";
 	    exports.NE = 32;
 	    exports.E = 16;
@@ -823,8 +823,8 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        var texcoords = new Float32Array(numFaces * 3 * 2), t = 0;
 	        var border = new Float32Array(numFaces * 3 * 1), e = 0;
 	        var points = [0, 1, 2, 3, 4, 5].map(function (i) {
-	            return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * (i / 6.0)), radius * Math.cos(Math.PI * 2 * (i / 6.0)), 0);
-	        }).concat([new THREE.Vector3(0, 0, 0)]);
+	            return new three_1.Vector3(radius * Math.sin(Math.PI * 2 * (i / 6.0)), radius * Math.cos(Math.PI * 2 * (i / 6.0)), 0);
+	        }).concat([new three_1.Vector3(0, 0, 0)]);
 	        var faces = [0, 6, 1, 1, 6, 2, 2, 6, 3, 3, 6, 4, 4, 6, 5, 5, 6, 0];
 	        var vertices = []; // every three vertices constitute one face
 	        for (var i = 0; i < faces.length; i += 3) {
@@ -840,11 +840,11 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	            var inradius = (Math.sqrt(3) / 2) * radius;
 	            border[e++] = vertices[i].length() >= inradius - 0.1 ? 1.0 : 0.0;
 	        }
-	        var geometry = new THREE.BufferGeometry();
-	        geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-	        geometry.addAttribute("uv", new THREE.BufferAttribute(texcoords, 2));
+	        var geometry = new three_1.BufferGeometry();
+	        geometry.addAttribute("position", new three_1.BufferAttribute(positions, 3));
+	        geometry.addAttribute("uv", new three_1.BufferAttribute(texcoords, 2));
 	        // 1.0 = border vertex, 0.0 otherwise
-	        geometry.addAttribute("border", new THREE.BufferAttribute(border, 1));
+	        geometry.addAttribute("border", new three_1.BufferAttribute(border, 1));
 	        return geometry;
 	    }
 	    exports.createHexagon = createHexagon;
@@ -855,7 +855,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        // the hexagon consists of 6 triangles, construct one of them randomly
 	        var startCornerIndex = Math.floor(Math.random() * 6);
 	        var A = computeHexagonCorner(hexRadius, ((startCornerIndex + 0) % 6) / 6.0);
-	        var B = new THREE.Vector3(0, 0, 0);
+	        var B = new three_1.Vector3(0, 0, 0);
 	        var C = computeHexagonCorner(hexRadius, ((startCornerIndex + 1) % 6) / 6.0);
 	        // random point in the triangle based on AB and AC
 	        var r = Math.random(), s = Math.random();
@@ -872,7 +872,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        // the hexagon consists of 6 triangles, construct one of them randomly
 	        var startCornerIndex = Math.floor(Math.random() * 6);
 	        var A = hexagonCorners1[startCornerIndex].clone();
-	        var B = new THREE.Vector3(0, 0, 0);
+	        var B = new three_1.Vector3(0, 0, 0);
 	        var C = hexagonCorners1[(startCornerIndex + 1) % 6].clone();
 	        // random point in the triangle based on AB and AC
 	        var r = Math.random(), s = Math.random();
@@ -884,11 +884,11 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	    }
 	    exports.randomPointInHexagonEx = randomPointInHexagonEx;
 	    function computeHexagonCorner(radius, angle) {
-	        return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
+	        return new three_1.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
 	    }
 	    function computeHexagonCorner1(angle) {
 	        var radius = 1.0;
-	        return new THREE.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
+	        return new three_1.Vector3(radius * Math.sin(Math.PI * 2 * angle), radius * Math.cos(Math.PI * 2 * angle), 0);
 	    }
 	    var hexagonCorners1 = [
 	        computeHexagonCorner1(0),
@@ -930,12 +930,12 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	    function pickingRay(vector, camera) {
 	        // set two vectors with opposing z values
 	        vector.z = -1.0;
-	        var end = new THREE.Vector3(vector.x, vector.y, 1.0);
+	        var end = new three_1.Vector3(vector.x, vector.y, 1.0);
 	        vector.unproject(camera);
 	        end.unproject(camera);
 	        // find direction from vector to end
 	        end.sub(vector).normalize();
-	        return new THREE.Raycaster(vector, end);
+	        return new three_1.Raycaster(vector, end);
 	    }
 	    exports.pickingRay = pickingRay;
 	    /**
@@ -951,7 +951,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	     * Transforms screen coordinates into world space, assuming that the game view spans the entire window.
 	     */
 	    function screenToWorld(x, y, camera) {
-	        var mv = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
+	        var mv = new three_1.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
 	        var raycaster = pickingRay(mv, camera);
 	        return raycaster.ray.intersectPlane(Z_PLANE);
 	    }
