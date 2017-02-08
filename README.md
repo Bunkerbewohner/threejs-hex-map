@@ -10,6 +10,7 @@ A simple 3D hexagonal terrain map based on three.js.
 
 * hexagonal tiles with water, flat land, hills, mountains, rivers, trees and coast
 * one texture atlas each for terrain textures, river tiles, and coast tiles
+* blending mask texture for transitions between tiles
 * two-tier fog of war like in Civilization
 
 ## Usage

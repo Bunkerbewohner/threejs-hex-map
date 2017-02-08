@@ -46,13 +46,14 @@ export function initInput(mapView: MapView) {
         }
     }, false)
 
-    window.addEventListener("mousewheel", onMouseWheelHandler(mapView), false)
-    window.addEventListener("DOMMouseScroll", onMouseWheelHandler(mapView), false)
+    const scrollHandler = onMouseWheelHandler(mapView)
+    mapView.canvas.addEventListener("wheel", scrollHandler, false)
 }
 
 function onMouseWheelHandler(mapView: MapView) {
-    return (e: MouseWheelEvent) => {
-        var delta = Math.max(-1, Math.min(1, (e.wheelDeltaY || e.detail)))
+    return (e: WheelEvent) => {
+        console.log(e)
+        var delta = Math.max(-1, Math.min(1, e.deltaY))
         if (delta == 0) return;
 
         const zoom = Math.max(8.0, Math.min(500.0, mapView.getZoom() * (1.0 - delta * 0.025)))

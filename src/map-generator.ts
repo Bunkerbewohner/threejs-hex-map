@@ -41,17 +41,13 @@ function generateRivers(grid: Grid<TileData>): Grid<TileData> {
     const rivers = spawns.map(growRiver)
 
     // assign sequential indices to rivers and their tiles
-    let riverIndex = 0
-    for (let river of rivers) {
-        let riverTileIndex = 0
-        for (let tile of river) {
-            tile.river = {
-                riverIndex: riverIndex,
-                riverTileIndex: riverTileIndex++
+    rivers.forEach((river, riverIndex) => {
+        river.forEach((tile, riverTileIndex) => {
+            if (riverTileIndex < river.length - 1) {
+                tile.river = {riverIndex, riverTileIndex}
             }
-        }
-        riverIndex++
-    }
+        })
+    })
 
     return grid
 

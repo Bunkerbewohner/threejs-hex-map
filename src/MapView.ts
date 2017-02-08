@@ -22,6 +22,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _scrollDir = new Vector3(0, 0, 0)    
     private _lastTimestamp = Date.now()
     private _zoom: number = 25
+    private _canvas: HTMLCanvasElement
 
     private _mapMesh: Object3D & TileDataSource
     private _chunkedMesh: ChunkedLazyMapMesh
@@ -37,6 +38,10 @@ export default class MapView implements MapViewControls, TileDataSource {
 
     get controller() {
         return this._controller
+    }
+
+    get canvas() {
+        return this._canvas
     }
 
     get zoom() {
@@ -111,7 +116,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     public scrollSpeed: number = 10
 
     constructor(canvasElementQuery: string = "canvas") {
-        const canvas = document.querySelector(canvasElementQuery) as HTMLCanvasElement
+        const canvas = this._canvas = document.querySelector(canvasElementQuery) as HTMLCanvasElement
         const camera = this._camera = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000)
         const scene = this._scene = new Scene()
         const renderer = this._renderer = new WebGLRenderer({

@@ -14,6 +14,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _scrollDir;
     private _lastTimestamp;
     private _zoom;
+    private _canvas;
     private _mapMesh;
     private _chunkedMesh;
     private _tileGrid;
@@ -24,6 +25,7 @@ export default class MapView implements MapViewControls, TileDataSource {
     private _onLoaded;
     private _onAnimate;
     readonly controller: MapViewController;
+    readonly canvas: HTMLCanvasElement;
     zoom: number;
     getZoom(): number;
     readonly selectedTile: TileData;

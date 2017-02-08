@@ -71,6 +71,14 @@ vec4 terrainTransition(vec4 inputColor, float terrain, float sector) {
     vec4 color = texture2D(texture, otherUV);
     vec4 blend = texture2D(transitionTexture, blendMaskUV);
     float a = min(blend.r, clamp(terrain - vTerrain, 0.0, 1.0));
+    
+    // TODO: Remove this debug code
+    if (vTerrain <= 1.0 && terrain <= 1.0 && false) {
+        a = 1.0 - length(vec2(0.5, 0.5) - vUV);
+        a *= (1.0 - 1.0 * length(otherUV - vTexCoord));
+        return mix(vec4(1.0, 0.0, 0.0, 1.0), vec4(0.0, 1.0, 0.0, 1.0), a);
+    }
+    
     return mix(inputColor, color, a);
 }
 
