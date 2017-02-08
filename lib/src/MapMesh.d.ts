@@ -55,6 +55,19 @@ export interface MapMeshOptions {
      */
     treesPerForest?: number;
     /**
+     * Options per tree index to vary individual tree types.
+     */
+    treeOptions?: {
+        /**
+         * Tree size scale (1.0 by default)
+         */
+        scale?: number;
+        /**
+         * Number of trees per forest
+         */
+        treesPerForest: number;
+    }[];
+    /**
      * Overall scale of the geometry. Default 1.0
      */
     scale?: number;

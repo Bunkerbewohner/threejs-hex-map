@@ -20,7 +20,7 @@ export interface Options {
      */
     spritesheetSubdivisions: number;
     /**
-     * Number of trees that are rendered per forest.
+     * Number of trees that are rendered per forest by default.
      */
     treesPerForest: number;
     /**
@@ -28,6 +28,19 @@ export interface Options {
      * i.e. the transparent background. Valid values are between 0.0 and 1.0.
      */
     alphaTest: number;
+    /**
+     * Options per tree index to vary individual tree types.
+     */
+    treeOptions?: {
+        /**
+         * Tree size scale (1.0 by default)
+         */
+        scale?: number;
+        /**
+         * Number of trees per forest
+         */
+        treesPerForest: number;
+    }[];
 }
 export default class Forests extends Object3D {
     private _forestTiles;

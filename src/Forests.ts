@@ -34,7 +34,7 @@ export interface Options {
     spritesheetSubdivisions: number;
 
     /**
-     * Number of trees that are rendered per forest.
+     * Number of trees that are rendered per forest by default.
      */
     treesPerForest: number;
 
@@ -43,6 +43,21 @@ export interface Options {
      * i.e. the transparent background. Valid values are between 0.0 and 1.0.
      */
     alphaTest: number;
+
+    /**
+     * Options per tree index to vary individual tree types.
+     */
+    treeOptions?: {
+        /**
+         * Tree size scale (1.0 by default)
+         */
+        scale?: number;
+
+        /**
+         * Number of trees per forest
+         */
+        treesPerForest: number;
+    }[];
 }
 
 export default class Forests extends Object3D {
@@ -112,19 +127,39 @@ class Trees extends Object3D {
         this.add(this._points)
     }
 
+    private treeSize(treeIndex: number): number {
+        if (this._options.treeOptions && typeof this._options.treeOptions[treeIndex] != "undefined") {
+            return (this._options.treeOptions[treeIndex].scale || 1.0) * this._options.treeSize
+        } else {
+            return this._options.treeSize
+        }
+    }
+
+    private numTreesPerForest(treeIndex: number): number {
+        if (this._options.treeOptions && typeof this._options.treeOptions[treeIndex] != "undefined") {
+            return this._options.treeOptions[treeIndex].treesPerForest
+        } else {
+            return this._options.treesPerForest
+        }
+    }
+
     private createGeometry(): BufferGeometry {
         const geometry = new BufferGeometry()
-        const {treeSize, treesPerForest, mapScale} = this._options
-        const numTreesRange = range(0, treesPerForest)
+        const {treeSize, mapScale} = this._options
 
         // tree positions
         const positions = flatMap(this._tiles, (tile, j) => {
+            const treesPerForest = this.numTreesPerForest(tile.treeIndex)
             tile.bufferIndex = j * treesPerForest
-            return numTreesRange.map(j => {
+            const vs: Vector3[] = new Array(treesPerForest)
+
+            for (let i = 0; i < treesPerForest; i++) {
                 const tilePos = qrToWorld(tile.q, tile.r, mapScale)
                 const localPos = randomPointOnCoastTile(waterAdjacency(this._globalGrid, tile), mapScale)
-                return tilePos.add(localPos).setZ(0.12)
-            })
+                vs[i] = tilePos.add(localPos).setZ(0.12)
+            }
+
+            return vs
         })
 
         const posAttr = new BufferAttribute(new Float32Array(positions.length * 3), 3).copyVector3sArray(positions)
@@ -135,7 +170,15 @@ class Trees extends Object3D {
 
         const params = flatMap(this._tiles, tile => {
             const spriteIndex = () => tile.treeIndex * cols + Math.floor(Math.random() * cols)
-            return numTreesRange.map(i => new Vector3(spriteIndex(), 0.0, tile.clouds ? 0.0 : 1.0))
+            const treesPerForest = this.numTreesPerForest(tile.treeIndex)
+            const treeSize = this.treeSize(tile.treeIndex)
+            const ps: Vector3[] = new Array(treesPerForest)
+
+            for (let i = 0; i < treesPerForest; i++) {
+                ps[i] = new Vector3(spriteIndex(), treeSize, tile.clouds ? 0.0 : 1.0)
+            }
+
+            return ps
         })
         this._alphaAttr = new BufferAttribute(new Float32Array(positions.length * 3), 3).copyVector3sArray(params)
         geometry.addAttribute("params", this._alphaAttr)

@@ -226,7 +226,8 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	                        spritesheetSubdivisions: this.options.treeSpritesheetSubdivisions,
 	                        treesPerForest: this.options.treesPerForest || 50,
 	                        mapScale: this.options.scale || 1.0,
-	                        alphaTest: this.options.treeAlphaTest || 0.2
+	                        alphaTest: this.options.treeAlphaTest || 0.2,
+	                        treeOptions: this.options.treeOptions
 	                    });
 	                    this.add(trees);
 	                    return [2 /*return*/];
@@ -1133,19 +1134,37 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	            this._points = new three_1.Points(this.createGeometry(), this.createMaterial());
 	            this.add(this._points);
 	        };
+	        Trees.prototype.treeSize = function (treeIndex) {
+	            if (this._options.treeOptions && typeof this._options.treeOptions[treeIndex] != "undefined") {
+	                return (this._options.treeOptions[treeIndex].scale || 1.0) * this._options.treeSize;
+	            }
+	            else {
+	                return this._options.treeSize;
+	            }
+	        };
+	        Trees.prototype.numTreesPerForest = function (treeIndex) {
+	            if (this._options.treeOptions && typeof this._options.treeOptions[treeIndex] != "undefined") {
+	                return this._options.treeOptions[treeIndex].treesPerForest;
+	            }
+	            else {
+	                return this._options.treesPerForest;
+	            }
+	        };
 	        Trees.prototype.createGeometry = function () {
 	            var _this = this;
 	            var geometry = new three_1.BufferGeometry();
-	            var _a = this._options, treeSize = _a.treeSize, treesPerForest = _a.treesPerForest, mapScale = _a.mapScale;
-	            var numTreesRange = util_1.range(0, treesPerForest);
+	            var _a = this._options, treeSize = _a.treeSize, mapScale = _a.mapScale;
 	            // tree positions
 	            var positions = util_1.flatMap(this._tiles, function (tile, j) {
+	                var treesPerForest = _this.numTreesPerForest(tile.treeIndex);
 	                tile.bufferIndex = j * treesPerForest;
-	                return numTreesRange.map(function (j) {
+	                var vs = new Array(treesPerForest);
+	                for (var i = 0; i < treesPerForest; i++) {
 	                    var tilePos = coords_1.qrToWorld(tile.q, tile.r, mapScale);
 	                    var localPos = map_generator_1.randomPointOnCoastTile(map_generator_1.waterAdjacency(_this._globalGrid, tile), mapScale);
-	                    return tilePos.add(localPos).setZ(0.12);
-	                });
+	                    vs[i] = tilePos.add(localPos).setZ(0.12);
+	                }
+	                return vs;
 	            });
 	            var posAttr = new three_1.BufferAttribute(new Float32Array(positions.length * 3), 3).copyVector3sArray(positions);
 	            geometry.addAttribute("position", posAttr);
@@ -1153,7 +1172,13 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	            var cols = this._options.spritesheetSubdivisions;
 	            var params = util_1.flatMap(this._tiles, function (tile) {
 	                var spriteIndex = function () { return tile.treeIndex * cols + Math.floor(Math.random() * cols); };
-	                return numTreesRange.map(function (i) { return new three_1.Vector3(spriteIndex(), 0.0, tile.clouds ? 0.0 : 1.0); });
+	                var treesPerForest = _this.numTreesPerForest(tile.treeIndex);
+	                var treeSize = _this.treeSize(tile.treeIndex);
+	                var ps = new Array(treesPerForest);
+	                for (var i = 0; i < treesPerForest; i++) {
+	                    ps[i] = new three_1.Vector3(spriteIndex(), treeSize, tile.clouds ? 0.0 : 1.0);
+	                }
+	                return ps;
 	            });
 	            this._alphaAttr = new three_1.BufferAttribute(new Float32Array(positions.length * 3), 3).copyVector3sArray(params);
 	            geometry.addAttribute("params", this._alphaAttr);
@@ -1192,7 +1217,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
 	    "use strict";
-	    exports.TREES_VERTEX_SHADER = "\nprecision mediump float;\n\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform float size;\nuniform float scale;\n\nattribute vec3 position;\nattribute vec3 params; // x = spritesheet x, y = spritesheet y, z = alpha\nattribute vec3 color;\n\nvarying vec3 vParams;\nvarying vec3 vColor;\n\nvoid main() {\n    vParams = params;\n\n    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n    gl_Position = projectionMatrix * mvPosition;\n    gl_PointSize = size * ( scale / - mvPosition.z );\n    \n    vColor = color;\n}\n";
+	    exports.TREES_VERTEX_SHADER = "\nprecision mediump float;\n\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform float size;\nuniform float scale;\n\nattribute vec3 position;\nattribute vec3 params; // x = spritesheet x, y = spritesheet y, z = alpha\nattribute vec3 color;\n\nvarying vec3 vParams; // x = sprite index, y = size, z = visible?\nvarying vec3 vColor;\n\nvoid main() {\n    vParams = params;\n\n    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n    gl_Position = projectionMatrix * mvPosition;\n    gl_PointSize = params.y * ( scale / - mvPosition.z );\n    \n    vColor = color;\n}\n";
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	//# sourceMappingURL=trees.vertex.js.map
 

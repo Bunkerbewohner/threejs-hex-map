@@ -66,7 +66,19 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
         treesPerForest: 50,
         gridWidth: 0.025,
         gridColor: new Color(0x42322b),
-        gridOpacity: 0.25
+        gridOpacity: 0.25,
+
+        // options per tree index, varying the different kinds of trees a little
+        treeOptions: [
+            undefined, // leave default options for trees with index 0 (temperate zone forests)
+            { // tundra trees
+                treesPerForest: 25
+            },
+            { // snowy trees
+                treesPerForest: 10,
+                scale: 0.85
+            } // no options for tropical forests (index = 3)
+        ]
     }
     const [map, atlas] = await Promise.all([generateMap(mapSize), loadTextureAtlas()])
     options.terrainAtlas = atlas
