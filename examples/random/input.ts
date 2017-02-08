@@ -52,7 +52,6 @@ export function initInput(mapView: MapView) {
 
 function onMouseWheelHandler(mapView: MapView) {
     return (e: WheelEvent) => {
-        console.log(e)
         var delta = Math.max(-1, Math.min(1, e.deltaY))
         if (delta == 0) return;
 
