@@ -144,14 +144,14 @@ class Trees extends Object3D {
     }
 
     private createMaterial() {
-        const {treeSize, mapScale} = this._options
+        const {treeSize, mapScale, spritesheetSubdivisions} = this._options
         const parameters = {
             uniforms: {
                 texture: {
                     type: "t",
                     value: this._texture
                 },
-                spritesheetSubdivisions: { type: "f", value: 4 },
+                spritesheetSubdivisions: { type: "f", value: spritesheetSubdivisions },
                 size: {
                     type: "f",
                     value: (this._options.mapScale || 1.0) * this._options.treeSize
