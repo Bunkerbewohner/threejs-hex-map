@@ -49,7 +49,7 @@ vec2 cellIndexToUV(float idx) {
     float atlasWidth = textureAtlasMeta.x;
     float atlasHeight = textureAtlasMeta.y;
     float cellSize = textureAtlasMeta.z;
-    float cols = atlasWidth / cellSize;
+    float cols = atlasWidth / cellSize - 1e-6; // subtract small epsilon to avoid edge cases that cause flickering
     float rows = atlasHeight / cellSize;
     float x = mod(idx, cols);
     float y = floor(idx / cols);
