@@ -9,7 +9,7 @@ varying vec3 vParams;
 varying vec3 vColor;
 
 vec2 spriteIndexToUV(float idx, vec2 uv) {
-    float cols = spritesheetSubdivisions;
+    float cols = spritesheetSubdivisions - 1e-6; // subtract small epsilon to avoid edge cases that cause flickering
     float rows = spritesheetSubdivisions;
     
     float x = mod(idx, cols);
