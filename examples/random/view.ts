@@ -42,7 +42,7 @@ async function generateMap(mapSize: number) {
         const terrain = terrainAt(q, r, height)
         const trees = isMountain(height) || isWater(height) || terrain == "desert" ? undefined :
             (varying(true, false, false) ? treeAt(q, r, terrain) : undefined)
-        return {q, r, height, terrain, treeIndex: trees, river: null, fog: false, clouds: false }
+        return {q, r, height, terrain, treeIndex: trees, river: null, fog: true, clouds: true }
     })
 }
 
@@ -92,8 +92,8 @@ export async function initView(mapSize: number, initialZoom: number): Promise<Ma
 
     mapView.onLoaded = () => {
         // uncover tiles around initial selection
-        //setFogAround(mapView, mapView.selectedTile, 10, true, false)
-        //setFogAround(mapView, mapView.selectedTile, 5, false, false)
+        setFogAround(mapView, mapView.selectedTile, 10, true, false)
+        setFogAround(mapView, mapView.selectedTile, 5, false, false)
     }
 
     mapView.onTileSelected = (tile: TileData) => {
