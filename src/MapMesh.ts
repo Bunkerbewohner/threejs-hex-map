@@ -102,7 +102,7 @@ export interface MapMeshOptions {
          */
         scale?: number;
 
-        /**
+        /*
          * Number of trees per forest
          */
         treesPerForest: number;
