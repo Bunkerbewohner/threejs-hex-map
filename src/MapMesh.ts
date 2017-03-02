@@ -572,8 +572,7 @@ function isNextOrPrevRiverTile(grid: Grid<TileData>, tile: TileData, q: number, 
         return false
     } else {
         // let the river run into the first ocean / lake
-        const water = isWater(neighbor.height)
-        if (water && coastCount.count == 0) {
+        if (neighbor && isWater(neighbor.height) && coastCount.count == 0) {
             coastCount.count++
             return true
         } else {
