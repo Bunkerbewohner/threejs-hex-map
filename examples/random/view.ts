@@ -42,7 +42,7 @@ async function generateMap(mapSize: number) {
         const terrain = terrainAt(q, r, height)
         const trees = isMountain(height) || isWater(height) || terrain == "desert" ? undefined :
             (varying(true, false, false) ? treeAt(q, r, terrain) : undefined)
-        return {q, r, height, terrain, treeIndex: trees, river: null, fog: true, clouds: true }
+        return {q, r, height, terrain, treeIndex: trees, rivers: null, fog: false, clouds: false }
     })
 }
 

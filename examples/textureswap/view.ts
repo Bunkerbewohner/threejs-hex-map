@@ -19,7 +19,7 @@ async function generateMap(mapSize: number) {
         const terrain = (height < 0 && "ocean") || (height > 0.75 && "mountain") || varying("grass", "plains")
         const trees = !isMountain(height) && !isWater(height) && varying(true, false) ?
             Math.floor(Math.random()*2) : undefined
-        return {q, r, height, terrain, treeIndex: trees, river: null, fog: false, clouds: false }
+        return {q, r, height, terrain, treeIndex: trees, rivers: null, fog: false, clouds: false }
     })
 }
 

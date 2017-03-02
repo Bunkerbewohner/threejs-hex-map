@@ -44,7 +44,7 @@ function generateRivers(grid: Grid<TileData>): Grid<TileData> {
     rivers.forEach((river, riverIndex) => {
         river.forEach((tile, riverTileIndex) => {
             if (riverTileIndex < river.length - 1) {
-                tile.river = {riverIndex, riverTileIndex}
+                tile.rivers = [{riverIndex, riverTileIndex}]
             }
         })
     })

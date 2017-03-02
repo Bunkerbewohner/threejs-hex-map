@@ -16,7 +16,7 @@ export interface TileData {
     fog: boolean;
     clouds: boolean;
     terrain: string;
-    river?: {riverIndex: number; riverTileIndex: number};
+    rivers?: {riverIndex: number; riverTileIndex: number}[];
     treeIndex?: number; // index of tree texture, optional
 }
 

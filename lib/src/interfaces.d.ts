@@ -14,10 +14,10 @@ export interface TileData {
     fog: boolean;
     clouds: boolean;
     terrain: string;
-    river?: {
+    rivers?: {
         riverIndex: number;
         riverTileIndex: number;
-    };
+    }[];
     treeIndex?: number;
 }
 export declare function isLand(height: Height): boolean;
