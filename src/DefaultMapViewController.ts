@@ -42,7 +42,7 @@ export default class Controller implements MapViewController {
     private pickingCamera: Camera
     private mouseDownPos: Vector3
     private dragStartCameraPos: Vector3
-    private lastDrag: Vector3 = new Vector3(0, 0, 0)
+    private lastDrag: Vector3 = null
     private debugText: HTMLElement = null
     private selectedQR: QR = {q: 0, r: 0}
     private animations: Animation[] = []
@@ -144,8 +144,8 @@ export default class Controller implements MapViewController {
         }
     }
 
-    onMouseUp = (e: MouseEvent) => {                                
-        if (!this.lastDrag) {
+    onMouseUp = (e: MouseEvent) => {
+        if (!this.lastDrag || this.lastDrag.length() < 0.1) {
             const mousePos = screenToWorld(e.clientX, e.clientY, this.controls.getCamera())
             const tile = this.controls.pickTile(mousePos)
             if (tile) {
