@@ -459,8 +459,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        }
 	        else {
 	            // let the river run into the first ocean / lake
-	            var water = interfaces_1.isWater(neighbor.height);
-	            if (water && coastCount.count == 0) {
+	            if (neighbor && interfaces_1.isWater(neighbor.height) && coastCount.count == 0) {
 	                coastCount.count++;
 	                return true;
 	            }
@@ -480,7 +479,6 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	        var W = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q - 1, tile.r, coastCount));
 	        var NW = bitStr(isNextOrPrevRiverTile(grid, tile, tile.q, tile.r - 1, coastCount));
 	        var combination = NE + E + SE + SW + W + NW;
-	        console.log("(" + tile.q + "," + tile.r + ") = " + combination);
 	        return parseInt(combination, 2);
 	    }
 	    function bitStr(x) {
@@ -1811,7 +1809,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	    var Controller = (function () {
 	        function Controller() {
 	            var _this = this;
-	            this.lastDrag = new three_1.Vector3(0, 0, 0);
+	            this.lastDrag = null;
 	            this.debugText = null;
 	            this.selectedQR = { q: 0, r: 0 };
 	            this.animations = [];
@@ -1870,7 +1868,7 @@ define("threejs-hex-map", ["three"], function(__WEBPACK_EXTERNAL_MODULE_4__) { r
 	                }
 	            };
 	            this.onMouseUp = function (e) {
-	                if (!_this.lastDrag) {
+	                if (!_this.lastDrag || _this.lastDrag.length() < 0.1) {
 	                    var mousePos = coords_1.screenToWorld(e.clientX, e.clientY, _this.controls.getCamera());
 	                    var tile = _this.controls.pickTile(mousePos);
 	                    if (tile) {
