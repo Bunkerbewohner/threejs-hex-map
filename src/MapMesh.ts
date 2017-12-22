@@ -192,7 +192,7 @@ export default class MapMesh extends Group implements TileDataSource {
 
     boundingSphere: Sphere
 
-    readonly loaded: Promise<void>
+    readonly loaded: Promise<any>
 
     private _showGrid = true
 
