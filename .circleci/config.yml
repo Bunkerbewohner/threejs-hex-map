@@ -1,0 +1,14 @@
+version: 2.1
+orbs:
+  node: circleci/node@3.0.0
+parameters:
+  skip_tests:
+    type: boolean
+    default: false
+workflows:
+  node-tests:
+    jobs:
+      - node/test
+  params:
+    jobs:
+      - node/test
